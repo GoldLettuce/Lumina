@@ -4,5 +4,6 @@
   "dailyPL": "P/G diario | 0,00 € 0.00%",
   "openPL": "Abrir P/G | 4,328.47 € 1.17%",
   "graphPlaceholder": "Marcador de gráfico",
-  "quantity": "Cantidad"
+  "quantity": "Cantidad",
+  "noInvestments": "No hay inversiones"
 }

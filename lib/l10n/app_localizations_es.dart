@@ -22,4 +22,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get quantity => 'Cantidad';
+
+  @override
+  String get noInvestments => 'No hay inversiones';
 }

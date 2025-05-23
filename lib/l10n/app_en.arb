@@ -4,5 +4,6 @@
   "dailyPL": "Daily P/L | 0.00 € 0.00%",
   "openPL": "Open P/L | 4,328.47 € 1.17%",
   "graphPlaceholder": "Graph placeholder",
-  "quantity": "Quantity"
+  "quantity": "Quantity",
+  "noInvestments": "No investments"
 }

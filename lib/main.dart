@@ -1,14 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'core/theme.dart';
-import 'l10n/app_localizations.dart'; // Importa la clase generada
+import 'l10n/app_localizations.dart'; // Importa la clase generada para i18n
 import 'package:flutter_localizations/flutter_localizations.dart'; // Importa localizaciones
 
-void main() {
-  runApp(const PortfolioApp());
+import 'domain/entities/investment.dart';
+import 'data/repositories_impl/investment_repository_impl.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Hive.initFlutter();
+
+  Hive.registerAdapter(InvestmentAdapter());
+
+  final investmentRepository = InvestmentRepositoryImpl();
+  await investmentRepository.init();
+
+  runApp(PortfolioApp(investmentRepository: investmentRepository));
 }
 
 class PortfolioApp extends StatelessWidget {
-  const PortfolioApp({super.key});
+  final InvestmentRepositoryImpl investmentRepository;
+
+  const PortfolioApp({super.key, required this.investmentRepository});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +32,7 @@ class PortfolioApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       localizationsDelegates: const [
-        AppLocalizations.delegate, // Delegate generado automáticamente
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
@@ -26,24 +41,38 @@ class PortfolioApp extends StatelessWidget {
         Locale('en'),
         Locale('es'),
       ],
-      home: const PortfolioScreen(),
+      home: PortfolioScreen(investmentRepository: investmentRepository),
     );
   }
 }
 
-class PortfolioScreen extends StatelessWidget {
-  const PortfolioScreen({super.key});
+class PortfolioScreen extends StatefulWidget {
+  final InvestmentRepositoryImpl investmentRepository;
+
+  const PortfolioScreen({super.key, required this.investmentRepository});
+
+  @override
+  State<PortfolioScreen> createState() => _PortfolioScreenState();
+}
+
+class _PortfolioScreenState extends State<PortfolioScreen> {
+  List<Investment> investments = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInvestments();
+  }
+
+  Future<void> _loadInvestments() async {
+    final data = await widget.investmentRepository.getAllInvestments();
+    setState(() {
+      investments = data;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final totalValue = '€374,528.47';
-    final dailyPL = AppLocalizations.of(context)?.dailyPL ?? '';
-    final openPL = AppLocalizations.of(context)?.openPL ?? '';
-    final assets = [
-      {'name': 'AAPL', 'quantity': 2.0, 'value': '€0.47', 'change': '-90.76%', 'changeColor': AppColors.negative},
-      {'name': 'bitcoin', 'quantity': 4.0, 'value': '€374,528.00', 'change': '1.22%', 'changeColor': AppColors.positive},
-    ];
-
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -56,7 +85,7 @@ class PortfolioScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Acción añadir inversión (más adelante)
+          // Aquí añadirás función para agregar una nueva inversión y refrescar la lista
         },
         backgroundColor: AppColors.primary,
         child: const Icon(Icons.add),
@@ -67,16 +96,16 @@ class PortfolioScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              totalValue,
+              '€${investments.fold(0.0, (sum, inv) => sum + inv.price * inv.quantity).toStringAsFixed(2)}',
               style: theme.textTheme.headlineLarge,
             ),
             const SizedBox(height: 8),
             Text(
-              dailyPL,
+              AppLocalizations.of(context)?.dailyPL ?? '',
               style: theme.textTheme.bodyMedium,
             ),
             Text(
-              openPL,
+              AppLocalizations.of(context)?.openPL ?? '',
               style: theme.textTheme.bodyMedium!.copyWith(color: AppColors.positive),
             ),
             const SizedBox(height: 20),
@@ -99,19 +128,21 @@ class PortfolioScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Expanded(
-              child: ListView.separated(
-                itemCount: assets.length,
+              child: investments.isEmpty
+                  ? Center(child: Text(AppLocalizations.of(context)?.noInvestments ?? 'No investments'))
+                  : ListView.separated(
+                itemCount: investments.length,
                 separatorBuilder: (context, index) => Divider(color: AppColors.border),
                 itemBuilder: (context, index) {
-                  final asset = assets[index];
+                  final asset = investments[index];
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(
-                      asset['name'] as String,
+                      asset.symbol,
                       style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      '${AppLocalizations.of(context)?.quantity ?? ''}: ${asset['quantity']}',
+                      '${AppLocalizations.of(context)?.quantity ?? ''}: ${asset.quantity}',
                       style: theme.textTheme.bodyMedium,
                     ),
                     trailing: Column(
@@ -119,13 +150,10 @@ class PortfolioScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          asset['value'] as String,
+                          '€${(asset.price * asset.quantity).toStringAsFixed(2)}',
                           style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
                         ),
-                        Text(
-                          asset['change'] as String,
-                          style: TextStyle(color: asset['changeColor'] as Color, fontWeight: FontWeight.w600),
-                        ),
+                        // Aquí podrías calcular y mostrar el cambio porcentual
                       ],
                     ),
                   );
