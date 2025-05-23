@@ -16,7 +16,7 @@
 - [x] Implementar almacenamiento local simple (usando `shared_preferences` o `hive`).
 - [x] Definir repositorio abstracto `InvestmentRepository` en `domain/repositories`.
 - [x] Implementar repositorio concreto en `data/repositories_impl.
-- [ ] Crear caso de uso �a�adir inversi�n� y �listar inversiones� en `domain/usecases`.
+- [x] Crear caso de uso �a�adir inversi�n� y �listar inversiones� en `domain/usecases`.
 
 ## FASE 3: UI B�sica y Funcionalidad Inicial
 
