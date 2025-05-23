@@ -11,7 +11,7 @@
 
 ## FASE 2: Modelo de Datos y Persistencia
 
-- [ ] Definir entidad `Investment` en `domain/entities`.
+- [x] Definir entidad `Investment` en `domain/entities`.
 - [ ] Crear modelo `InvestmentModel` en `data/models`.
 - [ ] Implementar almacenamiento local simple (usando `shared_preferences` o `hive`).
 - [ ] Definir repositorio abstracto `InvestmentRepository` en `domain/repositories`.
