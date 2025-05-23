@@ -5,7 +5,7 @@
 - [x] Crear estructura de carpetas (core, data, domain, ui, l10n).
 - [x] A�adir archivos README.md en cada carpeta con explicaci�n.
 - [x] Crear `.gitignore` para Flutter.
-- [ ] Crear `main.dart` con pantalla de bienvenida minimalista.
+- [X] Crear `main.dart` con pantalla de bienvenida minimalista.
 - [ ] Definir paleta de colores y fuentes minimalistas (archivo de tema en `core`).
 - [ ] Configurar internacionalizaci�n inicial (ingl�s/espa�ol, aunque sea solo en estructura).
 
