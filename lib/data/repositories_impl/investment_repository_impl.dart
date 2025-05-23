@@ -6,7 +6,8 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
   static const String boxName = 'investments';
   late Box<Investment> _box;
 
-  // Inicializar la caja Hive (debe llamarse antes de usar cualquier método)
+  /// Inicializa la caja Hive para almacenar inversiones.
+  /// Debe llamarse antes de usar los métodos de este repositorio.
   Future<void> init() async {
     if (!Hive.isBoxOpen(boxName)) {
       _box = await Hive.openBox<Investment>(boxName);
@@ -17,17 +18,19 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
 
   @override
   Future<void> addInvestment(Investment investment) async {
-    // Usar put con id para actualizar o añadir
+    // Agrega o actualiza la inversión usando su ID como clave
     await _box.put(investment.id, investment);
   }
 
   @override
   Future<List<Investment>> getAllInvestments() async {
+    // Devuelve todas las inversiones almacenadas en la caja
     return _box.values.toList();
   }
 
   @override
   Future<void> deleteInvestment(String id) async {
+    // Elimina la inversión por su ID
     await _box.delete(id);
   }
 }

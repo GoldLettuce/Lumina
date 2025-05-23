@@ -14,7 +14,7 @@
 - [x] Definir entidad `Investment` en `domain/entities`.
 - [x] Crear modelo `InvestmentModel` en `data/models`.
 - [x] Implementar almacenamiento local simple (usando `shared_preferences` o `hive`).
-- [ ] Definir repositorio abstracto `InvestmentRepository` en `domain/repositories`.
+- [x] Definir repositorio abstracto `InvestmentRepository` en `domain/repositories`.
 - [ ] Implementar repositorio concreto en `data/repositories_impl`.
 - [ ] Crear caso de uso �a�adir inversi�n� y �listar inversiones� en `domain/usecases`.
 
