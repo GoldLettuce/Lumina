@@ -5,5 +5,7 @@
   "openPL": "Open P/L | 4,328.47 € 1.17%",
   "graphPlaceholder": "Graph placeholder",
   "quantity": "Quantity",
-  "noInvestments": "No investments"
+  "noInvestments": "No investments",
+  "emptyPortfolioMessage": "No investments yet.\nStart by adding your first one!"
+
 }

@@ -130,6 +130,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No investments'**
   String get noInvestments;
+
+  /// No description provided for @emptyPortfolioMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'No investments yet.\nStart by adding your first one!'**
+  String get emptyPortfolioMessage;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

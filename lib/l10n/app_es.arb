@@ -5,5 +5,7 @@
   "openPL": "Abrir P/G | 4,328.47 € 1.17%",
   "graphPlaceholder": "Marcador de gráfico",
   "quantity": "Cantidad",
-  "noInvestments": "No hay inversiones"
+  "noInvestments": "No hay inversiones",
+  "emptyPortfolioMessage": "No tienes inversiones aún.\n¡Comienza añadiendo la primera!"
+
 }

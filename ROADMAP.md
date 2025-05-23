@@ -21,7 +21,7 @@
 ## FASE 3: UI B�sica y Funcionalidad Inicial
 
 - ~~[ ] Pantalla de inicio (welcome/minimalista, logo y nombre).~~ DESESTIMADO
-- [ ] Pantalla principal con listado de inversiones (vac�o al principio).
+- [x] Pantalla principal con listado de inversiones (vac�o al principio).
 - [ ] Pantalla/modal para a�adir inversi�n (tipo, s�mbolo, cantidad, fecha, precio de compra).
 - [ ] Validaci�n de formularios y UX amigable (campos obligatorios, errores claros).
 - [ ] Gesti�n de estado con Provider para inversiones.

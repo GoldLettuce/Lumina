@@ -129,7 +129,17 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             const SizedBox(height: 20),
             Expanded(
               child: investments.isEmpty
-                  ? Center(child: Text(AppLocalizations.of(context)?.noInvestments ?? 'No investments'))
+                  ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: Text(
+                    AppLocalizations.of(context)?.emptyPortfolioMessage ??
+                        'No tienes inversiones aún.\n¡Comienza añadiendo la primera!',
+                    style: theme.textTheme.bodyLarge,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              )
                   : ListView.separated(
                 itemCount: investments.length,
                 separatorBuilder: (context, index) => Divider(color: AppColors.border),
@@ -153,7 +163,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                           '€${(asset.price * asset.quantity).toStringAsFixed(2)}',
                           style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
                         ),
-                        // Aquí podrías calcular y mostrar el cambio porcentual
                       ],
                     ),
                   );

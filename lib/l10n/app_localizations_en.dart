@@ -25,4 +25,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noInvestments => 'No investments';
+
+  @override
+  String get emptyPortfolioMessage => 'No investments yet.\nStart by adding your first one!';
 }
