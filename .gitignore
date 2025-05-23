@@ -31,7 +31,8 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
+build/
+.packages
 
 # Symbolication related
 app.*.symbols
@@ -43,3 +44,25 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+android/.gradle/
+android/local.properties
+
+# iOS specific
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/.symlinks/
+ios/Pods/
+ios/Runner.xcworkspace/
+ios/build/
+ios/Flutter/ephemeral/
+
+# Web
+web/.dart_tool/
+web/build/
+
+# Others
+*.log
+
+# Credentials or local env files (si usas)
+.env
+.env.*
