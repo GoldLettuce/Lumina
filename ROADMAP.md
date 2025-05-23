@@ -1,13 +1,13 @@
-# ??? Roadmap Detallado Portafolio Financiero
+# Roadmap Detallado Portafolio Financiero
 
-## FASE 1: Estructura Base y Configuración
+## FASE 1: Estructura Base y Configuraciï¿½n
 
 - [x] Crear estructura de carpetas (core, data, domain, ui, l10n).
-- [x] Añadir archivos README.md en cada carpeta con explicación.
-- [ ] Crear `.gitignore` para Flutter.
+- [x] Aï¿½adir archivos README.md en cada carpeta con explicaciï¿½n.
+- [x] Crear `.gitignore` para Flutter.
 - [ ] Crear `main.dart` con pantalla de bienvenida minimalista.
 - [ ] Definir paleta de colores y fuentes minimalistas (archivo de tema en `core`).
-- [ ] Configurar internacionalización inicial (inglés/español, aunque sea solo en estructura).
+- [ ] Configurar internacionalizaciï¿½n inicial (inglï¿½s/espaï¿½ol, aunque sea solo en estructura).
 
 ## FASE 2: Modelo de Datos y Persistencia
 
@@ -16,50 +16,50 @@
 - [ ] Implementar almacenamiento local simple (usando `shared_preferences` o `hive`).
 - [ ] Definir repositorio abstracto `InvestmentRepository` en `domain/repositories`.
 - [ ] Implementar repositorio concreto en `data/repositories_impl`.
-- [ ] Crear caso de uso “añadir inversión” y “listar inversiones” en `domain/usecases`.
+- [ ] Crear caso de uso ï¿½aï¿½adir inversiï¿½nï¿½ y ï¿½listar inversionesï¿½ en `domain/usecases`.
 
-## FASE 3: UI Básica y Funcionalidad Inicial
+## FASE 3: UI Bï¿½sica y Funcionalidad Inicial
 
 - [ ] Pantalla de inicio (welcome/minimalista, logo y nombre).
-- [ ] Pantalla principal con listado de inversiones (vacío al principio).
-- [ ] Pantalla/modal para añadir inversión (tipo, símbolo, cantidad, fecha, precio de compra).
-- [ ] Validación de formularios y UX amigable (campos obligatorios, errores claros).
-- [ ] Gestión de estado con Provider para inversiones.
+- [ ] Pantalla principal con listado de inversiones (vacï¿½o al principio).
+- [ ] Pantalla/modal para aï¿½adir inversiï¿½n (tipo, sï¿½mbolo, cantidad, fecha, precio de compra).
+- [ ] Validaciï¿½n de formularios y UX amigable (campos obligatorios, errores claros).
+- [ ] Gestiï¿½n de estado con Provider para inversiones.
 
-## FASE 4: Visualización y Experiencia de Usuario
+## FASE 4: Visualizaciï¿½n y Experiencia de Usuario
 
 - [ ] Resumen superior con total invertido, valor actual, rentabilidad general (minimalista).
-- [ ] Gráfico de evolución del portafolio (usando fl_chart, solo diseño simple al principio).
+- [ ] Grï¿½fico de evoluciï¿½n del portafolio (usando fl_chart, solo diseï¿½o simple al principio).
 - [ ] Selector de activos con buscador (modal tipo CoinGecko).
-- [ ] Animaciones de transición suaves (pantallas y gráficos).
+- [ ] Animaciones de transiciï¿½n suaves (pantallas y grï¿½ficos).
 
-## FASE 5: Integración de Datos en Tiempo Real
+## FASE 5: Integraciï¿½n de Datos en Tiempo Real
 
 - [ ] Integrar API de CoinGecko para obtener precios de criptos (usando modelo con `idCoinGecko`).
 - [ ] Integrar API de acciones/ETFs si es posible (AlphaVantage, Yahoo Finance, etc.).
-- [ ] Selección dinámica de símbolo según tipo de activo.
-- [ ] Cálculo automático de valor actual y rentabilidad con precios reales.
-- [ ] Actualización automática/periódica de datos de precios.
+- [ ] Selecciï¿½n dinï¿½mica de sï¿½mbolo segï¿½n tipo de activo.
+- [ ] Cï¿½lculo automï¿½tico de valor actual y rentabilidad con precios reales.
+- [ ] Actualizaciï¿½n automï¿½tica/periï¿½dica de datos de precios.
 
-## FASE 6: Gestión y Edición de Operaciones
+## FASE 6: Gestiï¿½n y Ediciï¿½n de Operaciones
 
 - [ ] Pantalla/modal con detalle de cada activo (listado de operaciones, compras/ventas).
 - [ ] Permitir editar y eliminar operaciones.
-- [ ] Confirmación antes de borrar.
-- [ ] Visualización clara de todas las operaciones históricas.
+- [ ] Confirmaciï¿½n antes de borrar.
+- [ ] Visualizaciï¿½n clara de todas las operaciones histï¿½ricas.
 
 ## FASE 7: Robustez y Experiencia Final
 
 - [ ] Persistencia robusta: que los datos no se pierdan nunca (pruebas con cierre/reapertura de app).
-- [ ] Pruebas básicas de funcionalidades críticas.
-- [ ] Mejoras visuales (tipografía, iconos minimalistas, modo oscuro opcional).
-- [ ] Optimización para rendimiento y tamaño de app (revisar dependencias y assets).
-- [ ] Internacionalización real (en, es) y textos bien gestionados.
-- [ ] Pantalla de ajustes básicos (idioma, moneda base, etc.).
-- [ ] Autenticación con Apple ID (y Google opcional).
+- [ ] Pruebas bï¿½sicas de funcionalidades crï¿½ticas.
+- [ ] Mejoras visuales (tipografï¿½a, iconos minimalistas, modo oscuro opcional).
+- [ ] Optimizaciï¿½n para rendimiento y tamaï¿½o de app (revisar dependencias y assets).
+- [ ] Internacionalizaciï¿½n real (en, es) y textos bien gestionados.
+- [ ] Pantalla de ajustes bï¿½sicos (idioma, moneda base, etc.).
+- [ ] Autenticaciï¿½n con Apple ID (y Google opcional).
 
-## FASE 8: Publicación y Extras
+## FASE 8: Publicaciï¿½n y Extras
 
 - [ ] Pruebas en TestFlight (iOS) y dispositivos reales.
-- [ ] Ajustes finales de diseño.
+- [ ] Ajustes finales de diseï¿½o.
 - [ ] Publicar en App Store y Play Store.
