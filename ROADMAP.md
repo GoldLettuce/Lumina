@@ -7,7 +7,7 @@
 - [x] Crear `.gitignore` para Flutter.
 - [x] Crear `main.dart` con pantalla de bienvenida minimalista.
 - [x] Definir paleta de colores y fuentes minimalistas (archivo de tema en `core`).
-- [ ] Configurar internacionalizaci�n inicial (ingl�s/espa�ol, aunque sea solo en estructura).
+- [x] Configurar internacionalizaci�n inicial (ingl�s/espa�ol, aunque sea solo en estructura).
 
 ## FASE 2: Modelo de Datos y Persistencia
 

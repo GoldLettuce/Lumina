@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'core/theme.dart';
+import 'l10n/app_localizations.dart'; // Importa la clase generada
+import 'package:flutter_localizations/flutter_localizations.dart'; // Importa localizaciones
 
 void main() {
   runApp(const PortfolioApp());
@@ -14,6 +16,16 @@ class PortfolioApp extends StatelessWidget {
       title: 'Mi Portafolio',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      localizationsDelegates: const [
+        AppLocalizations.delegate, // Delegate generado automáticamente
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('es'),
+      ],
       home: const PortfolioScreen(),
     );
   }
@@ -24,10 +36,9 @@ class PortfolioScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Datos estáticos ejemplo
     final totalValue = '€374,528.47';
-    final dailyPL = 'P/G diario | 0,00 € 0.00%';
-    final openPL = 'Abrir P/G | 4,328.47 € 1.17%';
+    final dailyPL = AppLocalizations.of(context)?.dailyPL ?? '';
+    final openPL = AppLocalizations.of(context)?.openPL ?? '';
     final assets = [
       {'name': 'AAPL', 'quantity': 2.0, 'value': '€0.47', 'change': '-90.76%', 'changeColor': AppColors.negative},
       {'name': 'bitcoin', 'quantity': 4.0, 'value': '€374,528.00', 'change': '1.22%', 'changeColor': AppColors.positive},
@@ -37,7 +48,7 @@ class PortfolioScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mi Portafolio'),
+        title: Text(AppLocalizations.of(context)?.appTitle ?? ''),
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
@@ -55,28 +66,20 @@ class PortfolioScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Total invertido
             Text(
               totalValue,
               style: theme.textTheme.headlineLarge,
             ),
             const SizedBox(height: 8),
-
-            // P/G diario
             Text(
               dailyPL,
               style: theme.textTheme.bodyMedium,
             ),
-
-            // Abrir P/G
             Text(
               openPL,
               style: theme.textTheme.bodyMedium!.copyWith(color: AppColors.positive),
             ),
-
             const SizedBox(height: 20),
-
-            // Placeholder para gráfico
             Container(
               height: 150,
               decoration: BoxDecoration(
@@ -87,17 +90,14 @@ class PortfolioScreen extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  'Gráfico placeholder',
+                  AppLocalizations.of(context)?.graphPlaceholder ?? '',
                   style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
-
             const SizedBox(height: 20),
-
-            // Lista de activos
             Expanded(
               child: ListView.separated(
                 itemCount: assets.length,
@@ -106,13 +106,22 @@ class PortfolioScreen extends StatelessWidget {
                   final asset = assets[index];
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text(asset['name'] as String, style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold)),
-                    subtitle: Text('Cantidad: ${asset['quantity']}', style: theme.textTheme.bodyMedium),
+                    title: Text(
+                      asset['name'] as String,
+                      style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      '${AppLocalizations.of(context)?.quantity ?? ''}: ${asset['quantity']}',
+                      style: theme.textTheme.bodyMedium,
+                    ),
                     trailing: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(asset['value'] as String, style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600)),
+                        Text(
+                          asset['value'] as String,
+                          style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
+                        ),
                         Text(
                           asset['change'] as String,
                           style: TextStyle(color: asset['changeColor'] as Color, fontWeight: FontWeight.w600),
