@@ -29,5 +29,33 @@ class InvestmentModel extends ChangeNotifier {
     await loadInvestments();
   }
 
-// Puedes añadir update, clear, etc., si lo necesitas
+  // --- GETTERS PARA EL RESUMEN SUPERIOR ---
+
+  // Total invertido (suma de todas las compras)
+  double get totalInvertido {
+    double total = 0.0;
+    for (final inv in _investments) {
+      if (inv.operation == 'buy') {
+        total += inv.price * inv.quantity;
+      }
+    }
+    return total;
+  }
+
+  // Valor actual (de momento, igual al valor de compra)
+  double get valorActual {
+    double total = 0.0;
+    for (final inv in _investments) {
+      // Aquí irá el cálculo real cuando haya API de precios
+      total += inv.price * inv.quantity;
+    }
+    return total;
+  }
+
+  // Rentabilidad general en porcentaje
+  double get rentabilidadGeneral {
+    final invertido = totalInvertido;
+    if (invertido == 0) return 0.0;
+    return ((valorActual - invertido) / invertido) * 100;
+  }
 }
