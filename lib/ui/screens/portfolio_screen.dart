@@ -31,6 +31,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     });
   }
 
+  // Calcula la cantidad disponible para vender de un símbolo
   double calculateAvailableQuantity(List<Investment> investments, String symbol) {
     double total = 0.0;
     for (final inv in investments) {
@@ -61,7 +62,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             quantity: data['quantity'],
             price: data['price'],
             date: data['date'],
-            operation: data['operation'],  // Campo operation incluido aquí
+            operation: data['operation'],
           );
           await widget.investmentRepository.addInvestment(newInvestment);
           await _loadInvestments();
@@ -72,7 +73,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
 
     if (result != null) {
       setState(() {
-        _symbolToAdd = result['symbol']; // Actualizamos el símbolo para futuras ventas
+        _symbolToAdd = result['symbol']; // Guardamos para futuras ventas
       });
     }
   }
