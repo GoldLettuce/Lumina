@@ -23,7 +23,7 @@
 - ~~[ ] Pantalla de inicio (welcome/minimalista, logo y nombre).~~ DESESTIMADO
 - [x] Pantalla principal con listado de inversiones (vac�o al principio).
 - [x] Pantalla/modal para a�adir inversi�n (tipo, s�mbolo, cantidad, fecha, precio de compra).
-- [ ] Validaci�n de formularios y UX amigable (campos obligatorios, errores claros).
+- [x] Validaci�n de formularios y UX amigable (campos obligatorios, errores claros).
 - [ ] Gesti�n de estado con Provider para inversiones.
 
 ## FASE 4: Visualizaci�n y Experiencia de Usuario
