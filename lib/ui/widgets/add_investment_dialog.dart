@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../../domain/entities/investment.dart';
+import '../../data/models/investment_model.dart';
 import '../../l10n/app_localizations.dart';
 
 class AddInvestmentDialog extends StatefulWidget {
-  final Function(Map<String, dynamic>) onSave;
-
-  const AddInvestmentDialog({super.key, required this.onSave});
+  const AddInvestmentDialog({super.key});
 
   @override
   State<AddInvestmentDialog> createState() => _AddInvestmentDialogState();
@@ -25,6 +25,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   bool _symbolTouched = false;
   bool _quantityTouched = false;
   bool _priceTouched = false;
+  bool _dateTouched = false;
 
   final Map<String, List<String>> _symbolsByType = {
     'crypto': ['BTC', 'ETH', 'ADA', 'SOL', 'DOT'],
@@ -62,7 +63,10 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       ),
     );
     if (picked != null) {
-      setState(() => _selectedDate = picked);
+      setState(() {
+        _selectedDate = picked;
+        _dateTouched = true;
+      });
     }
   }
 
@@ -104,21 +108,23 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     }
   }
 
-  void _submit() {
+  void _submit() async {
     setState(() {
       _formSubmitted = true;
+      _dateTouched = true;
     });
 
     if (_formKey.currentState!.validate() && _type != null && _symbol != null && _selectedDate != null) {
-      final data = {
-        'type': _type!,
-        'symbol': _symbol!,
-        'quantity': double.parse(_quantityController.text.trim()),
-        'price': double.parse(_priceController.text.trim()),
-        'date': _selectedDate!,
-        'operation': _isBuy ? 'buy' : 'sell',
-      };
-      widget.onSave(data);
+      final newInvestment = Investment(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        type: _type!,
+        symbol: _symbol!,
+        quantity: double.parse(_quantityController.text.trim()),
+        price: double.parse(_priceController.text.trim()),
+        date: _selectedDate!,
+        operation: _isBuy ? 'buy' : 'sell',
+      );
+      await context.read<InvestmentModel>().addInvestment(newInvestment);
       Navigator.of(context).pop();
     }
   }
@@ -138,7 +144,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    final dateText = _selectedDate == null ? loc?.selectDate ?? 'Seleccionar fecha' : DateFormat.yMd().format(_selectedDate!);
+    final dateText = _selectedDate == null
+        ? loc?.selectDate ?? 'Seleccionar fecha'
+        : MaterialLocalizations.of(context).formatMediumDate(_selectedDate!);
 
     return Dialog(
       backgroundColor: Colors.white,
@@ -151,7 +159,11 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
             key: _formKey,
             autovalidateMode: _formSubmitted ? AutovalidateMode.always : AutovalidateMode.disabled,
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Text(loc?.newOperation ?? 'Nueva operación', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
+              Text(loc?.newOperation ?? 'Nueva operación',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(fontWeight: FontWeight.w600)),
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(
                 decoration: _inputDecoration(loc?.assetType ?? 'Tipo de activo'),
@@ -166,8 +178,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 validator: (val) => val == null ? (loc?.selectAssetType ?? 'Seleccione un tipo') : null,
               ),
               const SizedBox(height: 16),
-
-              // CAMBIO: Selector de símbolo minimalista
+              // Selector de símbolo minimalista
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -234,8 +245,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                     ),
                 ],
               ),
-              // FIN DEL CAMBIO
-
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -332,6 +341,20 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   ),
                 ),
               ),
+              if ((_formSubmitted || _dateTouched) && _selectedDate == null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8, top: 4),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      loc?.selectDate ?? 'Selecciona una fecha',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
               const SizedBox(height: 24),
               Row(
                 children: [

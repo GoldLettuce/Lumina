@@ -1,45 +1,33 @@
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/investment.dart';
+import '../repositories_impl/investment_repository_impl.dart';
 
-class InvestmentModel extends Investment {
-  InvestmentModel({
-    required String id,
-    required String type,
-    required String symbol,
-    required double quantity,
-    required DateTime date,
-    required double price,
-    required String operation,  // Añadido
-  }) : super(
-    id: id,
-    type: type,
-    symbol: symbol,
-    quantity: quantity,
-    date: date,
-    price: price,
-    operation: operation,  // Añadido
-  );
+class InvestmentModel extends ChangeNotifier {
+  final InvestmentRepositoryImpl _repository;
 
-  factory InvestmentModel.fromJson(Map<String, dynamic> json) {
-    return InvestmentModel(
-      id: json['id'],
-      type: json['type'],
-      symbol: json['symbol'],
-      quantity: (json['quantity'] as num).toDouble(),
-      date: DateTime.parse(json['date']),
-      price: (json['price'] as num).toDouble(),
-      operation: json['operation'],  // Añadido
-    );
+  List<Investment> _investments = [];
+
+  List<Investment> get investments => List.unmodifiable(_investments);
+
+  InvestmentModel(this._repository) {
+    loadInvestments();
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'type': type,
-      'symbol': symbol,
-      'quantity': quantity,
-      'date': date.toIso8601String(),
-      'price': price,
-      'operation': operation,  // Añadido
-    };
+  Future<void> loadInvestments() async {
+    final data = await _repository.getAllInvestments();
+    _investments = data;
+    notifyListeners();
   }
+
+  Future<void> addInvestment(Investment investment) async {
+    await _repository.addInvestment(investment);
+    await loadInvestments();
+  }
+
+  Future<void> removeInvestment(Investment investment) async {
+    await _repository.deleteInvestment(investment.id);
+    await loadInvestments();
+  }
+
+// Puedes añadir update, clear, etc., si lo necesitas
 }

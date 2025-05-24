@@ -6,7 +6,12 @@ import 'package:flutter_localizations/flutter_localizations.dart'; // Importa lo
 
 import 'domain/entities/investment.dart';
 import 'data/repositories_impl/investment_repository_impl.dart';
-import 'ui/widgets/add_investment_dialog.dart'; // Importa el modal para añadir inversión
+import 'ui/widgets/add_investment_dialog.dart';
+
+// NUEVO: Provider e InvestmentModel
+import 'package:provider/provider.dart';
+import 'data/models/investment_model.dart';
+import 'ui/screens/portfolio_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,13 +23,17 @@ Future<void> main() async {
   final investmentRepository = InvestmentRepositoryImpl();
   await investmentRepository.init();
 
-  runApp(PortfolioApp(investmentRepository: investmentRepository));
+  // Inyecta el Provider aquí
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => InvestmentModel(investmentRepository),
+      child: const PortfolioApp(),
+    ),
+  );
 }
 
 class PortfolioApp extends StatelessWidget {
-  final InvestmentRepositoryImpl investmentRepository;
-
-  const PortfolioApp({super.key, required this.investmentRepository});
+  const PortfolioApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -42,156 +51,7 @@ class PortfolioApp extends StatelessWidget {
         Locale('en'),
         Locale('es'),
       ],
-      home: PortfolioScreen(investmentRepository: investmentRepository),
-    );
-  }
-}
-
-class PortfolioScreen extends StatefulWidget {
-  final InvestmentRepositoryImpl investmentRepository;
-
-  const PortfolioScreen({super.key, required this.investmentRepository});
-
-  @override
-  State<PortfolioScreen> createState() => _PortfolioScreenState();
-}
-
-class _PortfolioScreenState extends State<PortfolioScreen> {
-  List<Investment> investments = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadInvestments();
-  }
-
-  Future<void> _loadInvestments() async {
-    final data = await widget.investmentRepository.getAllInvestments();
-    setState(() {
-      investments = data;
-    });
-  }
-
-  Future<void> _openAddInvestmentDialog() async {
-    await showDialog(
-      context: context,
-      builder: (_) => AddInvestmentDialog(
-        onSave: (data) async {
-          final newInvestment = Investment(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
-            type: data['type'],
-            symbol: data['symbol'],
-            quantity: data['quantity'],
-            price: data['price'],
-            date: data['date'],
-            operation: data['operation'], // Aquí está la corrección
-          );
-          await widget.investmentRepository.addInvestment(newInvestment);
-          await _loadInvestments();
-        },
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)?.appTitle ?? ''),
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.textPrimary,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _openAddInvestmentDialog,
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '€${investments.fold(0.0, (sum, inv) => sum + inv.price * inv.quantity).toStringAsFixed(2)}',
-              style: theme.textTheme.headlineLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              AppLocalizations.of(context)?.dailyPL ?? '',
-              style: theme.textTheme.bodyMedium,
-            ),
-            Text(
-              AppLocalizations.of(context)?.openPL ?? '',
-              style: theme.textTheme.bodyMedium!.copyWith(color: AppColors.positive),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              height: 150,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppColors.primary.withOpacity(0.5), AppColors.primary.withOpacity(0.1)],
-                  begin: Alignment.bottomLeft,
-                  end: Alignment.topRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Text(
-                  AppLocalizations.of(context)?.graphPlaceholder ?? '',
-                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: investments.isEmpty
-                  ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: Text(
-                    AppLocalizations.of(context)?.emptyPortfolioMessage ??
-                        'No tienes inversiones aún.\n¡Comienza añadiendo la primera!',
-                    style: theme.textTheme.bodyLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              )
-                  : ListView.separated(
-                itemCount: investments.length,
-                separatorBuilder: (context, index) => Divider(color: AppColors.border),
-                itemBuilder: (context, index) {
-                  final asset = investments[index];
-                  return ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      asset.symbol,
-                      style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      '${AppLocalizations.of(context)?.quantity ?? ''}: ${asset.quantity}',
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                    trailing: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '€${(asset.price * asset.quantity).toStringAsFixed(2)}',
-                          style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+      home: const PortfolioScreen(),
     );
   }
 }

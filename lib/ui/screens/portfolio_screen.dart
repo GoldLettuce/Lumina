@@ -1,98 +1,36 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/investment.dart';
-import '../../data/repositories_impl/investment_repository_impl.dart';
-import '../widgets/add_investment_dialog.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
+import '../../domain/entities/investment.dart';
+import '../widgets/add_investment_dialog.dart';
+import '../../data/models/investment_model.dart';
 
-class PortfolioScreen extends StatefulWidget {
-  final InvestmentRepositoryImpl investmentRepository;
+class PortfolioScreen extends StatelessWidget {
+  const PortfolioScreen({super.key});
 
-  const PortfolioScreen({super.key, required this.investmentRepository});
-
-  @override
-  State<PortfolioScreen> createState() => _PortfolioScreenState();
-}
-
-class _PortfolioScreenState extends State<PortfolioScreen> {
-  List<Investment> investments = [];
-  String? _symbolToAdd;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadInvestments();
-  }
-
-  Future<void> _loadInvestments() async {
-    final data = await widget.investmentRepository.getAllInvestments();
-    setState(() {
-      investments = data;
-    });
-  }
-
-  // Calcula la cantidad disponible para vender de un símbolo
-  double calculateAvailableQuantity(List<Investment> investments, String symbol) {
-    double total = 0.0;
-    for (final inv in investments) {
-      if (inv.symbol == symbol) {
-        if (inv.operation == 'buy') {
-          total += inv.quantity;
-        } else if (inv.operation == 'sell') {
-          total -= inv.quantity;
-        }
-      }
-    }
-    return total < 0 ? 0 : total;
-  }
-
-  Future<void> _openAddInvestmentDialog() async {
-    final availableQuantity = _symbolToAdd == null
-        ? 0.0
-        : calculateAvailableQuantity(investments, _symbolToAdd!);
-
-    final result = await showDialog<Map<String, dynamic>>(
+  Future<void> _openAddInvestmentDialog(BuildContext context) async {
+    await showDialog(
       context: context,
-      builder: (_) => AddInvestmentDialog(
-        onSave: (data) async {
-          final newInvestment = Investment(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
-            type: data['type'],
-            symbol: data['symbol'],
-            quantity: data['quantity'],
-            price: data['price'],
-            date: data['date'],
-            operation: data['operation'],
-          );
-          await widget.investmentRepository.addInvestment(newInvestment);
-          await _loadInvestments();
-        },
-        availableQuantity: availableQuantity,
-      ),
+      builder: (_) => const AddInvestmentDialog(),
     );
-
-    if (result != null) {
-      setState(() {
-        _symbolToAdd = result['symbol']; // Guardamos para futuras ventas
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final loc = AppLocalizations.of(context);
+    final investments = context.watch<InvestmentModel>().investments;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(loc?.appTitle ?? ''),
+        title: Text(AppLocalizations.of(context)?.appTitle ?? ''),
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _openAddInvestmentDialog,
+        onPressed: () => _openAddInvestmentDialog(context),
         backgroundColor: AppColors.primary,
         child: const Icon(Icons.add),
       ),
@@ -107,11 +45,11 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              loc?.dailyPL ?? '',
+              AppLocalizations.of(context)?.dailyPL ?? '',
               style: theme.textTheme.bodyMedium,
             ),
             Text(
-              loc?.openPL ?? '',
+              AppLocalizations.of(context)?.openPL ?? '',
               style: theme.textTheme.bodyMedium!.copyWith(color: AppColors.positive),
             ),
             const SizedBox(height: 20),
@@ -119,10 +57,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               height: 150,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    AppColors.primary.withOpacity(0.5),
-                    AppColors.primary.withOpacity(0.1)
-                  ],
+                  colors: [AppColors.primary.withOpacity(0.5), AppColors.primary.withOpacity(0.1)],
                   begin: Alignment.bottomLeft,
                   end: Alignment.topRight,
                 ),
@@ -130,9 +65,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               ),
               child: Center(
                 child: Text(
-                  loc?.graphPlaceholder ?? '',
-                  style: TextStyle(
-                      color: AppColors.primary, fontWeight: FontWeight.w600),
+                  AppLocalizations.of(context)?.graphPlaceholder ?? '',
+                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -143,7 +77,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Text(
-                    loc?.emptyPortfolioMessage ??
+                    AppLocalizations.of(context)?.emptyPortfolioMessage ??
                         'No tienes inversiones aún.\n¡Comienza añadiendo la primera!',
                     style: theme.textTheme.bodyLarge,
                     textAlign: TextAlign.center,
@@ -152,19 +86,17 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               )
                   : ListView.separated(
                 itemCount: investments.length,
-                separatorBuilder: (context, index) =>
-                    Divider(color: AppColors.border),
+                separatorBuilder: (context, index) => Divider(color: AppColors.border),
                 itemBuilder: (context, index) {
                   final asset = investments[index];
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(
                       asset.symbol,
-                      style: theme.textTheme.bodyLarge!
-                          .copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      '${loc?.quantity ?? ''}: ${asset.quantity}',
+                      '${AppLocalizations.of(context)?.quantity ?? ''}: ${asset.quantity}',
                       style: theme.textTheme.bodyMedium,
                     ),
                     trailing: Column(
@@ -173,8 +105,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       children: [
                         Text(
                           '€${(asset.price * asset.quantity).toStringAsFixed(2)}',
-                          style: theme.textTheme.bodyLarge!
-                              .copyWith(fontWeight: FontWeight.w600),
+                          style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),

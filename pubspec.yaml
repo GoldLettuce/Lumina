@@ -24,6 +24,9 @@ dependencies:
 
   path_provider: ^2.0.15
 
+  # NUEVO: Provider para gestión de estado
+  provider: ^6.1.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
