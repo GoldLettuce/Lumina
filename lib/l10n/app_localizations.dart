@@ -136,6 +136,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No investments yet.\nStart by adding your first one!'**
   String get emptyPortfolioMessage;
+
+  /// No description provided for @newOperation.
+  ///
+  /// In en, this message translates to:
+  /// **'New Operation'**
+  String get newOperation;
+
+  /// No description provided for @assetType.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset Type'**
+  String get assetType;
+
+  /// No description provided for @selectAssetType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a type'**
+  String get selectAssetType;
+
+  /// No description provided for @symbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Symbol'**
+  String get symbol;
+
+  /// No description provided for @selectSymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a symbol'**
+  String get selectSymbol;
+
+  /// No description provided for @buy.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy'**
+  String get buy;
+
+  /// No description provided for @sell.
+  ///
+  /// In en, this message translates to:
+  /// **'Sell'**
+  String get sell;
+
+  /// No description provided for @fieldRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Field required'**
+  String get fieldRequired;
+
+  /// No description provided for @invalidQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid quantity'**
+  String get invalidQuantity;
+
+  /// No description provided for @unitPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit Price (€)'**
+  String get unitPrice;
+
+  /// No description provided for @invalidPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid price'**
+  String get invalidPrice;
+
+  /// No description provided for @date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get date;
+
+  /// No description provided for @selectDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select date'**
+  String get selectDate;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @sellAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Sell All'**
+  String get sellAll;
+
+  /// No description provided for @exceedQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity exceeds available'**
+  String get exceedQuantity;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

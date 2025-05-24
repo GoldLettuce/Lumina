@@ -8,6 +8,7 @@ class InvestmentModel extends Investment {
     required double quantity,
     required DateTime date,
     required double price,
+    required String operation,  // Añadido
   }) : super(
     id: id,
     type: type,
@@ -15,6 +16,7 @@ class InvestmentModel extends Investment {
     quantity: quantity,
     date: date,
     price: price,
+    operation: operation,  // Añadido
   );
 
   factory InvestmentModel.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class InvestmentModel extends Investment {
       quantity: (json['quantity'] as num).toDouble(),
       date: DateTime.parse(json['date']),
       price: (json['price'] as num).toDouble(),
+      operation: json['operation'],  // Añadido
     );
   }
 
@@ -36,6 +39,7 @@ class InvestmentModel extends Investment {
       'quantity': quantity,
       'date': date.toIso8601String(),
       'price': price,
+      'operation': operation,  // Añadido
     };
   }
 }

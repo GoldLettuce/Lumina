@@ -27,5 +27,56 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noInvestments => 'No hay inversiones';
 
   @override
-  String get emptyPortfolioMessage => 'No tienes inversiones aún.\n¡Comienza añadiendo la primera!';
+  String get emptyPortfolioMessage => 'No tienes inversiones aún.\n¡Comienza añ,adiendo la primera!';
+
+  @override
+  String get newOperation => 'Nueva operación';
+
+  @override
+  String get assetType => 'Tipo de activo';
+
+  @override
+  String get selectAssetType => 'Seleccione un tipo';
+
+  @override
+  String get symbol => 'Símbolo';
+
+  @override
+  String get selectSymbol => 'Selecciona un símbolo';
+
+  @override
+  String get buy => 'Compra';
+
+  @override
+  String get sell => 'Venta';
+
+  @override
+  String get fieldRequired => 'Campo obligatorio';
+
+  @override
+  String get invalidQuantity => 'Cantidad inválida';
+
+  @override
+  String get unitPrice => 'Precio unitario (€)';
+
+  @override
+  String get invalidPrice => 'Precio inválido';
+
+  @override
+  String get date => 'Fecha';
+
+  @override
+  String get selectDate => 'Seleccionar fecha';
+
+  @override
+  String get cancel => 'Cancelar';
+
+  @override
+  String get save => 'Guardar';
+
+  @override
+  String get sellAll => 'Vender todo';
+
+  @override
+  String get exceedQuantity => 'Cantidad mayor que disponible';
 }

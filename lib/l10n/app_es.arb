@@ -6,6 +6,22 @@
   "graphPlaceholder": "Marcador de gráfico",
   "quantity": "Cantidad",
   "noInvestments": "No hay inversiones",
-  "emptyPortfolioMessage": "No tienes inversiones aún.\n¡Comienza añadiendo la primera!"
-
+  "emptyPortfolioMessage": "No tienes inversiones aún.\n¡Comienza añ,adiendo la primera!",
+  "newOperation": "Nueva operación",
+  "assetType": "Tipo de activo",
+  "selectAssetType": "Seleccione un tipo",
+  "symbol": "Símbolo",
+  "selectSymbol": "Selecciona un símbolo",
+  "buy": "Compra",
+  "sell": "Venta",
+  "fieldRequired": "Campo obligatorio",
+  "invalidQuantity": "Cantidad inválida",
+  "unitPrice": "Precio unitario (€)",
+  "invalidPrice": "Precio inválido",
+  "date": "Fecha",
+  "selectDate": "Seleccionar fecha",
+  "cancel": "Cancelar",
+  "save": "Guardar",
+  "sellAll": "Vender todo",
+  "exceedQuantity": "Cantidad mayor que disponible"
 }

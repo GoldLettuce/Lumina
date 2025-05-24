@@ -22,6 +22,9 @@ class Investment extends HiveObject {
   @HiveField(5)
   final double price;        // Precio de compra por unidad
 
+  @HiveField(6)
+  final String operation;    // Operación: 'buy' o 'sell'
+
   Investment({
     required this.id,
     required this.type,
@@ -29,7 +32,8 @@ class Investment extends HiveObject {
     required this.quantity,
     required this.date,
     required this.price,
+    required this.operation,
   });
 
-// Puedes añadir métodos para calcular valor total, rentabilidad, etc. más adelante.
+// Métodos adicionales si los necesitas
 }

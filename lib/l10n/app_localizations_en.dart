@@ -28,4 +28,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emptyPortfolioMessage => 'No investments yet.\nStart by adding your first one!';
+
+  @override
+  String get newOperation => 'New Operation';
+
+  @override
+  String get assetType => 'Asset Type';
+
+  @override
+  String get selectAssetType => 'Select a type';
+
+  @override
+  String get symbol => 'Symbol';
+
+  @override
+  String get selectSymbol => 'Select a symbol';
+
+  @override
+  String get buy => 'Buy';
+
+  @override
+  String get sell => 'Sell';
+
+  @override
+  String get fieldRequired => 'Field required';
+
+  @override
+  String get invalidQuantity => 'Invalid quantity';
+
+  @override
+  String get unitPrice => 'Unit Price (€)';
+
+  @override
+  String get invalidPrice => 'Invalid price';
+
+  @override
+  String get date => 'Date';
+
+  @override
+  String get selectDate => 'Select date';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get sellAll => 'Sell All';
+
+  @override
+  String get exceedQuantity => 'Quantity exceeds available';
 }

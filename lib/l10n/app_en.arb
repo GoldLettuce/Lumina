@@ -6,6 +6,22 @@
   "graphPlaceholder": "Graph placeholder",
   "quantity": "Quantity",
   "noInvestments": "No investments",
-  "emptyPortfolioMessage": "No investments yet.\nStart by adding your first one!"
-
+  "emptyPortfolioMessage": "No investments yet.\nStart by adding your first one!",
+  "newOperation": "New Operation",
+  "assetType": "Asset Type",
+  "selectAssetType": "Select a type",
+  "symbol": "Symbol",
+  "selectSymbol": "Select a symbol",
+  "buy": "Buy",
+  "sell": "Sell",
+  "fieldRequired": "Field required",
+  "invalidQuantity": "Invalid quantity",
+  "unitPrice": "Unit Price (€)",
+  "invalidPrice": "Invalid price",
+  "date": "Date",
+  "selectDate": "Select date",
+  "cancel": "Cancel",
+  "save": "Save",
+  "sellAll": "Sell All",
+  "exceedQuantity": "Quantity exceeds available"
 }

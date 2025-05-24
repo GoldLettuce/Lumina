@@ -1,51 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'core/theme.dart';
-import 'l10n/app_localizations.dart'; // Importa la clase generada para i18n
-import 'package:flutter_localizations/flutter_localizations.dart'; // Importa localizaciones
-
-import 'domain/entities/investment.dart';
-import 'data/repositories_impl/investment_repository_impl.dart';
-import 'ui/widgets/add_investment_dialog.dart'; // Importa el modal para añadir inversión
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  await Hive.initFlutter();
-
-  Hive.registerAdapter(InvestmentAdapter());
-
-  final investmentRepository = InvestmentRepositoryImpl();
-  await investmentRepository.init();
-
-  runApp(PortfolioApp(investmentRepository: investmentRepository));
-}
-
-class PortfolioApp extends StatelessWidget {
-  final InvestmentRepositoryImpl investmentRepository;
-
-  const PortfolioApp({super.key, required this.investmentRepository});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Mi Portafolio',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('en'),
-        Locale('es'),
-      ],
-      home: PortfolioScreen(investmentRepository: investmentRepository),
-    );
-  }
-}
+import '../../domain/entities/investment.dart';
+import '../../data/repositories_impl/investment_repository_impl.dart';
+import '../widgets/add_investment_dialog.dart';
+import '../../core/theme.dart';
+import '../../l10n/app_localizations.dart';
 
 class PortfolioScreen extends StatefulWidget {
   final InvestmentRepositoryImpl investmentRepository;
@@ -58,6 +16,7 @@ class PortfolioScreen extends StatefulWidget {
 
 class _PortfolioScreenState extends State<PortfolioScreen> {
   List<Investment> investments = [];
+  String? _symbolToAdd;
 
   @override
   void initState() {
@@ -72,8 +31,26 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     });
   }
 
+  double calculateAvailableQuantity(List<Investment> investments, String symbol) {
+    double total = 0.0;
+    for (final inv in investments) {
+      if (inv.symbol == symbol) {
+        if (inv.operation == 'buy') {
+          total += inv.quantity;
+        } else if (inv.operation == 'sell') {
+          total -= inv.quantity;
+        }
+      }
+    }
+    return total < 0 ? 0 : total;
+  }
+
   Future<void> _openAddInvestmentDialog() async {
-    await showDialog(
+    final availableQuantity = _symbolToAdd == null
+        ? 0.0
+        : calculateAvailableQuantity(investments, _symbolToAdd!);
+
+    final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (_) => AddInvestmentDialog(
         onSave: (data) async {
@@ -84,22 +61,30 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             quantity: data['quantity'],
             price: data['price'],
             date: data['date'],
-            operation: data['operation'], // Aquí está la corrección
+            operation: data['operation'],  // Campo operation incluido aquí
           );
           await widget.investmentRepository.addInvestment(newInvestment);
           await _loadInvestments();
         },
+        availableQuantity: availableQuantity,
       ),
     );
+
+    if (result != null) {
+      setState(() {
+        _symbolToAdd = result['symbol']; // Actualizamos el símbolo para futuras ventas
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)?.appTitle ?? ''),
+        title: Text(loc?.appTitle ?? ''),
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
@@ -121,11 +106,11 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context)?.dailyPL ?? '',
+              loc?.dailyPL ?? '',
               style: theme.textTheme.bodyMedium,
             ),
             Text(
-              AppLocalizations.of(context)?.openPL ?? '',
+              loc?.openPL ?? '',
               style: theme.textTheme.bodyMedium!.copyWith(color: AppColors.positive),
             ),
             const SizedBox(height: 20),
@@ -133,7 +118,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               height: 150,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppColors.primary.withOpacity(0.5), AppColors.primary.withOpacity(0.1)],
+                  colors: [
+                    AppColors.primary.withOpacity(0.5),
+                    AppColors.primary.withOpacity(0.1)
+                  ],
                   begin: Alignment.bottomLeft,
                   end: Alignment.topRight,
                 ),
@@ -141,8 +129,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               ),
               child: Center(
                 child: Text(
-                  AppLocalizations.of(context)?.graphPlaceholder ?? '',
-                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+                  loc?.graphPlaceholder ?? '',
+                  style: TextStyle(
+                      color: AppColors.primary, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -153,7 +142,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Text(
-                    AppLocalizations.of(context)?.emptyPortfolioMessage ??
+                    loc?.emptyPortfolioMessage ??
                         'No tienes inversiones aún.\n¡Comienza añadiendo la primera!',
                     style: theme.textTheme.bodyLarge,
                     textAlign: TextAlign.center,
@@ -162,17 +151,19 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               )
                   : ListView.separated(
                 itemCount: investments.length,
-                separatorBuilder: (context, index) => Divider(color: AppColors.border),
+                separatorBuilder: (context, index) =>
+                    Divider(color: AppColors.border),
                 itemBuilder: (context, index) {
                   final asset = investments[index];
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(
                       asset.symbol,
-                      style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.bodyLarge!
+                          .copyWith(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      '${AppLocalizations.of(context)?.quantity ?? ''}: ${asset.quantity}',
+                      '${loc?.quantity ?? ''}: ${asset.quantity}',
                       style: theme.textTheme.bodyMedium,
                     ),
                     trailing: Column(
@@ -181,7 +172,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       children: [
                         Text(
                           '€${(asset.price * asset.quantity).toStringAsFixed(2)}',
-                          style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
+                          style: theme.textTheme.bodyLarge!
+                              .copyWith(fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
