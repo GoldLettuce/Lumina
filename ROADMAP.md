@@ -31,6 +31,7 @@
 - [x] Resumen superior con total invertido, valor actual, rentabilidad general (minimalista).
 - [x] Gráfico de evolución del portafolio (usando `fl_chart`, solo diseño simple al principio).
 - [x] Selector de activos con buscador (modal tipo CoinGecko).
+- [x] Selector de temporalidad en el gráfico (1D, 1W, 1M, 1Y, ALL).
 
 ## FASE 5: Integración de Datos en Tiempo Real
 
@@ -39,6 +40,7 @@
 - [ ] Selección dinámica de símbolo según tipo de activo.
 - [ ] Cálculo automático de valor actual y rentabilidad con precios reales.
 - [ ] Actualización automática/periódica de datos de precios.
+- [ ] ⚠️ Tener en cuenta desde el diseño que el gráfico deberá poder filtrar por activo individual (tap largo), por lo que el servicio de histórico debe permitir obtener datos de un activo concreto además del portafolio completo.
 
 ## FASE 6: Gestión y Edición de Operaciones
 
@@ -46,6 +48,8 @@
 - [ ] Permitir editar y eliminar operaciones.
 - [ ] Confirmación antes de borrar.
 - [ ] Visualización clara de todas las operaciones históricas.
+- [ ] Acceso al historial con tap sobre activo en la lista principal. 👈 NUEVO
+- [ ] Filtrar gráfico por activo con tap largo sobre activo. 👈 NUEVO
 
 ## FASE 7: Robustez y Experiencia Final
 
