@@ -5,11 +5,12 @@ import '../../l10n/app_localizations.dart';
 import '../../domain/entities/investment.dart';
 import '../widgets/add_investment_dialog.dart';
 import '../../data/models/investment_model.dart';
+import '../widgets/portfolio_summary_with_chart.dart';
+import '../providers/chart_value_provider.dart';
 
 class PortfolioSummaryMinimal extends StatelessWidget {
   const PortfolioSummaryMinimal({super.key});
 
-  /// Mide el ancho de un texto con un estilo dado.
   double _measureTextWidth(String text, TextStyle style, BuildContext context) {
     final tp = TextPainter(
       text: TextSpan(text: text, style: style),
@@ -19,7 +20,6 @@ class PortfolioSummaryMinimal extends StatelessWidget {
     return tp.size.width;
   }
 
-  /// Mide la línea base (baseline) de un texto con un estilo dado.
   double _measureBaseline(String text, TextStyle style) {
     final tp = TextPainter(
       text: TextSpan(text: text, style: style),
@@ -34,13 +34,15 @@ class PortfolioSummaryMinimal extends StatelessWidget {
   Widget build(BuildContext context) {
     final model = context.watch<InvestmentModel>();
     final valorActual = model.valorActual;
-    final rentabilidad = model.rentabilidadGeneral;
-    final isPositivo = rentabilidad >= 0;
+    final touchedValue = context.watch<ChartValueProvider>().valorTocado;
+    final mostrarValor = touchedValue ?? valorActual;
+    final rentabilidad = ((mostrarValor - model.totalInvertido) / model.totalInvertido) * 100;
 
+    final isPositivo = rentabilidad >= 0;
     final signo = isPositivo ? "+" : "-";
     final colorRent = isPositivo ? Colors.green : Colors.red;
 
-    final valorText = '€${valorActual.toStringAsFixed(2)}';
+    final valorText = '€${mostrarValor.toStringAsFixed(2)}';
     final percentText = '$signo${rentabilidad.abs().toStringAsFixed(2)}%';
 
     const valorStyle = TextStyle(
@@ -61,29 +63,20 @@ class PortfolioSummaryMinimal extends StatelessWidget {
       width: double.infinity,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // Medimos anchos y baselines:
           final valorWidth = _measureTextWidth(valorText, valorStyle, context);
           final valorBaseline = _measureBaseline(valorText, valorStyle);
           final percentBaseline = _measureBaseline(percentText, percentStyle);
-
-          // Centro horizontal de la pantalla:
           final centerX = constraints.maxWidth / 2;
-
-          // Posición left del valor para centrarlo:
           final valorLeft = centerX - valorWidth / 2;
-
-          // Posición top del porcentaje para alinear baselines:
           final percentTop = valorBaseline - percentBaseline;
 
           return Stack(
             children: [
-              // Texto del valor, centrado:
               Positioned(
                 left: valorLeft,
                 top: 0,
                 child: Text(valorText, style: valorStyle),
               ),
-              // Texto del porcentaje, pegado a la derecha y alineado por baseline:
               Positioned(
                 left: valorLeft + valorWidth + spacing,
                 top: percentTop,
@@ -132,29 +125,8 @@ class PortfolioScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const PortfolioSummaryMinimal(),
-            Container(
-              height: 150,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primary.withOpacity(0.5),
-                    AppColors.primary.withOpacity(0.1),
-                  ],
-                  begin: Alignment.bottomLeft,
-                  end: Alignment.topRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Text(
-                  AppLocalizations.of(context)?.graphPlaceholder ?? '',
-                  style: TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
+            const SizedBox(height: 12),
+            const PortfolioSummaryWithChart(),
             const SizedBox(height: 20),
             Expanded(
               child: investments.isEmpty
