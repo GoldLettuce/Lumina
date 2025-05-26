@@ -79,4 +79,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get exceedQuantity => 'Cantidad mayor que disponible';
+
+  @override
+  String get searchAsset => 'Buscar activo';
 }

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../domain/entities/investment.dart';
 import '../../data/models/investment_model.dart';
 import '../../l10n/app_localizations.dart';
+import 'asset_selector_modal.dart'; // NUEVO
 
 class AddInvestmentDialog extends StatefulWidget {
   const AddInvestmentDialog({super.key});
@@ -26,13 +27,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   bool _quantityTouched = false;
   bool _priceTouched = false;
   bool _dateTouched = false;
-
-  final Map<String, List<String>> _symbolsByType = {
-    'crypto': ['BTC', 'ETH', 'ADA', 'SOL', 'DOT'],
-    'stock': ['AAPL', 'TSLA', 'MSFT', 'GOOG', 'AMZN'],
-    'etf': ['SPY', 'IVV', 'VOO', 'QQQ', 'VTI'],
-    'commodity': ['GOLD', 'SILVER', 'OIL', 'COPPER', 'PLATINUM'],
-  };
 
   @override
   void dispose() {
@@ -73,34 +67,14 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   Future<void> _selectSymbol() async {
     if (_type == null) return;
 
-    final symbols = _symbolsByType[_type!] ?? [];
-
     final selected = await showModalBottomSheet<String>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) {
-        final loc = AppLocalizations.of(context);
-        return ListView.separated(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          itemCount: symbols.length,
-          separatorBuilder: (_, __) => Divider(
-            thickness: 0.3,
-            color: Colors.grey.shade300,
-            height: 0.3,
-          ),
-          itemBuilder: (context, index) {
-            final symbol = symbols[index];
-            return ListTile(
-              title: Text(symbol, style: const TextStyle(fontWeight: FontWeight.w500)),
-              onTap: () => Navigator.of(context).pop(symbol),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            );
-          },
-        );
-      },
+      builder: (context) => AssetSelectorModal(type: _type!),
     );
 
     if (selected != null) {
@@ -160,14 +134,11 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
             autovalidateMode: _formSubmitted ? AutovalidateMode.always : AutovalidateMode.disabled,
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               Text(loc?.newOperation ?? 'Nueva operación',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(fontWeight: FontWeight.w600)),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(
                 decoration: _inputDecoration(loc?.assetType ?? 'Tipo de activo'),
-                items: _symbolsByType.keys
+                items: ['crypto', 'stock', 'etf', 'commodity']
                     .map((type) => DropdownMenuItem(value: type, child: Text(type.toUpperCase())))
                     .toList(),
                 value: _type,
@@ -178,7 +149,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 validator: (val) => val == null ? (loc?.selectAssetType ?? 'Seleccione un tipo') : null,
               ),
               const SizedBox(height: 16),
-              // Selector de símbolo minimalista
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -195,9 +165,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                     onTap: _type == null
                         ? null
                         : () {
-                      setState(() {
-                        _symbolTouched = true;
-                      });
+                      setState(() => _symbolTouched = true);
                       _selectSymbol();
                     },
                     child: Container(

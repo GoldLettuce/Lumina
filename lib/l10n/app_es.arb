@@ -23,5 +23,7 @@
   "cancel": "Cancelar",
   "save": "Guardar",
   "sellAll": "Vender todo",
-  "exceedQuantity": "Cantidad mayor que disponible"
+  "exceedQuantity": "Cantidad mayor que disponible",
+  "searchAsset": "Buscar activo"
+
 }

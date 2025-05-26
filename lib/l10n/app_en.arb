@@ -23,5 +23,6 @@
   "cancel": "Cancel",
   "save": "Save",
   "sellAll": "Sell All",
-  "exceedQuantity": "Quantity exceeds available"
+  "exceedQuantity": "Quantity exceeds available",
+  "searchAsset": "Search asset"
 }

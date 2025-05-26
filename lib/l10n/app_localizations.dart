@@ -238,6 +238,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Quantity exceeds available'**
   String get exceedQuantity;
+
+  /// No description provided for @searchAsset.
+  ///
+  /// In en, this message translates to:
+  /// **'Search asset'**
+  String get searchAsset;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

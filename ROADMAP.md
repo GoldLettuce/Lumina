@@ -30,7 +30,7 @@
 
 - [x] Resumen superior con total invertido, valor actual, rentabilidad general (minimalista).
 - [x] Gr�fico de evoluci�n del portafolio (usando fl_chart, solo dise�o simple al principio).
-- [ ] Selector de activos con buscador (modal tipo CoinGecko).
+- [x] Selector de activos con buscador (modal tipo CoinGecko).
 - [ ] Animaciones de transici�n suaves (pantallas y gr�ficos).
 
 ## FASE 5: Integraci�n de Datos en Tiempo Real
