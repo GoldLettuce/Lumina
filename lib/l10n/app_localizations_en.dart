@@ -82,4 +82,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchAsset => 'Search asset';
+
+  @override
+  String get notEnoughChartData => 'Not enough data to display the chart';
 }

@@ -25,34 +25,37 @@ class InvestmentModel extends ChangeNotifier {
   }
 
   Future<void> removeInvestment(Investment investment) async {
-    await _repository.deleteInvestment(investment.id);
+    await _repository.deleteInvestment(investment.idCoinGecko);
     await loadInvestments();
   }
 
   // --- GETTERS PARA EL RESUMEN SUPERIOR ---
 
-  // Total invertido (suma de todas las compras)
+  /// Total invertido (suma de todas las operaciones de compra)
   double get totalInvertido {
     double total = 0.0;
     for (final inv in _investments) {
-      if (inv.operation == 'buy') {
-        total += inv.price * inv.quantity;
+      for (final op in inv.operations) {
+        if (op.quantity > 0) {
+          total += op.quantity * op.price;
+        }
       }
     }
     return total;
   }
 
-  // Valor actual (de momento, igual al valor de compra)
+  /// Valor actual estimado (usando precios de compra promedio por ahora)
   double get valorActual {
     double total = 0.0;
     for (final inv in _investments) {
-      // Aquí irá el cálculo real cuando haya API de precios
-      total += inv.price * inv.quantity;
+      final quantity = inv.totalQuantity;
+      final avgPrice = quantity > 0 ? inv.totalInvested / quantity : 0.0;
+      total += quantity * avgPrice;
     }
     return total;
   }
 
-  // Rentabilidad general en porcentaje
+  /// Rentabilidad general en porcentaje
   double get rentabilidadGeneral {
     final invertido = totalInvertido;
     if (invertido == 0) return 0.0;

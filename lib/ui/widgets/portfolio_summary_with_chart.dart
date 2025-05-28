@@ -4,31 +4,160 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/chart_value_provider.dart';
 import '../../core/theme.dart';
-import '../../data/models/investment_model.dart';
-
-enum ChartRange { day, week, month, year, all }
+import 'package:lumina/core/chart_range.dart';
+import 'package:lumina/l10n/app_localizations.dart';
+import 'package:lumina/domain/entities/investment.dart';
 
 class PortfolioSummaryWithChart extends StatefulWidget {
-  const PortfolioSummaryWithChart({super.key});
+  final List<Investment> investments;
+
+  const PortfolioSummaryWithChart({super.key, required this.investments});
 
   @override
-  State<PortfolioSummaryWithChart> createState() => _PortfolioSummaryWithChartState();
+  State<PortfolioSummaryWithChart> createState() =>
+      _PortfolioSummaryWithChartState();
 }
 
-class _PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> {
-  final List<Map<String, dynamic>> data = [
-    {'fecha': DateTime(2025, 1, 1), 'valor': 1000.0},
-    {'fecha': DateTime(2025, 2, 1), 'valor': 1200.0},
-    {'fecha': DateTime(2025, 3, 10), 'valor': 1400.0},
-    {'fecha': DateTime(2025, 4, 1), 'valor': 1350.0},
-    {'fecha': DateTime(2025, 5, 1), 'valor': 1600.0},
-  ];
+class _PortfolioSummaryWithChartState
+    extends State<PortfolioSummaryWithChart> {
+  @override
+  void initState() {
+    super.initState();
+    final chartProvider = context.read<ChartValueProvider>();
+    final ids = widget.investments.map((inv) => inv.idCoinGecko).toSet();
+    chartProvider.setVisibleIds(ids);
 
-  ChartRange _selectedRange = ChartRange.day;
+    if (widget.investments.isNotEmpty) {
+      chartProvider.loadHistory(ChartRange.day, widget.investments);
+    }
+  }
 
-  bool isPositive(ChartRange range) {
-    // Simulación: solo el mes tiene pérdidas
-    return range != ChartRange.month;
+  @override
+  Widget build(BuildContext context) {
+    final chartProvider = context.watch<ChartValueProvider>();
+    final history = chartProvider.history;
+    final loc = AppLocalizations.of(context);
+
+    final ids = widget.investments.map((inv) => inv.idCoinGecko).toSet();
+    chartProvider.setVisibleIds(ids);
+
+    final spots = history.asMap().entries.map((entry) {
+      return FlSpot(entry.key.toDouble(), entry.value.value);
+    }).toList();
+
+    final isPositive = (spots.isNotEmpty && spots.first.y <= spots.last.y);
+    final lineColor = isPositive ? AppColors.positive : AppColors.negative;
+
+    return Column(
+      children: [
+        if (spots.isNotEmpty)
+          SizedBox(
+            height: 200,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 400),
+              child: spots.length <= 1
+                  ? Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Text(
+                  loc?.notEnoughChartData ??
+                      'No hay suficientes datos para mostrar el gráfico',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+              )
+                  : LineChart(
+                key: ValueKey(spots),
+                LineChartData(
+                  lineTouchData: LineTouchData(
+                    enabled: true,
+                    touchTooltipData: LineTouchTooltipData(
+                      getTooltipItems: (touchedSpots) {
+                        return touchedSpots.map((spot) {
+                          final point = history[spot.spotIndex];
+                          final fecha = point.time;
+                          final locale =
+                          Localizations.localeOf(context).toString();
+                          final fechaStr =
+                          DateFormat('d MMM yyyy', locale)
+                              .format(fecha);
+
+                          return LineTooltipItem(
+                            '$fechaStr\n${spot.y.toStringAsFixed(2)} €',
+                            const TextStyle(color: Colors.white),
+                          );
+                        }).toList();
+                      },
+                    ),
+                  ),
+                  gridData: FlGridData(show: false),
+                  titlesData: FlTitlesData(show: false),
+                  borderData: FlBorderData(show: false),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: spots,
+                      isCurved: true,
+                      color: lineColor,
+                      barWidth: 2,
+                      dotData: FlDotData(show: false),
+                      belowBarData: BarAreaData(show: false),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )
+        else
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Text(
+              loc?.notEnoughChartData ??
+                  'No hay suficientes datos para mostrar el gráfico',
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        const SizedBox(height: 12),
+        _buildRangeSelector(),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+
+  Widget _buildRangeSelector() {
+    final chartProvider = context.read<ChartValueProvider>();
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: ChartRange.values.map((range) {
+        final isSelected = chartProvider.range == range;
+        final textColor =
+        isSelected ? AppColors.positive : AppColors.textPrimary;
+
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(999),
+            onTap: () {
+              if (widget.investments.isNotEmpty) {
+                chartProvider.loadHistory(range, widget.investments);
+              }
+            },
+            child: Padding(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: Text(
+                _labelForRange(range),
+                style: TextStyle(
+                  color: textColor,
+                  fontWeight:
+                  isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
   }
 
   String _labelForRange(ChartRange range) {
@@ -44,112 +173,5 @@ class _PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> {
       case ChartRange.all:
         return 'ALL';
     }
-  }
-
-  Widget _buildRangeSelector() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: ChartRange.values.map((range) {
-        final isSelected = range == _selectedRange;
-        final textColor = isSelected
-            ? (isPositive(range) ? AppColors.positive : AppColors.negative)
-            : AppColors.textPrimary;
-        final highlightColor = isPositive(range)
-            ? AppColors.positive.withOpacity(0.2)
-            : AppColors.negative.withOpacity(0.2);
-
-        return Material(
-          color: Colors.transparent,
-          shape: const StadiumBorder(),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(999),
-            splashColor: highlightColor,
-            highlightColor: highlightColor,
-            onTap: () {
-              setState(() {
-                _selectedRange = range;
-              });
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              child: Text(
-                _labelForRange(range),
-                style: TextStyle(
-                  color: textColor,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final List<FlSpot> spots = data.asMap().entries.map((entry) {
-      return FlSpot(entry.key.toDouble(), entry.value['valor']);
-    }).toList();
-
-    final chartProvider = context.read<ChartValueProvider>();
-    final investmentModel = context.watch<InvestmentModel>();
-    final isPositivo = investmentModel.rentabilidadGeneral >= 0;
-
-    final lineColor = isPositivo ? AppColors.positive : AppColors.negative;
-
-    return Column(
-      children: [
-        SizedBox(
-          height: 200,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 400),
-            transitionBuilder: (child, animation) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            child: LineChart(
-              key: ValueKey(spots),
-              LineChartData(
-                lineTouchData: LineTouchData(
-                  enabled: true,
-                  handleBuiltInTouches: true,
-                  touchTooltipData: LineTouchTooltipData(
-                    getTooltipItems: (touchedSpots) {
-                      return touchedSpots.map((spot) {
-                        final index = spot.spotIndex;
-                        final fecha = data[index]['fecha'] as DateTime;
-                        final locale = Localizations.localeOf(context).toString();
-                        final fechaStr = DateFormat('d MMM yyyy', locale).format(fecha);
-
-                        return LineTooltipItem(
-                          '$fechaStr\\n${spot.y.toStringAsFixed(2)}',
-                          const TextStyle(color: Colors.white),
-                        );
-                      }).toList();
-                    },
-                  ),
-                ),
-                gridData: FlGridData(show: false),
-                titlesData: FlTitlesData(show: false),
-                borderData: FlBorderData(show: false),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: spots,
-                    isCurved: true,
-                    color: lineColor,
-                    barWidth: 2,
-                    dotData: FlDotData(show: false),
-                    belowBarData: BarAreaData(show: false),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        _buildRangeSelector(),
-        const SizedBox(height: 8),
-      ],
-    );
   }
 }

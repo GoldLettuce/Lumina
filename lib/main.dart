@@ -17,7 +17,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Hive.initFlutter();
+
+  // ✅ Registro de adaptadores Hive
   Hive.registerAdapter(InvestmentAdapter());
+  Hive.registerAdapter(InvestmentOperationAdapter());
 
   final investmentRepository = InvestmentRepositoryImpl();
   await investmentRepository.init();

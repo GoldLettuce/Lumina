@@ -1,39 +1,53 @@
 import 'package:hive/hive.dart';
 
-part 'investment.g.dart';  // Archivo generado automáticamente
+part 'investment.g.dart';
 
 @HiveType(typeId: 0)
 class Investment extends HiveObject {
   @HiveField(0)
-  final String id;           // Identificador único
+  final String idCoinGecko;
 
   @HiveField(1)
-  final String type;         // Tipo de inversión: 'crypto', 'stock', 'etf', 'commodity', etc.
+  final String symbol;
 
   @HiveField(2)
-  final String symbol;       // Símbolo o ticker (ej: BTC, AAPL)
+  final String name;
 
   @HiveField(3)
-  final double quantity;     // Cantidad invertida
-
-  @HiveField(4)
-  final DateTime date;       // Fecha de compra
-
-  @HiveField(5)
-  final double price;        // Precio de compra por unidad
-
-  @HiveField(6)
-  final String operation;    // Operación: 'buy' o 'sell'
+  final List<InvestmentOperation> operations;
 
   Investment({
-    required this.id,
-    required this.type,
+    required this.idCoinGecko,
     required this.symbol,
-    required this.quantity,
-    required this.date,
-    required this.price,
-    required this.operation,
-  });
+    required this.name,
+    List<InvestmentOperation>? operations,
+  }) : operations = operations ?? [];
 
-// Métodos adicionales si los necesitas
+  double get totalQuantity =>
+      operations.fold(0.0, (sum, op) => sum + op.quantity);
+
+  double get totalInvested =>
+      operations.fold(0.0, (sum, op) => sum + (op.quantity * op.price));
+
+  void addOperation(InvestmentOperation operation) {
+    operations.add(operation);
+  }
+}
+
+@HiveType(typeId: 1)
+class InvestmentOperation {
+  @HiveField(0)
+  final double quantity;
+
+  @HiveField(1)
+  final double price;
+
+  @HiveField(2)
+  final DateTime date;
+
+  InvestmentOperation({
+    required this.quantity,
+    required this.price,
+    required this.date,
+  });
 }

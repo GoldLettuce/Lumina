@@ -244,6 +244,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search asset'**
   String get searchAsset;
+
+  /// No description provided for @notEnoughChartData.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough data to display the chart'**
+  String get notEnoughChartData;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

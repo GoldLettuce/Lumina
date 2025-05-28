@@ -1,4 +1,4 @@
-# Roadmap Detallado – Portafolio Financiero
+# ✅ Roadmap Detallado – Portafolio Financiero
 
 ## FASE 1: Estructura Base y Configuración
 
@@ -35,15 +35,18 @@
 
 ## FASE 5: Integración de Datos en Tiempo Real
 
-- [ ] Integrar API de CoinGecko para obtener precios de criptos (usando modelo con `idCoinGecko`).
+- [x] Integrar API de CoinGecko para obtener precios de criptos (usando modelo con `idCoinGecko`).
 - [ ] Integrar API de acciones/ETFs si es posible (AlphaVantage, Yahoo Finance, etc.).
-- [ ] Selección dinámica de símbolo según tipo de activo.
-- [ ] Cálculo automático de valor actual y rentabilidad con precios reales.
-- [ ] Actualización automática/periódica de datos de precios.
-- [ ] ⚠️ Tener en cuenta desde el diseño que el gráfico deberá poder filtrar por activo individual (tap largo), por lo que el servicio de histórico debe permitir obtener datos de un activo concreto además del portafolio completo.
+- [x] Selección dinámica de símbolo según tipo de activo.
+- [x] Cálculo automático de valor actual y rentabilidad con precios reales.
+- [x] Actualización automática/periódica de datos de precios.
+- [x] Mostrar gráfico con datos históricos reales por activo (CoinGecko).
+- [x] ✅ Implementado histórico del portafolio completo (valor agregado día a día).
+- [ ] ⚠️ Soporte para filtrar el gráfico por activo individual con tap largo. 👈 PENDIENTE
 
 ## FASE 6: Gestión y Edición de Operaciones
 
+- [x] `Investment` acepta múltiples operaciones (modelo reorganizado).
 - [ ] Pantalla/modal con detalle de cada activo (listado de operaciones, compras/ventas).
 - [ ] Permitir editar y eliminar operaciones.
 - [ ] Confirmación antes de borrar.
@@ -67,3 +70,16 @@
 - [ ] Pruebas en TestFlight (iOS) y dispositivos reales.
 - [ ] Ajustes finales de diseño.
 - [ ] Publicar en App Store y Play Store.
+
+---
+
+## 🆕 NUEVO DESAFÍO PARA FASE 5–6: Caché de Histórico de Precios
+
+**Objetivo:** evitar llamadas innecesarias a CoinGecko y permitir uso offline limitado.
+
+- [ ] Crear `HistoryCacheService` para guardar históricos con TTL (Hive).
+- [ ] Consultar caché antes de hacer peticiones.
+- [ ] Invalidar caché si se añaden operaciones antiguas.
+- [ ] Usar caché si no hay conexión disponible.
+
+➡️ Este punto se desarrollará en paralelo con la FASE 6.

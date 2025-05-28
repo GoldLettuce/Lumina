@@ -1,0 +1,1 @@
+enum ChartRange { day, week, month, year, all }

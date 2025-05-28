@@ -18,19 +18,25 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
 
   @override
   Future<void> addInvestment(Investment investment) async {
-    // Agrega o actualiza la inversión usando su ID como clave
-    await _box.put(investment.id, investment);
+    final existing = _box.get(investment.idCoinGecko);
+
+    if (existing != null) {
+      // ✅ Agregar operación en vez de sobrescribir
+      final newOp = investment.operations.first;
+      existing.addOperation(newOp);
+      await existing.save();
+    } else {
+      await _box.put(investment.idCoinGecko, investment);
+    }
   }
 
   @override
   Future<List<Investment>> getAllInvestments() async {
-    // Devuelve todas las inversiones almacenadas en la caja
     return _box.values.toList();
   }
 
   @override
   Future<void> deleteInvestment(String id) async {
-    // Elimina la inversión por su ID
     await _box.delete(id);
   }
 }

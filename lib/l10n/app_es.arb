@@ -24,6 +24,7 @@
   "save": "Guardar",
   "sellAll": "Vender todo",
   "exceedQuantity": "Cantidad mayor que disponible",
-  "searchAsset": "Buscar activo"
+  "searchAsset": "Buscar activo",
+  "notEnoughChartData": "No hay suficientes datos para mostrar el gráfico"
 
 }

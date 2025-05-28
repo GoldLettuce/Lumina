@@ -33,10 +33,18 @@ class PortfolioSummaryMinimal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final model = context.watch<InvestmentModel>();
-    final valorActual = model.valorActual;
-    final touchedValue = context.watch<ChartValueProvider>().valorTocado;
-    final mostrarValor = touchedValue ?? valorActual;
-    final rentabilidad = ((mostrarValor - model.totalInvertido) / model.totalInvertido) * 100;
+    final chartProvider = context.watch<ChartValueProvider>();
+
+    final valorActual = model.investments.fold(0.0, (sum, inv) {
+      final price = chartProvider.getPriceFor(inv.idCoinGecko) ?? 0;
+      return sum + (inv.totalQuantity * price);
+    });
+
+    final mostrarValor = valorActual;
+
+    final rentabilidad = (model.totalInvertido == 0 || mostrarValor == 0)
+        ? 0.0
+        : ((mostrarValor - model.totalInvertido) / model.totalInvertido) * 100;
 
     final isPositivo = rentabilidad >= 0;
     final signo = isPositivo ? "+" : "-";
@@ -105,6 +113,7 @@ class PortfolioScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final model = context.watch<InvestmentModel>();
     final investments = model.investments;
+    final chartProvider = context.watch<ChartValueProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -126,7 +135,7 @@ class PortfolioScreen extends StatelessWidget {
           children: [
             const PortfolioSummaryMinimal(),
             const SizedBox(height: 12),
-            const PortfolioSummaryWithChart(),
+            PortfolioSummaryWithChart(investments: investments),
             const SizedBox(height: 20),
             Expanded(
               child: investments.isEmpty
@@ -143,29 +152,36 @@ class PortfolioScreen extends StatelessWidget {
               )
                   : ListView.separated(
                 itemCount: investments.length,
-                separatorBuilder: (_, __) =>
-                    Divider(color: AppColors.border),
+                separatorBuilder: (_, __) => Divider(color: AppColors.border),
                 itemBuilder: (context, index) {
                   final asset = investments[index];
+                  final price = chartProvider.getPriceFor(asset.idCoinGecko);
+                  final valorActual = price != null
+                      ? asset.totalQuantity * price
+                      : null;
+
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(
                       asset.symbol,
-                      style: theme.textTheme.bodyLarge!
-                          .copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      '${AppLocalizations.of(context)?.quantity ?? ''}: ${asset.quantity}',
+                      '${AppLocalizations.of(context)?.quantity ?? ''}: ${asset.totalQuantity}',
                       style: theme.textTheme.bodyMedium,
                     ),
                     trailing: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          '€${(asset.price * asset.quantity).toStringAsFixed(2)}',
-                          style: theme.textTheme.bodyLarge!
-                              .copyWith(fontWeight: FontWeight.w600),
+                        valorActual == null
+                            ? Text(
+                          'Cargando...',
+                          style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                        )
+                            : Text(
+                          '€${valorActual.toStringAsFixed(2)}',
+                          style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
