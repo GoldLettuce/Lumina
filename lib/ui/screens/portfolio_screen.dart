@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
-import '../../domain/entities/investment.dart';
+import 'package:lumina/data/models/investment.dart';
 import '../widgets/add_investment_dialog.dart';
 import '../../data/models/investment_model.dart';
 import '../widgets/portfolio_summary_with_chart.dart';

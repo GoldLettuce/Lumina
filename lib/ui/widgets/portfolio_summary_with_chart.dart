@@ -6,7 +6,7 @@ import '../providers/chart_value_provider.dart';
 import '../../core/theme.dart';
 import 'package:lumina/core/chart_range.dart';
 import 'package:lumina/l10n/app_localizations.dart';
-import 'package:lumina/domain/entities/investment.dart';
+import 'package:lumina/data/models/investment.dart';
 
 class PortfolioSummaryWithChart extends StatefulWidget {
   final List<Investment> investments;

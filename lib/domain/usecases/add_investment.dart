@@ -1,4 +1,4 @@
-import '../entities/investment.dart';
+import 'package:lumina/data/models/investment.dart';
 import '../repositories/investment_repository.dart';
 
 class AddInvestment {

@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import '../../domain/entities/investment.dart';
+import 'package:lumina/data/models/investment.dart';
 import '../repositories_impl/investment_repository_impl.dart';
 
 class InvestmentModel extends ChangeNotifier {

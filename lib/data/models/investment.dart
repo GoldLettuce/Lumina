@@ -35,7 +35,7 @@ class Investment extends HiveObject {
 }
 
 @HiveType(typeId: 1)
-class InvestmentOperation {
+class InvestmentOperation extends HiveObject {
   @HiveField(0)
   final double quantity;
 

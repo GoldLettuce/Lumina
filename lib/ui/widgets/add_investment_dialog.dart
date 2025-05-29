@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../domain/entities/investment.dart';
-import '../../data/models/investment_model.dart';
+
+import 'package:lumina/core/chart_range.dart';
+import 'package:lumina/data/models/investment.dart';
+import 'package:lumina/data/models/investment_model.dart';
+import 'package:lumina/domain/repositories/history_repository.dart';
+import 'package:lumina/domain/repositories/price_repository.dart';
+import 'package:lumina/ui/providers/chart_value_provider.dart';
+
 import '../../l10n/app_localizations.dart';
 import 'asset_selector_modal.dart';
 import 'coingecko_asset_selector_modal.dart';
@@ -16,7 +22,7 @@ class AddInvestmentDialog extends StatefulWidget {
 class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   final _formKey = GlobalKey<FormState>();
 
-  String? _type;
+  String? _type; // crypto, stock, etf, commodity
   bool _isBuy = true;
   String? _symbol;
   String? _idCoinGecko;
@@ -25,10 +31,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   DateTime? _selectedDate = DateTime.now();
 
   bool _formSubmitted = false;
-  bool _symbolTouched = false;
-  bool _quantityTouched = false;
-  bool _priceTouched = false;
-  bool _dateTouched = false;
 
   @override
   void dispose() {
@@ -36,6 +38,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     _priceController.dispose();
     super.dispose();
   }
+
+  /* ─────────── helpers ─────────── */
 
   Future<void> _pickDate() async {
     final now = DateTime.now();
@@ -45,12 +49,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       firstDate: DateTime(2000),
       lastDate: now,
     );
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-        _dateTouched = true;
-      });
-    }
+    if (picked != null) setState(() => _selectedDate = picked);
   }
 
   Future<void> _selectSymbol() async {
@@ -63,8 +62,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
         builder: (_) => CoinGeckoAssetSelectorModal(
           onSelect: (asset) {
             setState(() {
-              _symbol = asset.symbol.toUpperCase();
-              _idCoinGecko = asset.id;
+              _symbol = asset.symbol.toUpperCase(); // BTC
+              _idCoinGecko = asset.id;              // bitcoin
             });
           },
         ),
@@ -79,71 +78,92 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
         ),
         builder: (context) => AssetSelectorModal(type: _type!),
       );
-
-      if (selected != null) {
-        setState(() {
-          _symbol = selected;
-          _idCoinGecko = null;
-        });
-      }
+      if (selected != null) setState(() => _symbol = selected);
     }
   }
 
-  void _submit() async {
-    setState(() {
-      _formSubmitted = true;
-      _dateTouched = true;
-    });
-
-    if (_formKey.currentState!.validate() &&
-        _type != null &&
-        _symbol != null &&
-        _selectedDate != null &&
-        (_type != 'crypto' || _idCoinGecko != null)) {
-      final quantity = double.parse(_quantityController.text.trim());
-      final price = double.parse(_priceController.text.trim());
-
-      final operation = InvestmentOperation(
-        quantity: _isBuy ? quantity : -quantity,
-        price: price,
-        date: _selectedDate!,
-      );
-
-      final newInvestment = Investment(
-        idCoinGecko: _idCoinGecko ?? 'manual-${DateTime.now().millisecondsSinceEpoch}',
-        symbol: _symbol!,
-        name: _symbol!,
-        operations: [operation],
-      );
-
-      await context.read<InvestmentModel>().addInvestment(newInvestment);
-      Navigator.of(context).pop();
-    }
-  }
-
-  InputDecoration _inputDecoration(String label) => InputDecoration(
-    labelText: label,
-    labelStyle: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w400),
-    enabledBorder: const UnderlineInputBorder(
-      borderSide: BorderSide(color: Colors.black26),
-    ),
-    focusedBorder: const UnderlineInputBorder(
-      borderSide: BorderSide(color: Colors.black87),
-    ),
-    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+  InputDecoration _input(String lbl) => InputDecoration(
+    labelText: lbl,
+    enabledBorder:
+    const UnderlineInputBorder(borderSide: BorderSide(color: Colors.black26)),
+    focusedBorder:
+    const UnderlineInputBorder(borderSide: BorderSide(color: Colors.black87)),
   );
+
+  /* ─────────── submit ─────────── */
+
+  Future<void> _submit() async {
+    setState(() => _formSubmitted = true);
+
+    /* Validaciones */
+    if (!_formKey.currentState!.validate()) return;
+    if (_type == 'crypto' && _idCoinGecko == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Debes seleccionar una criptomoneda válida.')),
+      );
+      return;
+    }
+
+    final qty   = double.parse(_quantityController.text.trim());
+    final price = double.parse(_priceController.text.trim());
+
+    final op = InvestmentOperation(
+      quantity: _isBuy ? qty : -qty,
+      price: price,
+      date: _selectedDate!,
+    );
+
+    final inv = Investment(
+      idCoinGecko:
+      _idCoinGecko ?? 'manual-${DateTime.now().millisecondsSinceEpoch}',
+      symbol: _symbol!,
+      name: _symbol!,
+      operations: [op],
+    );
+
+    final invModel  = context.read<InvestmentModel>();
+    final priceRepo = context.read<PriceRepository>();
+    final histRepo  = context.read<HistoryRepository>();
+    final chartProv = context.read<ChartValueProvider>();
+
+    try {
+      await invModel.addInvestment(inv);
+
+      final pts = await priceRepo.getHistory(
+        symbol: inv.idCoinGecko, // ✅ CORREGIDO: usar idCoinGecko
+        type: _type!,
+        range: ChartRange.all,
+      );
+
+      await histRepo.mergeAndSaveHistory(
+        symbol: inv.symbol,
+        range: 'all',
+        newPoints: pts,
+      );
+
+      chartProv.setVisibleIds(
+        invModel.investments.map((e) => e.idCoinGecko).toSet(),
+      );
+      await chartProv.loadHistory(chartProv.range, invModel.investments);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al guardar: $e')),
+      );
+    } finally {
+      if (mounted) Navigator.of(context).pop();
+    }
+  }
+
+  /* ─────────── build ─────────── */
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    final dateText = _selectedDate == null
-        ? loc?.selectDate ?? 'Seleccionar fecha'
-        : MaterialLocalizations.of(context).formatMediumDate(_selectedDate!);
+    final dateTxt = MaterialLocalizations.of(context).formatMediumDate(_selectedDate!);
 
     return Dialog(
-      backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      elevation: 12,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
         child: SingleChildScrollView(
@@ -154,156 +174,100 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  loc?.newOperation ?? 'Nueva operación',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-                ),
+                Text(loc?.newOperation ?? 'Nueva operación',
+                    style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 20),
+
+                /* tipo */
                 DropdownButtonFormField<String>(
-                  decoration: _inputDecoration(loc?.assetType ?? 'Tipo de activo'),
+                  decoration: _input(loc?.assetType ?? 'Tipo de activo'),
                   items: ['crypto', 'stock', 'etf', 'commodity']
-                      .map((type) => DropdownMenuItem(value: type, child: Text(type.toUpperCase())))
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e.toUpperCase())))
                       .toList(),
                   value: _type,
-                  onChanged: (val) => setState(() {
-                    _type = val;
+                  onChanged: (v) => setState(() {
+                    _type = v;
                     _symbol = null;
                     _idCoinGecko = null;
                   }),
-                  validator: (val) => val == null ? (loc?.selectAssetType ?? 'Seleccione un tipo') : null,
+                  validator: (v) => v == null ? 'Seleccione un tipo' : null,
                 ),
                 const SizedBox(height: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      loc?.symbol ?? 'Símbolo',
-                      style: const TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w400,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    GestureDetector(
-                      onTap: _type == null
-                          ? null
-                          : () {
-                        setState(() => _symbolTouched = true);
-                        _selectSymbol();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: (_symbol == null && (_formSubmitted || _symbolTouched))
-                                  ? Theme.of(context).colorScheme.error
-                                  : Colors.black26,
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              _symbol ?? (loc?.selectSymbol ?? 'Selecciona un símbolo'),
-                              style: TextStyle(
-                                color: _symbol == null ? Colors.black38 : Colors.black87,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const Icon(Icons.arrow_drop_down, color: Colors.black54),
-                          ],
+
+                /* símbolo */
+                GestureDetector(
+                  onTap: _selectSymbol,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: (_symbol == null && _formSubmitted)
+                              ? Theme.of(context).colorScheme.error
+                              : Colors.black26,
                         ),
                       ),
                     ),
-                    if ((_formSubmitted || _symbolTouched) && _symbol == null)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8, top: 4),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            loc?.selectSymbol ?? 'Selecciona un símbolo',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                InkWell(
-                  onTap: _pickDate,
-                  borderRadius: BorderRadius.circular(4),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '${loc?.date ?? 'Fecha'}: ',
+                          _symbol ?? 'Selecciona un símbolo',
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.w600,
+                            color: _symbol == null ? Colors.black38 : Colors.black87,
                             fontSize: 16,
                           ),
                         ),
-                        Text(
-                          dateText,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
-                        ),
+                        const Icon(Icons.arrow_drop_down),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                /* fecha */
+                InkWell(
+                  onTap: _pickDate,
+                  child: Row(
+                    children: [
+                      Text('${loc?.date ?? 'Fecha'}: ',
+                          style: const TextStyle(fontWeight: FontWeight.w600)),
+                      Text(dateTxt),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                /* cantidad */
                 TextFormField(
                   controller: _quantityController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: _inputDecoration(loc?.quantity ?? 'Cantidad'),
-                  autovalidateMode: _quantityTouched || _formSubmitted
-                      ? AutovalidateMode.always
-                      : AutovalidateMode.disabled,
-                  validator: (val) {
-                    if (!_quantityTouched && !_formSubmitted) return null;
-                    if (val == null || val.isEmpty) return loc?.fieldRequired ?? 'Campo obligatorio';
-                    final n = double.tryParse(val);
-                    if (n == null || n <= 0) return loc?.invalidQuantity ?? 'Cantidad inválida';
+                  keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+                  decoration: _input(loc?.quantity ?? 'Cantidad'),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Campo obligatorio';
+                    final n = double.tryParse(v);
+                    if (n == null || n <= 0) return 'Cantidad inválida';
                     return null;
-                  },
-                  onChanged: (_) {
-                    if (!_quantityTouched) setState(() => _quantityTouched = true);
                   },
                 ),
                 const SizedBox(height: 16),
+
+                /* precio */
                 TextFormField(
                   controller: _priceController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: _inputDecoration(loc?.unitPrice ?? 'Precio unitario (€)'),
-                  autovalidateMode: _priceTouched || _formSubmitted
-                      ? AutovalidateMode.always
-                      : AutovalidateMode.disabled,
-                  validator: (val) {
-                    if (!_priceTouched && !_formSubmitted) return null;
-                    if (val == null || val.isEmpty) return loc?.fieldRequired ?? 'Campo obligatorio';
-                    final n = double.tryParse(val);
-                    if (n == null || n <= 0) return loc?.invalidPrice ?? 'Precio inválido';
+                  keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+                  decoration: _input(loc?.unitPrice ?? 'Precio unitario (€)'),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Campo obligatorio';
+                    final n = double.tryParse(v);
+                    if (n == null || n <= 0) return 'Precio inválido';
                     return null;
-                  },
-                  onChanged: (_) {
-                    if (!_priceTouched) setState(() => _priceTouched = true);
                   },
                 ),
                 const SizedBox(height: 24),
+
                 Row(
                   children: [
                     Expanded(

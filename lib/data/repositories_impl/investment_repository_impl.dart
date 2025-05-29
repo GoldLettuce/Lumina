@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
-import '../../domain/entities/investment.dart';
+import '../../data/models/investment.dart'; // ✅ CORRECTA
 import '../../domain/repositories/investment_repository.dart';
+
 
 class InvestmentRepositoryImpl implements InvestmentRepository {
   static const String boxName = 'investments';

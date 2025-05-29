@@ -1,4 +1,4 @@
-import '../entities/investment.dart';
+import 'package:lumina/data/models/investment.dart';
 
 /// Interfaz que define el contrato para un repositorio de inversiones.
 /// Cualquier implementación debe proveer métodos para agregar, obtener y eliminar inversiones.

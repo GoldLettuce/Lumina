@@ -1,41 +1,36 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'investment.dart';
+part of 'asset_history_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class InvestmentAdapter extends TypeAdapter<Investment> {
+class AssetHistoryModelAdapter extends TypeAdapter<AssetHistoryModel> {
   @override
-  final int typeId = 0;
+  final int typeId = 4;
 
   @override
-  Investment read(BinaryReader reader) {
+  AssetHistoryModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Investment(
-      idCoinGecko: fields[0] as String,
-      symbol: fields[1] as String,
-      name: fields[2] as String,
-      operations: (fields[3] as List?)?.cast<InvestmentOperation>(),
+    return AssetHistoryModel(
+      symbol: fields[0] as String,
+      timeRanges: (fields[1] as Map).map((dynamic k, dynamic v) =>
+          MapEntry(k as String, (v as List).cast<HistoryPointModel>())),
     );
   }
 
   @override
-  void write(BinaryWriter writer, Investment obj) {
+  void write(BinaryWriter writer, AssetHistoryModel obj) {
     writer
-      ..writeByte(4)
-      ..writeByte(0)
-      ..write(obj.idCoinGecko)
-      ..writeByte(1)
-      ..write(obj.symbol)
       ..writeByte(2)
-      ..write(obj.name)
-      ..writeByte(3)
-      ..write(obj.operations);
+      ..writeByte(0)
+      ..write(obj.symbol)
+      ..writeByte(1)
+      ..write(obj.timeRanges);
   }
 
   @override
@@ -44,38 +39,35 @@ class InvestmentAdapter extends TypeAdapter<Investment> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is InvestmentAdapter &&
+      other is AssetHistoryModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
 
-class InvestmentOperationAdapter extends TypeAdapter<InvestmentOperation> {
+class HistoryPointModelAdapter extends TypeAdapter<HistoryPointModel> {
   @override
-  final int typeId = 1;
+  final int typeId = 5;
 
   @override
-  InvestmentOperation read(BinaryReader reader) {
+  HistoryPointModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return InvestmentOperation(
-      quantity: fields[0] as double,
-      price: fields[1] as double,
-      date: fields[2] as DateTime,
+    return HistoryPointModel(
+      timestamp: fields[0] as int,
+      value: fields[1] as double,
     );
   }
 
   @override
-  void write(BinaryWriter writer, InvestmentOperation obj) {
+  void write(BinaryWriter writer, HistoryPointModel obj) {
     writer
-      ..writeByte(3)
-      ..writeByte(0)
-      ..write(obj.quantity)
-      ..writeByte(1)
-      ..write(obj.price)
       ..writeByte(2)
-      ..write(obj.date);
+      ..writeByte(0)
+      ..write(obj.timestamp)
+      ..writeByte(1)
+      ..write(obj.value);
   }
 
   @override
@@ -84,7 +76,7 @@ class InvestmentOperationAdapter extends TypeAdapter<InvestmentOperation> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is InvestmentOperationAdapter &&
+      other is HistoryPointModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
