@@ -20,15 +20,23 @@ class PortfolioSummaryWithChart extends StatefulWidget {
 
 class _PortfolioSummaryWithChartState
     extends State<PortfolioSummaryWithChart> {
-  @override
-  void initState() {
-    super.initState();
-    final chartProvider = context.read<ChartValueProvider>();
-    final ids = widget.investments.map((inv) => inv.idCoinGecko).toSet();
-    chartProvider.setVisibleIds(ids);
+  bool _hasInitialized = false;
 
-    if (widget.investments.isNotEmpty) {
-      chartProvider.loadHistory(ChartRange.day, widget.investments);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasInitialized) {
+      final chartProvider = context.read<ChartValueProvider>();
+      final validIds = widget.investments
+          .map((inv) => inv.idCoinGecko)
+          .where((id) => id.isNotEmpty)
+          .toSet();
+
+      if (widget.investments.isNotEmpty && validIds.isNotEmpty) {
+        chartProvider.setVisibleIds(validIds);
+        chartProvider.loadHistory(ChartRange.day, widget.investments);
+        _hasInitialized = true;
+      }
     }
   }
 
@@ -38,12 +46,11 @@ class _PortfolioSummaryWithChartState
     final history = chartProvider.history;
     final loc = AppLocalizations.of(context);
 
-    final ids = widget.investments.map((inv) => inv.idCoinGecko).toSet();
-    chartProvider.setVisibleIds(ids);
-
     final spots = history.asMap().entries.map((entry) {
       return FlSpot(entry.key.toDouble(), entry.value.value);
     }).toList();
+
+    print('📈 Puntos visibles en el gráfico: ${spots.length}');
 
     final isPositive = (spots.isNotEmpty && spots.first.y <= spots.last.y);
     final lineColor = isPositive ? AppColors.positive : AppColors.negative;
@@ -75,10 +82,9 @@ class _PortfolioSummaryWithChartState
                         return touchedSpots.map((spot) {
                           final point = history[spot.spotIndex];
                           final fecha = point.time;
-                          final locale =
-                          Localizations.localeOf(context).toString();
-                          final fechaStr =
-                          DateFormat('d MMM yyyy', locale)
+                          final locale = Localizations.localeOf(context)
+                              .toString();
+                          final fechaStr = DateFormat('d MMM yyyy', locale)
                               .format(fecha);
 
                           return LineTooltipItem(
@@ -138,7 +144,13 @@ class _PortfolioSummaryWithChartState
           child: InkWell(
             borderRadius: BorderRadius.circular(999),
             onTap: () {
-              if (widget.investments.isNotEmpty) {
+              final validIds = widget.investments
+                  .map((inv) => inv.idCoinGecko)
+                  .where((id) => id.isNotEmpty)
+                  .toSet();
+
+              if (widget.investments.isNotEmpty && validIds.isNotEmpty) {
+                chartProvider.setVisibleIds(validIds);
                 chartProvider.loadHistory(range, widget.investments);
               }
             },

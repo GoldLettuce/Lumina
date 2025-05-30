@@ -1,4 +1,4 @@
-# ✅ Roadmap Detallado – Portafolio Financiero
+# ✅ Roadmap Detallado – Portafolio Financiero (Actualizado)
 
 ## FASE 1: Estructura Base y Configuración
 
@@ -42,6 +42,9 @@
 - [x] Actualización automática/periódica de datos de precios.
 - [x] Mostrar gráfico con datos históricos reales por activo (CoinGecko).
 - [x] ✅ Implementado histórico del portafolio completo (valor agregado día a día).
+- [x] Uso de caché local de históricos en Hive para evitar peticiones innecesarias.
+- [ ] Recalcular histórico si se añaden operaciones anteriores al rango guardado.
+- [ ] Soporte offline: usar datos locales si no hay conexión.
 - [ ] ⚠️ Soporte para filtrar el gráfico por activo individual con tap largo. 👈 PENDIENTE
 
 ## FASE 6: Gestión y Edición de Operaciones
@@ -56,6 +59,7 @@
 
 ## FASE 7: Robustez y Experiencia Final
 
+- [x] Gráfico y datos cargan de inmediato desde Hive tras hot restart ✅
 - [ ] Persistencia robusta: que los datos no se pierdan nunca (pruebas con cierre/reapertura de app).
 - [ ] Pruebas básicas de funcionalidades críticas.
 - [ ] Mejoras visuales (tipografía, iconos minimalistas, modo oscuro opcional).
@@ -70,16 +74,3 @@
 - [ ] Pruebas en TestFlight (iOS) y dispositivos reales.
 - [ ] Ajustes finales de diseño.
 - [ ] Publicar en App Store y Play Store.
-
----
-
-## 🆕 NUEVO DESAFÍO PARA FASE 5–6: Caché de Histórico de Precios
-
-**Objetivo:** evitar llamadas innecesarias a CoinGecko y permitir uso offline limitado.
-
-- [ ] Crear `HistoryCacheService` para guardar históricos con TTL (Hive).
-- [ ] Consultar caché antes de hacer peticiones.
-- [ ] Invalidar caché si se añaden operaciones antiguas.
-- [ ] Usar caché si no hay conexión disponible.
-
-➡️ Este punto se desarrollará en paralelo con la FASE 6.

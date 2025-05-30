@@ -30,12 +30,14 @@ class PriceRepositoryImpl implements PriceRepository {
 
     try {
       final fetched = await _service.fetchSpotPrices(cleanIds);
+      print('🟢 Precios recibidos desde CoinGecko: $fetched');
       _cachedPrices
         ..clear()
         ..addAll(fetched);
       _lastFetch = now;
       return fetched;
     } catch (e) {
+      print('❌ Error al obtener precios de CoinGecko: $e');
       rethrow;
     }
   }

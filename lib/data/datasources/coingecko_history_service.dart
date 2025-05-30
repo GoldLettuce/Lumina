@@ -26,10 +26,38 @@ class CoinGeckoHistoryService {
     final points = prices.map<Point>((e) {
       final time = DateTime.fromMillisecondsSinceEpoch(e[0]);
       final value = (e[1] as num).toDouble();
-      return Point(time: time, value: value); // ✅ argumentos nombrados
+      return Point(time: time, value: value);
     }).toList();
 
     return _groupPoints(points, range);
+  }
+
+  Future<List<Point>> getHistoryBetweenDates({
+    required String idCoinGecko,
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    final fromTs = (from.millisecondsSinceEpoch / 1000).round();
+    final toTs = (to.millisecondsSinceEpoch / 1000).round();
+
+    final uri = Uri.parse(
+      '$_baseUrl/coins/$idCoinGecko/market_chart/range?vs_currency=eur&from=$fromTs&to=$toTs',
+    );
+
+    final response = await http.get(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception('Error al obtener histórico de $idCoinGecko entre fechas');
+    }
+
+    final data = json.decode(response.body);
+    final List prices = data['prices'];
+
+    return prices.map<Point>((e) {
+      final time = DateTime.fromMillisecondsSinceEpoch(e[0]);
+      final value = (e[1] as num).toDouble();
+      return Point(time: time, value: value);
+    }).toList();
   }
 
   int _daysForRange(ChartRange range) {
@@ -43,7 +71,7 @@ class CoinGeckoHistoryService {
       case ChartRange.year:
         return 365;
       case ChartRange.all:
-        return 1095; // máx 3 años
+        return 1095; // máx 3 años (esto se limita externamente)
     }
   }
 
@@ -78,7 +106,7 @@ class CoinGeckoHistoryService {
         i + groupSize > list.length ? list.length : i + groupSize,
       );
       final avg = group.map((p) => p.value).reduce((a, b) => a + b) / group.length;
-      result.add(Point(time: group.first.time, value: avg)); // ✅ argumentos nombrados
+      result.add(Point(time: group.first.time, value: avg));
     }
     return result;
   }

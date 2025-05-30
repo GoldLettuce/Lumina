@@ -7,6 +7,7 @@ import '../widgets/add_investment_dialog.dart';
 import '../../data/models/investment_model.dart';
 import '../widgets/portfolio_summary_with_chart.dart';
 import '../providers/chart_value_provider.dart';
+import '../../core/chart_range.dart';
 
 class PortfolioSummaryMinimal extends StatelessWidget {
   const PortfolioSummaryMinimal({super.key});
@@ -98,8 +99,25 @@ class PortfolioSummaryMinimal extends StatelessWidget {
   }
 }
 
-class PortfolioScreen extends StatelessWidget {
+class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
+
+  @override
+  State<PortfolioScreen> createState() => _PortfolioScreenState();
+}
+
+class _PortfolioScreenState extends State<PortfolioScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    // Cargar histórico tras primer frame
+    Future.microtask(() {
+      final model = context.read<InvestmentModel>();
+      final chartProvider = context.read<ChartValueProvider>();
+      chartProvider.loadHistory(ChartRange.month, model.investments);
+    });
+  }
 
   Future<void> _openAddInvestmentDialog(BuildContext context) async {
     await showDialog(
@@ -152,10 +170,12 @@ class PortfolioScreen extends StatelessWidget {
               )
                   : ListView.separated(
                 itemCount: investments.length,
-                separatorBuilder: (_, __) => Divider(color: AppColors.border),
+                separatorBuilder: (_, __) =>
+                    Divider(color: AppColors.border),
                 itemBuilder: (context, index) {
                   final asset = investments[index];
-                  final price = chartProvider.getPriceFor(asset.idCoinGecko);
+                  final price =
+                  chartProvider.getPriceFor(asset.idCoinGecko);
                   final valorActual = price != null
                       ? asset.totalQuantity * price
                       : null;
@@ -164,7 +184,8 @@ class PortfolioScreen extends StatelessWidget {
                     contentPadding: EdgeInsets.zero,
                     title: Text(
                       asset.symbol,
-                      style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.bodyLarge!
+                          .copyWith(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
                       '${AppLocalizations.of(context)?.quantity ?? ''}: ${asset.totalQuantity}',
@@ -177,11 +198,14 @@ class PortfolioScreen extends StatelessWidget {
                         valorActual == null
                             ? Text(
                           'Cargando...',
-                          style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                          style: theme.textTheme.bodyMedium
+                              ?.copyWith(color: Colors.grey),
                         )
                             : Text(
                           '€${valorActual.toStringAsFixed(2)}',
-                          style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
+                          style: theme.textTheme.bodyLarge!
+                              .copyWith(
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),

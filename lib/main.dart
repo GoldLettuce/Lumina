@@ -11,16 +11,21 @@ import 'ui/widgets/add_investment_dialog.dart';
 import 'package:provider/provider.dart';
 import 'data/models/investment_model.dart';
 import 'ui/screens/portfolio_screen.dart';
-import 'ui/providers/chart_value_provider.dart'; // ✅ nuevo import
+import 'ui/providers/chart_value_provider.dart';
+
+import 'core/point.dart';
+import 'data/models/local_history.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Hive.initFlutter();
 
-  // ✅ Registro de adaptadores Hive
+  // Registro de adaptadores Hive
   Hive.registerAdapter(InvestmentAdapter());
   Hive.registerAdapter(InvestmentOperationAdapter());
+  Hive.registerAdapter(PointAdapter());
+  Hive.registerAdapter(LocalHistoryAdapter());
 
   final investmentRepository = InvestmentRepositoryImpl();
   await investmentRepository.init();
@@ -29,7 +34,7 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => InvestmentModel(investmentRepository)),
-        ChangeNotifierProvider(create: (_) => ChartValueProvider()), // ✅ nuevo provider
+        ChangeNotifierProvider(create: (_) => ChartValueProvider()),
       ],
       child: const PortfolioApp(),
     ),
