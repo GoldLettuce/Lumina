@@ -3,20 +3,26 @@ import 'package:lumina/core/point.dart';
 
 part 'local_history.g.dart';
 
-@HiveType(typeId: 3) // ✅ actualizado para evitar conflicto con InvestmentOperation
-class LocalHistory {
+@HiveType(typeId: 3)
+class LocalHistory extends HiveObject {
   @HiveField(0)
-  final DateTime from;
+  DateTime from;
 
   @HiveField(1)
-  final DateTime to;
+  DateTime to;
 
+  /// Lista de puntos diarios comprimida opcionalmente.
   @HiveField(2)
-  final List<Point> points;
+  List<Point> points;
+
+  /// 🔸 Nuevo flag que indica si el histórico debe reconstruirse.
+  @HiveField(3, defaultValue: false)
+  bool needsRebuild;
 
   LocalHistory({
     required this.from,
     required this.to,
     required this.points,
+    this.needsRebuild = false,
   });
 }

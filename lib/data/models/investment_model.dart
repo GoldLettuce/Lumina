@@ -3,7 +3,9 @@ import 'package:hive/hive.dart';
 import '../../domain/entities/investment.dart';
 import '../repositories_impl/investment_repository_impl.dart';
 import '../datasources/coingecko_history_service.dart';
+import '../../workers/history_rebuild_worker.dart';
 import '../models/local_history.dart';
+
 
 class InvestmentModel extends ChangeNotifier {
   final InvestmentRepositoryImpl _repository;
@@ -102,4 +104,33 @@ class InvestmentModel extends ChangeNotifier {
     if (invertido == 0) return 0.0;
     return ((valorActual - invertido) / invertido) * 100;
   }
+
+  /// Añade una operación a un activo existente y marca su histórico si el
+  /// rango se amplía hacia atrás.
+  Future<void> addOperationToInvestment(String investmentId, InvestmentOperation op) async {
+    final invBox = await Hive.openBox<Investment>('investments');
+    final histBox = await Hive.openBox<LocalHistory>('history');
+
+    final inv = invBox.get(investmentId);
+    if (inv == null) return;
+
+    inv.operations.add(op);
+    await inv.save();
+
+    final earliest = inv.operations
+        .map((e) => e.date)
+        .reduce((a, b) => a.isBefore(b) ? a : b);
+
+    final hist = histBox.get(investmentId);
+    if (hist != null && earliest.isBefore(hist.from)) {
+      hist.needsRebuild = true;
+      await hist.save();
+
+      final history = Hive.box<LocalHistory>('histories').get(investmentId);
+      print('⚠️ needsRebuild: \${history?.needsRebuild}');
+
+      scheduleHistoryRebuildIfNeeded();
+    }
+  }
+
 }

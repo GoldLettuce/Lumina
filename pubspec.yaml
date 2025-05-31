@@ -29,6 +29,10 @@ dependencies:
   # Gráficos para evolución del portafolio
   fl_chart: ^0.70.0
 
+  # Trabajos en segundo plano
+  workmanager: ^0.6.0
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

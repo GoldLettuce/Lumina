@@ -20,19 +20,22 @@ class LocalHistoryAdapter extends TypeAdapter<LocalHistory> {
       from: fields[0] as DateTime,
       to: fields[1] as DateTime,
       points: (fields[2] as List).cast<Point>(),
+      needsRebuild: fields[3] == null ? false : fields[3] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, LocalHistory obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.from)
       ..writeByte(1)
       ..write(obj.to)
       ..writeByte(2)
-      ..write(obj.points);
+      ..write(obj.points)
+      ..writeByte(3)
+      ..write(obj.needsRebuild);
   }
 
   @override
