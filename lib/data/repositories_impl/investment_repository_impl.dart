@@ -1,3 +1,5 @@
+// lib/data/repositories_impl/investment_repository_impl.dart
+
 import 'package:hive/hive.dart';
 import '../../domain/entities/investment.dart';
 import '../../domain/repositories/investment_repository.dart';
@@ -18,15 +20,16 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
 
   @override
   Future<void> addInvestment(Investment investment) async {
-    final existing = _box.get(investment.idCoinGecko);
+    // Usamos el símbolo como clave única
+    final existing = _box.get(investment.symbol);
 
     if (existing != null) {
-      // ✅ Agregar operación en vez de sobrescribir
+      // Agregar operación en vez de sobrescribir
       final newOp = investment.operations.first;
       existing.addOperation(newOp);
       await existing.save();
     } else {
-      await _box.put(investment.idCoinGecko, investment);
+      await _box.put(investment.symbol, investment);
     }
   }
 
@@ -36,7 +39,7 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
   }
 
   @override
-  Future<void> deleteInvestment(String id) async {
-    await _box.delete(id);
+  Future<void> deleteInvestment(String symbol) async {
+    await _box.delete(symbol);
   }
 }

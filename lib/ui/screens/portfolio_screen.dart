@@ -1,3 +1,5 @@
+// lib/ui/screens/portfolio_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
@@ -12,7 +14,8 @@ import '../../core/chart_range.dart';
 class PortfolioSummaryMinimal extends StatelessWidget {
   const PortfolioSummaryMinimal({super.key});
 
-  double _measureTextWidth(String text, TextStyle style, BuildContext context) {
+  double _measureTextWidth(
+      String text, TextStyle style, BuildContext context) {
     final tp = TextPainter(
       text: TextSpan(text: text, style: style),
       textDirection: TextDirection.ltr,
@@ -36,8 +39,9 @@ class PortfolioSummaryMinimal extends StatelessWidget {
     final model = context.watch<InvestmentModel>();
     final chartProvider = context.watch<ChartValueProvider>();
 
+    // Se calcula valor actual leyendo precios por símbolo
     final valorActual = model.investments.fold(0.0, (sum, inv) {
-      final price = chartProvider.getPriceFor(inv.idCoinGecko) ?? 0;
+      final price = chartProvider.getPriceFor(inv.symbol) ?? 0;
       return sum + (inv.totalQuantity * price);
     });
 
@@ -45,7 +49,9 @@ class PortfolioSummaryMinimal extends StatelessWidget {
 
     final rentabilidad = (model.totalInvertido == 0 || mostrarValor == 0)
         ? 0.0
-        : ((mostrarValor - model.totalInvertido) / model.totalInvertido) * 100;
+        : ((mostrarValor - model.totalInvertido) /
+        model.totalInvertido) *
+        100;
 
     final isPositivo = rentabilidad >= 0;
     final signo = isPositivo ? "+" : "-";
@@ -72,8 +78,10 @@ class PortfolioSummaryMinimal extends StatelessWidget {
       width: double.infinity,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final valorWidth = _measureTextWidth(valorText, valorStyle, context);
-          final valorBaseline = _measureBaseline(valorText, valorStyle);
+          final valorWidth =
+          _measureTextWidth(valorText, valorStyle, context);
+          final valorBaseline =
+          _measureBaseline(valorText, valorStyle);
           final percentBaseline = _measureBaseline(percentText, percentStyle);
           final centerX = constraints.maxWidth / 2;
           final valorLeft = centerX - valorWidth / 2;
@@ -115,7 +123,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     Future.microtask(() {
       final model = context.read<InvestmentModel>();
       final chartProvider = context.read<ChartValueProvider>();
-      chartProvider.loadHistory(ChartRange.month, model.investments);
+      chartProvider.loadHistory(
+        ChartRange.month,
+        model.investments,
+      );
     });
   }
 
@@ -161,7 +172,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Text(
-                    AppLocalizations.of(context)?.emptyPortfolioMessage ??
+                    AppLocalizations.of(context)
+                        ?.emptyPortfolioMessage ??
                         'No tienes inversiones aún.\n¡Comienza añadiendo la primera!',
                     style: theme.textTheme.bodyLarge,
                     textAlign: TextAlign.center,
@@ -175,7 +187,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 itemBuilder: (context, index) {
                   final asset = investments[index];
                   final price =
-                  chartProvider.getPriceFor(asset.idCoinGecko);
+                  chartProvider.getPriceFor(asset.symbol);
                   final valorActual = price != null
                       ? asset.totalQuantity * price
                       : null;
@@ -205,7 +217,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                           '€${valorActual.toStringAsFixed(2)}',
                           style: theme.textTheme.bodyLarge!
                               .copyWith(
-                              fontWeight: FontWeight.w600),
+                              fontWeight:
+                              FontWeight.w600),
                         ),
                       ],
                     ),

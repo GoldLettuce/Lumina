@@ -32,6 +32,8 @@ dependencies:
   # Trabajos en segundo plano
   workmanager: ^0.6.0
 
+  # Cliente HTTP para llamadas a APIs
+  http: ^0.13.5
 
 dev_dependencies:
   flutter_test:

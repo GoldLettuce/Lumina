@@ -35,6 +35,8 @@
 
 ## FASE 5: Integración de Datos en Tiempo Real
 
+## FASE 5: Integración de Datos en Tiempo Real
+
 - [x] Integrar API de CoinGecko para obtener precios de criptos (usando modelo con `idCoinGecko`).
 - [ ] Integrar API de acciones/ETFs si es posible (AlphaVantage, Yahoo Finance, etc.).
 - [x] Selección dinámica de símbolo según tipo de activo.
@@ -47,6 +49,11 @@
 - [ ] Recalcular histórico si se añaden operaciones anteriores al rango guardado.
 - [ ] Soporte offline: usar datos locales si no hay conexión.
 - [ ] ⚠️ Soporte para filtrar el gráfico por activo individual con tap largo. 👈 PENDIENTE
+- [x] 🔁 Sustituida API de CoinGecko por CryptoCompare (top 100 por market cap).
+- [x] 🧭 Nuevo servicio `CryptoCompareAssetListService` para cargar los activos disponibles.
+- [x] 🧩 Creado `AssetListProvider` con filtro en vivo para el selector.
+- [x] 🧾 Modal de selección de activos completamente rediseñado con scroll, buscador y diseño minimalista.
+- [x] ✏️ Campo de búsqueda sin bordes, sin placeholder y con icono de lupa único.
 
 ## FASE 6: Gestión y Edición de Operaciones
 

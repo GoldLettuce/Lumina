@@ -1,10 +1,11 @@
+// lib/ui/widgets/add_investment_dialog.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../domain/entities/investment.dart';
 import '../../data/models/investment_model.dart';
 import '../../l10n/app_localizations.dart';
-import 'asset_selector_modal.dart';
-import 'coingecko_asset_selector_modal.dart';
+import 'asset_selector_modal.dart'; // Import del modal de selección dinámico
 
 class AddInvestmentDialog extends StatefulWidget {
   const AddInvestmentDialog({super.key});
@@ -19,16 +20,14 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   String? _type;
   bool _isBuy = true;
   String? _symbol;
-  String? _idCoinGecko;
+  DateTime? _selectedDate = DateTime.now();
   final _quantityController = TextEditingController();
   final _priceController = TextEditingController();
-  DateTime? _selectedDate = DateTime.now();
 
   bool _formSubmitted = false;
   bool _symbolTouched = false;
   bool _quantityTouched = false;
   bool _priceTouched = false;
-  bool _dateTouched = false;
 
   @override
   void dispose() {
@@ -48,7 +47,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
-        _dateTouched = true;
       });
     }
   }
@@ -56,50 +54,35 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   Future<void> _selectSymbol() async {
     if (_type == null) return;
 
-    if (_type == 'crypto') {
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        builder: (_) => CoinGeckoAssetSelectorModal(
-          onSelect: (asset) {
-            setState(() {
-              _symbol = asset.symbol.toUpperCase();
-              _idCoinGecko = asset.id;
-            });
-          },
-        ),
-      );
-    } else {
-      final selected = await showModalBottomSheet<String>(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.white,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        builder: (context) => AssetSelectorModal(type: _type!),
-      );
+    // Abrimos el modal dinámico que carga todos los símbolos (de CryptoCompare
+    // u otras listas en función del tipo)
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => AssetSelectorModal(type: _type!),
+    );
 
-      if (selected != null) {
-        setState(() {
-          _symbol = selected;
-          _idCoinGecko = null;
-        });
-      }
+    if (selected != null) {
+      setState(() {
+        _symbol = selected;
+        _symbolTouched = true;
+      });
     }
   }
 
   void _submit() async {
     setState(() {
       _formSubmitted = true;
-      _dateTouched = true;
     });
 
     if (_formKey.currentState!.validate() &&
         _type != null &&
         _symbol != null &&
-        _selectedDate != null &&
-        (_type != 'crypto' || _idCoinGecko != null)) {
+        _selectedDate != null) {
       final quantity = double.parse(_quantityController.text.trim());
       final price = double.parse(_priceController.text.trim());
 
@@ -110,9 +93,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       );
 
       final newInvestment = Investment(
-        idCoinGecko: _idCoinGecko ?? 'manual-${DateTime.now().millisecondsSinceEpoch}',
         symbol: _symbol!,
-        name: _symbol!,
+        name: _symbol!, // Usamos el símbolo como nombre por defecto
         operations: [operation],
       );
 
@@ -123,7 +105,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
 
   InputDecoration _inputDecoration(String label) => InputDecoration(
     labelText: label,
-    labelStyle: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w400),
+    labelStyle:
+    const TextStyle(color: Colors.black87, fontWeight: FontWeight.w400),
     enabledBorder: const UnderlineInputBorder(
       borderSide: BorderSide(color: Colors.black26),
     ),
@@ -149,30 +132,44 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
         child: SingleChildScrollView(
           child: Form(
             key: _formKey,
-            autovalidateMode:
-            _formSubmitted ? AutovalidateMode.always : AutovalidateMode.disabled,
+            autovalidateMode: _formSubmitted
+                ? AutovalidateMode.always
+                : AutovalidateMode.disabled,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   loc?.newOperation ?? 'Nueva operación',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 20),
+
+                // Selección de tipo de activo
                 DropdownButtonFormField<String>(
-                  decoration: _inputDecoration(loc?.assetType ?? 'Tipo de activo'),
+                  decoration:
+                  _inputDecoration(loc?.assetType ?? 'Tipo de activo'),
                   items: ['crypto', 'stock', 'etf', 'commodity']
-                      .map((type) => DropdownMenuItem(value: type, child: Text(type.toUpperCase())))
+                      .map((type) => DropdownMenuItem(
+                    value: type,
+                    child: Text(type.toUpperCase()),
+                  ))
                       .toList(),
                   value: _type,
                   onChanged: (val) => setState(() {
                     _type = val;
                     _symbol = null;
-                    _idCoinGecko = null;
+                    _symbolTouched = false;
                   }),
-                  validator: (val) => val == null ? (loc?.selectAssetType ?? 'Seleccione un tipo') : null,
+                  validator: (val) => val == null
+                      ? (loc?.selectAssetType ?? 'Seleccione un tipo')
+                      : null,
                 ),
                 const SizedBox(height: 16),
+
+                // Selector de símbolo (abre el modal dinámico)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -193,11 +190,13 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         _selectSymbol();
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16, horizontal: 12),
                         decoration: BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
-                              color: (_symbol == null && (_formSubmitted || _symbolTouched))
+                              color: (_symbol == null &&
+                                  (_formSubmitted || _symbolTouched))
                                   ? Theme.of(context).colorScheme.error
                                   : Colors.black26,
                               width: 1,
@@ -208,19 +207,25 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              _symbol ?? (loc?.selectSymbol ?? 'Selecciona un símbolo'),
+                              _symbol ??
+                                  (loc?.selectSymbol ??
+                                      'Selecciona un símbolo'),
                               style: TextStyle(
-                                color: _symbol == null ? Colors.black38 : Colors.black87,
+                                color: _symbol == null
+                                    ? Colors.black38
+                                    : Colors.black87,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            const Icon(Icons.arrow_drop_down, color: Colors.black54),
+                            const Icon(Icons.arrow_drop_down,
+                                color: Colors.black54),
                           ],
                         ),
                       ),
                     ),
-                    if ((_formSubmitted || _symbolTouched) && _symbol == null)
+                    if ((_formSubmitted || _symbolTouched) &&
+                        _symbol == null)
                       Padding(
                         padding: const EdgeInsets.only(left: 8, top: 4),
                         child: Align(
@@ -237,6 +242,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   ],
                 ),
                 const SizedBox(height: 16),
+
+                // Selector de fecha
                 InkWell(
                   onTap: _pickDate,
                   borderRadius: BorderRadius.circular(4),
@@ -266,37 +273,49 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // Campo cantidad
                 TextFormField(
                   controller: _quantityController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
                   decoration: _inputDecoration(loc?.quantity ?? 'Cantidad'),
                   autovalidateMode: _quantityTouched || _formSubmitted
                       ? AutovalidateMode.always
                       : AutovalidateMode.disabled,
                   validator: (val) {
                     if (!_quantityTouched && !_formSubmitted) return null;
-                    if (val == null || val.isEmpty) return loc?.fieldRequired ?? 'Campo obligatorio';
+                    if (val == null || val.isEmpty)
+                      return loc?.fieldRequired ?? 'Campo obligatorio';
                     final n = double.tryParse(val);
-                    if (n == null || n <= 0) return loc?.invalidQuantity ?? 'Cantidad inválida';
+                    if (n == null || n <= 0)
+                      return loc?.invalidQuantity ?? 'Cantidad inválida';
                     return null;
                   },
                   onChanged: (_) {
-                    if (!_quantityTouched) setState(() => _quantityTouched = true);
+                    if (!_quantityTouched)
+                      setState(() => _quantityTouched = true);
                   },
                 ),
                 const SizedBox(height: 16),
+
+                // Campo precio unitario
                 TextFormField(
                   controller: _priceController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: _inputDecoration(loc?.unitPrice ?? 'Precio unitario (€)'),
+                  keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+                  decoration:
+                  _inputDecoration(loc?.unitPrice ?? 'Precio unitario (€)'),
                   autovalidateMode: _priceTouched || _formSubmitted
                       ? AutovalidateMode.always
                       : AutovalidateMode.disabled,
                   validator: (val) {
                     if (!_priceTouched && !_formSubmitted) return null;
-                    if (val == null || val.isEmpty) return loc?.fieldRequired ?? 'Campo obligatorio';
+                    if (val == null || val.isEmpty)
+                      return loc?.fieldRequired ?? 'Campo obligatorio';
                     final n = double.tryParse(val);
-                    if (n == null || n <= 0) return loc?.invalidPrice ?? 'Precio inválido';
+                    if (n == null || n <= 0)
+                      return loc?.invalidPrice ?? 'Precio inválido';
                     return null;
                   },
                   onChanged: (_) {
@@ -304,6 +323,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   },
                 ),
                 const SizedBox(height: 24),
+
+                // Botones Cancelar / Guardar
                 Row(
                   children: [
                     Expanded(

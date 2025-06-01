@@ -1,3 +1,5 @@
+// lib/domain/entities/investment.dart
+
 import 'package:hive/hive.dart';
 
 part 'investment.g.dart';
@@ -5,19 +7,15 @@ part 'investment.g.dart';
 @HiveType(typeId: 0)
 class Investment extends HiveObject {
   @HiveField(0)
-  final String idCoinGecko;
-
-  @HiveField(1)
   final String symbol;
 
-  @HiveField(2)
+  @HiveField(1)
   final String name;
 
-  @HiveField(3)
+  @HiveField(2)
   final List<InvestmentOperation> operations;
 
   Investment({
-    required this.idCoinGecko,
     required this.symbol,
     required this.name,
     List<InvestmentOperation>? operations,

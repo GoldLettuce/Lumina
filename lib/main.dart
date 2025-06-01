@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'data/models/investment_model.dart';
 import 'ui/screens/portfolio_screen.dart';
 import 'ui/providers/chart_value_provider.dart';
+import 'ui/providers/asset_list_provider.dart';
 
 import 'core/point.dart';
 import 'data/models/local_history.dart';
@@ -33,6 +34,7 @@ Future<void> main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => AssetListProvider()),
         ChangeNotifierProvider(create: (_) => InvestmentModel(investmentRepository)),
         ChangeNotifierProvider(create: (_) => ChartValueProvider()),
       ],

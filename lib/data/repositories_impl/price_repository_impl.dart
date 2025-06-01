@@ -1,44 +1,75 @@
+// lib/data/repositories_impl/price_repository_impl.dart
+
 import 'dart:collection';
-import 'package:lumina/data/datasources/coingecko_price_service.dart';
+import 'package:lumina/data/datasources/cryptocompare/cryptocompare_price_service.dart';
 import 'package:lumina/domain/repositories/price_repository.dart';
 
 class PriceRepositoryImpl implements PriceRepository {
-  final CoinGeckoPriceService _service;
+  final CryptoComparePriceService _service = CryptoComparePriceService();
 
-  PriceRepositoryImpl(this._service);
-
+  // Caché local de precios
   final Map<String, double> _cachedPrices = {};
   DateTime? _lastFetch;
   final Duration _ttl = const Duration(seconds: 60);
 
   @override
-  Future<Map<String, double>> getPrices(Set<String> ids) async {
+  Future<double?> getCurrentPrice(String symbol, {String currency = 'USD'}) async {
     final now = DateTime.now();
 
-    // Usar caché si es válida
+    // Si la caché sigue vigente y existe el símbolo, devolvemos el valor cacheado.
     if (_lastFetch != null &&
         now.difference(_lastFetch!) < _ttl &&
-        _cachedPrices.keys.toSet().containsAll(ids)) {
-      return Map<String, double>.fromEntries(
-        ids.map((id) => MapEntry(id, _cachedPrices[id] ?? 0)),
+        _cachedPrices.containsKey(symbol)) {
+      return _cachedPrices[symbol];
+    }
+
+    // De lo contrario, pedimos al servicio CryptoCompare y actualizamos caché.
+    final price = await _service.getPrice(symbol, currency: currency);
+    if (price != null) {
+      _cachedPrices[symbol] = price;
+      _lastFetch = now;
+    }
+    return price;
+  }
+
+  @override
+  Future<Map<String, double>> getPrices(
+      Set<String> symbols, {
+        String currency = 'USD',
+      }) async {
+    final now = DateTime.now();
+
+    // Limpiar símbolos vacíos
+    final cleanSymbols = symbols.where((s) => s.trim().isNotEmpty).toSet();
+    if (cleanSymbols.isEmpty) return {};
+
+    // Si la caché está viva y contiene todos los símbolos, devolvemos subset
+    if (_lastFetch != null &&
+        now.difference(_lastFetch!) < _ttl &&
+        _cachedPrices.keys.toSet().containsAll(cleanSymbols)) {
+      return Map.fromEntries(
+        cleanSymbols.map((s) => MapEntry(s, _cachedPrices[s]!)),
       );
     }
 
-    // Filtrar IDs vacíos
-    final cleanIds = ids.where((id) => id.trim().isNotEmpty).toSet();
-    if (cleanIds.isEmpty) return {};
+    // Para los símbolos faltantes o expirados, llamamos a getCurrentPrice uno a uno
+    final Map<String, double> result = {};
 
-    try {
-      final fetched = await _service.fetchSpotPrices(cleanIds);
-      print('🟢 Precios recibidos desde CoinGecko: $fetched');
-      _cachedPrices
-        ..clear()
-        ..addAll(fetched);
-      _lastFetch = now;
-      return fetched;
-    } catch (e) {
-      print('❌ Error al obtener precios de CoinGecko: $e');
-      rethrow;
+    for (final symbol in cleanSymbols) {
+      double? price;
+      // Si existe en caché y TTL no expira, reutilizamos
+      if (_lastFetch != null &&
+          now.difference(_lastFetch!) < _ttl &&
+          _cachedPrices.containsKey(symbol)) {
+        price = _cachedPrices[symbol];
+      } else {
+        price = await getCurrentPrice(symbol, currency: currency);
+      }
+      if (price != null) {
+        result[symbol] = price;
+      }
     }
+
+    return result;
   }
 }

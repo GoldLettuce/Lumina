@@ -1,8 +1,9 @@
+// lib/ui/providers/chart_value_provider.dart
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:lumina/core/chart_range.dart';
 import 'package:lumina/core/point.dart';
-import 'package:lumina/data/datasources/coingecko_price_service.dart';
 import 'package:lumina/data/repositories_impl/price_repository_impl.dart';
 import 'package:lumina/data/repositories_impl/history_repository_impl.dart';
 import 'package:lumina/domain/entities/investment.dart';
@@ -10,12 +11,13 @@ import 'package:lumina/domain/repositories/price_repository.dart';
 import 'package:lumina/domain/repositories/history_repository.dart';
 
 class ChartValueProvider extends ChangeNotifier {
-  final PriceRepository _priceRepository =
-  PriceRepositoryImpl(CoinGeckoPriceService());
+  // Ahora instanciamos PriceRepositoryImpl sin pasar ningún servicio externo
+  final PriceRepository _priceRepository = PriceRepositoryImpl();
 
   final HistoryRepository _historyRepository = HistoryRepositoryImpl();
 
-  final Set<String> _visibleIds = {};
+  // Conjunto de símbolos (por ejemplo: "BTC", "ETH", etc.) cuya cotización queremos mostrar
+  final Set<String> _visibleSymbols = {};
   final Map<String, double> _spotPrices = {};
 
   Timer? _timer;
@@ -32,6 +34,7 @@ class ChartValueProvider extends ChangeNotifier {
 
   void _startAutoRefresh() {
     _timer?.cancel();
+    // Cada 60 segundos actualizamos precios automáticamente
     _timer = Timer.periodic(const Duration(seconds: 60), (_) {
       updatePrices();
     });
@@ -43,31 +46,39 @@ class ChartValueProvider extends ChangeNotifier {
     super.dispose();
   }
 
-  void setVisibleIds(Set<String> ids) {
-    _visibleIds
+  /// Establece el conjunto de símbolos visibles y dispara la actualización de precios
+  void setVisibleSymbols(Set<String> symbols) {
+    _visibleSymbols
       ..clear()
-      ..addAll(ids);
-    print('🟡 setVisibleIds() -> $_visibleIds');
+      ..addAll(symbols);
+    debugPrint('🟡 setVisibleSymbols() -> $_visibleSymbols');
     updatePrices();
   }
 
+  /// Actualiza los precios actuales de todos los símbolos en [_visibleSymbols]
   Future<void> updatePrices() async {
-    print('🟡 updatePrices() llamado con IDs: $_visibleIds');
+    debugPrint('🟡 updatePrices() llamado con símbolos: $_visibleSymbols');
     try {
-      final prices = await _priceRepository.getPrices(_visibleIds);
+      final prices =
+      await _priceRepository.getPrices(_visibleSymbols, currency: 'USD');
       _spotPrices
         ..clear()
         ..addAll(prices);
-      print('🟢 Precios recibidos desde CoinGecko: $_spotPrices');
+      debugPrint('🟢 Precios recibidos desde CryptoCompare: $_spotPrices');
       notifyListeners();
     } catch (e) {
       debugPrint('❌ Error al actualizar precios: $e');
     }
   }
 
-  double? getPriceFor(String id) => _spotPrices[id];
+  /// Devuelve el precio actual para un símbolo concreto (puede ser null si no está en caché)
+  double? getPriceFor(String symbol) => _spotPrices[symbol];
 
-  Future<void> loadHistory(ChartRange range, List<Investment> investments) async {
+  /// Carga el histórico para un rango y lista de inversiones
+  Future<void> loadHistory(
+      ChartRange range,
+      List<Investment> investments,
+      ) async {
     _currentRange = range;
 
     try {
@@ -81,7 +92,7 @@ class ChartValueProvider extends ChangeNotifier {
         notifyListeners();
       }
 
-      // 2. Luego intentar sincronizar en segundo plano
+      // 2. Luego intentar sincronizar en segundo plano y recargar
       final updated = await _historyRepository.downloadAndStoreIfNeeded(
         range: range,
         investments: investments,
@@ -91,8 +102,8 @@ class ChartValueProvider extends ChangeNotifier {
         notifyListeners();
       }
 
-      // 3. Actualizar precios spot
-      setVisibleIds(investments.map((inv) => inv.idCoinGecko).toSet());
+      // 3. Finalmente, actualizar precios spot de todos los símbolos de las inversiones
+      setVisibleSymbols(investments.map((inv) => inv.symbol).toSet());
     } catch (e) {
       debugPrint('❌ Error al cargar histórico: $e');
     }

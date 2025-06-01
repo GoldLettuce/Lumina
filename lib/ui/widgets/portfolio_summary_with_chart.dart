@@ -1,3 +1,5 @@
+// lib/ui/widgets/portfolio_summary_with_chart.dart
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -27,13 +29,13 @@ class _PortfolioSummaryWithChartState
     super.didChangeDependencies();
     if (!_hasInitialized) {
       final chartProvider = context.read<ChartValueProvider>();
-      final validIds = widget.investments
-          .map((inv) => inv.idCoinGecko)
-          .where((id) => id.isNotEmpty)
+      final validSymbols = widget.investments
+          .map((inv) => inv.symbol)
+          .where((symbol) => symbol.isNotEmpty)
           .toSet();
 
-      if (widget.investments.isNotEmpty && validIds.isNotEmpty) {
-        chartProvider.setVisibleIds(validIds);
+      if (widget.investments.isNotEmpty && validSymbols.isNotEmpty) {
+        chartProvider.setVisibleSymbols(validSymbols);
         chartProvider.loadHistory(ChartRange.day, widget.investments);
         _hasInitialized = true;
       }
@@ -50,9 +52,10 @@ class _PortfolioSummaryWithChartState
       return FlSpot(entry.key.toDouble(), entry.value.value);
     }).toList();
 
-    print('📈 Puntos visibles en el gráfico: ${spots.length}');
+    debugPrint('📈 Puntos visibles en el gráfico: ${spots.length}');
 
-    final isPositive = (spots.isNotEmpty && spots.first.y <= spots.last.y);
+    final isPositive =
+    (spots.isNotEmpty && spots.first.y <= spots.last.y);
     final lineColor = isPositive ? AppColors.positive : AppColors.negative;
 
     return Column(
@@ -82,10 +85,13 @@ class _PortfolioSummaryWithChartState
                         return touchedSpots.map((spot) {
                           final point = history[spot.spotIndex];
                           final fecha = point.time;
-                          final locale = Localizations.localeOf(context)
+                          final locale =
+                          Localizations.localeOf(context)
                               .toString();
-                          final fechaStr = DateFormat('d MMM yyyy', locale)
-                              .format(fecha);
+                          final fechaStr = DateFormat(
+                            'd MMM yyyy',
+                            locale,
+                          ).format(fecha);
 
                           return LineTooltipItem(
                             '$fechaStr\n${spot.y.toStringAsFixed(2)} €',
@@ -144,13 +150,13 @@ class _PortfolioSummaryWithChartState
           child: InkWell(
             borderRadius: BorderRadius.circular(999),
             onTap: () {
-              final validIds = widget.investments
-                  .map((inv) => inv.idCoinGecko)
-                  .where((id) => id.isNotEmpty)
+              final validSymbols = widget.investments
+                  .map((inv) => inv.symbol)
+                  .where((symbol) => symbol.isNotEmpty)
                   .toSet();
 
-              if (widget.investments.isNotEmpty && validIds.isNotEmpty) {
-                chartProvider.setVisibleIds(validIds);
+              if (widget.investments.isNotEmpty && validSymbols.isNotEmpty) {
+                chartProvider.setVisibleSymbols(validSymbols);
                 chartProvider.loadHistory(range, widget.investments);
               }
             },

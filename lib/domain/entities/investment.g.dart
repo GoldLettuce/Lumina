@@ -17,24 +17,21 @@ class InvestmentAdapter extends TypeAdapter<Investment> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Investment(
-      idCoinGecko: fields[0] as String,
-      symbol: fields[1] as String,
-      name: fields[2] as String,
-      operations: (fields[3] as List?)?.cast<InvestmentOperation>(),
+      symbol: fields[0] as String,
+      name: fields[1] as String,
+      operations: (fields[2] as List?)?.cast<InvestmentOperation>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, Investment obj) {
     writer
-      ..writeByte(4)
-      ..writeByte(0)
-      ..write(obj.idCoinGecko)
-      ..writeByte(1)
-      ..write(obj.symbol)
-      ..writeByte(2)
-      ..write(obj.name)
       ..writeByte(3)
+      ..writeByte(0)
+      ..write(obj.symbol)
+      ..writeByte(1)
+      ..write(obj.name)
+      ..writeByte(2)
       ..write(obj.operations);
   }
 
