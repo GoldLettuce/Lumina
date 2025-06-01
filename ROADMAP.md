@@ -41,7 +41,8 @@
 - [x] Cálculo automático de valor actual y rentabilidad con precios reales.
 - [x] Actualización automática/periódica de datos de precios.
 - [x] Mostrar gráfico con datos históricos reales por activo (CoinGecko).
-- [x] ✅ Implementado histórico del portafolio completo (valor agregado día a día).
+- [x] ✅ Implementado histórico del portafolio completo (valor agregado por minuto, con agrupamiento real).
+  - [x] Todos los puntos del histórico se agrupan por minuto para evitar picos artificiales por timestamps diferentes.
 - [x] Uso de caché local de históricos en Hive para evitar peticiones innecesarias.
 - [ ] Recalcular histórico si se añaden operaciones anteriores al rango guardado.
 - [ ] Soporte offline: usar datos locales si no hay conexión.

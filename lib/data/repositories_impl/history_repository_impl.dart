@@ -13,7 +13,21 @@ class HistoryRepositoryImpl implements HistoryRepository {
     required List<Investment> investments,
   }) async {
     final historyBox = await Hive.openBox<LocalHistory>('history');
-    final Map<DateTime, double> totalPorDia = {};
+
+    // Esta función trunca **siempre** al minuto (quita segundos y ms)
+    DateTime redondearAlMinuto(DateTime original) {
+      return DateTime(
+        original.year,
+        original.month,
+        original.day,
+        original.hour,
+        original.minute,
+      );
+    }
+
+    // 1. Recolectar todos los timestamps “minutales” de todos los activos
+    final Set<DateTime> allTimestamps = {};
+    final Map<String, LocalHistory> historiesPorAsset = {};
 
     final rangeKey = switch (range) {
       ChartRange.day => '1D',
@@ -25,27 +39,57 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
     for (final inv in investments) {
       final key = '${inv.idCoinGecko}_$rangeKey';
-      final history = historyBox.get(key);
+      final hist = historyBox.get(key);
+      if (hist == null) continue;
+      historiesPorAsset[inv.idCoinGecko] = hist;
 
-      if (history == null) continue;
-
-      for (final point in history.points) {
-        final fecha = point.time;
-
-        // Cantidad acumulada hasta esa fecha
-        final cantidad = inv.operations
-            .where((op) => !op.date.isAfter(fecha))
-            .fold<double>(0.0, (sum, op) => sum + op.quantity);
-
-        final valor = point.value * cantidad;
-        totalPorDia[fecha] = (totalPorDia[fecha] ?? 0) + valor;
+      for (final pt in hist.points) {
+        final tsMin = redondearAlMinuto(pt.time);
+        allTimestamps.add(tsMin);
       }
     }
 
-    final resultado = totalPorDia.entries
-        .map((e) => Point(time: e.key, value: e.value))
-        .toList()
-      ..sort((a, b) => a.time.compareTo(b.time));
+    if (allTimestamps.isEmpty) {
+      return [];
+    }
+
+    // Ordenar cronológicamente todos los timestamps al minuto
+    final sortedTimestamps = allTimestamps.toList()
+      ..sort((a, b) => a.compareTo(b));
+
+    // 2. Para cada timestamp-minuto, sumar el valor de todos los activos
+    final List<Point> resultado = [];
+
+    for (final timestampMin in sortedTimestamps) {
+      double totalEnTimestamp = 0.0;
+
+      for (final inv in investments) {
+        // 2.1. Cantidad acumulada de ese activo hasta este minuto
+        final cantidad = inv.operations
+            .where((op) => !op.date.isAfter(timestampMin))
+            .fold<double>(0.0, (sum, op) => sum + op.quantity);
+
+        if (cantidad <= 0) continue;
+
+        final hist = historiesPorAsset[inv.idCoinGecko];
+        if (hist == null) continue;
+
+        // 2.2. Buscamos el precio más reciente <= timestampMin
+        double precio = 0.0;
+        for (int i = hist.points.length - 1; i >= 0; i--) {
+          final pt = hist.points[i];
+          final ptMin = redondearAlMinuto(pt.time);
+          if (!ptMin.isAfter(timestampMin)) {
+            precio = pt.value;
+            break;
+          }
+        }
+
+        totalEnTimestamp += precio * cantidad;
+      }
+
+      resultado.add(Point(time: timestampMin, value: totalEnTimestamp));
+    }
 
     return resultado;
   }
@@ -77,21 +121,18 @@ class HistoryRepositoryImpl implements HistoryRepository {
           assetId: inv.idCoinGecko,
         );
         if (points.isNotEmpty) {
+          // Guardamos siempre ordenados (por fecha ascendente)
+          points.sort((a, b) => a.time.compareTo(b.time));
           final from = points.first.time;
           final to = points.last.time;
-          final history = LocalHistory(from: from, to: to, points: points);
-          await historyBox.put(key, history);
+          final hist = LocalHistory(from: from, to: to, points: points);
+          await historyBox.put(key, hist);
           huboDescarga = true;
         }
       }
     }
 
-    if (huboDescarga) {
-      // Si se descargó algo nuevo, recalculamos el portafolio
-      return await getHistory(range: range, investments: investments);
-    } else {
-      // Si no hay nada nuevo, no recalculamos
-      return [];
-    }
+    // Devolvemos en todos los casos el histórico completo ya procesado:
+    return await getHistory(range: range, investments: investments);
   }
 }
