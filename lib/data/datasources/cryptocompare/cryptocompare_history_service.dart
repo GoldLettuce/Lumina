@@ -10,7 +10,7 @@ class CryptoCompareHistoryService {
     String currency = 'USD',
     int limit = 24,
   }) async {
-    final url = Uri.parse('\${_baseUrl}?fsym=\${symbol.toUpperCase()}&tsym=\${currency.toUpperCase()}&limit=\$limit');
+    final url = Uri.parse('$_baseUrl?fsym=${symbol.toUpperCase()}&tsym=${currency.toUpperCase()}&limit=$limit');
     final res = await http.get(url);
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);

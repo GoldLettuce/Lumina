@@ -54,6 +54,9 @@
 - [x] 🧩 Creado `AssetListProvider` con filtro en vivo para el selector.
 - [x] 🧾 Modal de selección de activos completamente rediseñado con scroll, buscador y diseño minimalista.
 - [x] ✏️ Campo de búsqueda sin bordes, sin placeholder y con icono de lupa único.
+- [x] 📈 Servicio `CryptoCompareHistoryService` funcional con endpoint corregido y parámetros validados.
+- [x] 💵 Servicio `CryptoComparePriceService` implementado para obtener precios en tiempo real desde CryptoCompare.
+
 
 ## FASE 6: Gestión y Edición de Operaciones
 
