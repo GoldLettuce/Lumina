@@ -113,4 +113,9 @@ class InvestmentModel extends ChangeNotifier {
       );
     }
   }
+
+  /// Método auxiliar usado por servicios externos para forzar recarga del modelo
+  Future<void> load() async {
+    await loadInvestments();
+  }
 }

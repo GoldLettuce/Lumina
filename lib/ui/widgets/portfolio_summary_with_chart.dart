@@ -36,7 +36,7 @@ class _PortfolioSummaryWithChartState
 
       if (widget.investments.isNotEmpty && validSymbols.isNotEmpty) {
         chartProvider.setVisibleSymbols(validSymbols);
-        chartProvider.loadHistory(ChartRange.day, widget.investments);
+        chartProvider.loadHistory(widget.investments);
         _hasInitialized = true;
       }
     }
@@ -129,67 +129,7 @@ class _PortfolioSummaryWithChartState
             ),
           ),
         const SizedBox(height: 12),
-        _buildRangeSelector(),
-        const SizedBox(height: 8),
       ],
     );
-  }
-
-  Widget _buildRangeSelector() {
-    final chartProvider = context.read<ChartValueProvider>();
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: ChartRange.values.map((range) {
-        final isSelected = chartProvider.range == range;
-        final textColor =
-        isSelected ? AppColors.positive : AppColors.textPrimary;
-
-        return Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(999),
-            onTap: () {
-              final validSymbols = widget.investments
-                  .map((inv) => inv.symbol)
-                  .where((symbol) => symbol.isNotEmpty)
-                  .toSet();
-
-              if (widget.investments.isNotEmpty && validSymbols.isNotEmpty) {
-                chartProvider.setVisibleSymbols(validSymbols);
-                chartProvider.loadHistory(range, widget.investments);
-              }
-            },
-            child: Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              child: Text(
-                _labelForRange(range),
-                style: TextStyle(
-                  color: textColor,
-                  fontWeight:
-                  isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  String _labelForRange(ChartRange range) {
-    switch (range) {
-      case ChartRange.day:
-        return '1D';
-      case ChartRange.week:
-        return '1W';
-      case ChartRange.month:
-        return '1M';
-      case ChartRange.year:
-        return '1Y';
-      case ChartRange.all:
-        return 'ALL';
-    }
   }
 }

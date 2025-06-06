@@ -15,11 +15,10 @@ class HistoryRepositoryImpl implements HistoryRepository {
   Future<List<Point>> getHistory({
     required ChartRange range,
     required List<Investment> investments,
+    required Map<String, double> spotPrices, // 👈 nuevo
   }) async {
-    // Abrimos la caja que contiene todos los historiales guardados
     final historyBox = await Hive.openBox<LocalHistory>('history');
 
-    // Función auxiliar para truncar fecha al minuto (descartar segundos y ms)
     DateTime redondearAlMinuto(DateTime original) {
       return DateTime(
         original.year,
@@ -30,16 +29,8 @@ class HistoryRepositoryImpl implements HistoryRepository {
       );
     }
 
-    // 1. Construir clave de rango: mismas claves que antes pero usando ChartRange
-    final rangeKey = switch (range) {
-      ChartRange.day => '1D',
-      ChartRange.week => '1W',
-      ChartRange.month => '1M',
-      ChartRange.year => '1Y',
-      ChartRange.all => 'ALL',
-    };
+    const rangeKey = 'ALL';
 
-    // 2. Recoger todos los timestamps “minutales” y los historiales individuales
     final Set<DateTime> allTimestamps = {};
     final Map<String, LocalHistory> historiesPorAsset = {};
 
@@ -55,16 +46,14 @@ class HistoryRepositoryImpl implements HistoryRepository {
       }
     }
 
-    if (allTimestamps.isEmpty) {
-      return [];
-    }
+    if (allTimestamps.isEmpty) return [];
 
-    // 3. Ordenar cronológicamente todos los timestamps-minuto
     final sortedTimestamps = allTimestamps.toList()
       ..sort((a, b) => a.compareTo(b));
 
-    // 4. Para cada timestamp-minuto, sumar el valor de todos los activos
     final List<Point> resultado = [];
+    bool hasInversion = false;
+    DateTime? nextTargetDate;
 
     for (final timestampMin in sortedTimestamps) {
       double totalEnTimestamp = 0.0;
@@ -79,7 +68,6 @@ class HistoryRepositoryImpl implements HistoryRepository {
         final hist = historiesPorAsset[inv.symbol];
         if (hist == null) continue;
 
-        // Buscar el precio más reciente <= timestampMin
         double precio = 0.0;
         for (int i = hist.points.length - 1; i >= 0; i--) {
           final pt = hist.points[i];
@@ -93,7 +81,43 @@ class HistoryRepositoryImpl implements HistoryRepository {
         totalEnTimestamp += precio * cantidad;
       }
 
+      if (!hasInversion) {
+        if (totalEnTimestamp <= 0) continue;
+        hasInversion = true;
+        resultado.add(Point(time: timestampMin, value: totalEnTimestamp));
+
+        final weekday = timestampMin.weekday;
+        final daysUntilNextMonday = weekday == DateTime.monday ? 7 : (8 - weekday);
+        nextTargetDate = DateTime(timestampMin.year, timestampMin.month, timestampMin.day)
+            .add(Duration(days: daysUntilNextMonday));
+        continue;
+      }
+
+      if (timestampMin.isBefore(nextTargetDate!)) continue;
+
       resultado.add(Point(time: timestampMin, value: totalEnTimestamp));
+      nextTargetDate = timestampMin.add(const Duration(days: 7));
+    }
+
+    // ✅ Añadir punto actual con spotPrices
+    final DateTime ahora = DateTime.now();
+    double totalHoy = 0.0;
+
+    for (final inv in investments) {
+      final cantidad = inv.operations
+          .where((op) => !op.date.isAfter(ahora))
+          .fold<double>(0.0, (sum, op) => sum + op.quantity);
+
+      if (cantidad <= 0) continue;
+
+      final precio = spotPrices[inv.symbol];
+      if (precio != null) {
+        totalHoy += precio * cantidad;
+      }
+    }
+
+    if (totalHoy > 0) {
+      resultado.add(Point(time: ahora, value: totalHoy));
     }
 
     return resultado;
@@ -104,45 +128,31 @@ class HistoryRepositoryImpl implements HistoryRepository {
     required ChartRange range,
     required List<Investment> investments,
   }) async {
-    // Abrimos la caja donde almacenaremos LocalHistory
     final historyBox = await Hive.openBox<LocalHistory>('history');
+    const rangeKey = 'ALL';
 
-    final rangeKey = switch (range) {
-      ChartRange.day => '1D',
-      ChartRange.week => '1W',
-      ChartRange.month => '1M',
-      ChartRange.year => '1Y',
-      ChartRange.all => 'ALL',
-    };
-
-    // Para cada inversión, verificamos si ya existe el histórico; si no, lo descargamos
     for (final inv in investments) {
       final key = '${inv.symbol}_$rangeKey';
       final yaExiste = historyBox.containsKey(key);
       if (!yaExiste) {
-        // Pedimos los datos crudos de CryptoCompare (lista de mapas)
-        final raw = await _service.getHourlyHistory(
+        final raw = await _service.getFullHistoday(
           inv.symbol,
           currency: 'USD',
-          limit: _mapRangeToLimit(range),
         );
 
         if (raw.isNotEmpty) {
-          // Convertir la lista de mapas a List<Point>
-          final points = raw.map((e) {
-            final date =
-            DateTime.fromMillisecondsSinceEpoch((e['time'] as num).toInt() * 1000);
+          final rawPoints = raw.map((e) {
+            final date = DateTime.fromMillisecondsSinceEpoch((e['time'] as num).toInt() * 1000);
             final price = (e['close'] as num?)?.toDouble() ?? 0.0;
             return Point(time: date, value: price);
           }).toList();
 
-          // Ordenar por fecha ascendente por si acaso
-          points.sort((a, b) => a.time.compareTo(b.time));
+          rawPoints.sort((a, b) => a.time.compareTo(b.time));
 
           final hist = LocalHistory(
-            from: points.first.time,
-            to: points.last.time,
-            points: points,
+            from: rawPoints.first.time,
+            to: rawPoints.last.time,
+            points: rawPoints,
           );
 
           await historyBox.put(key, hist);
@@ -150,22 +160,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
       }
     }
 
-    // Finalmente, devolvemos el histórico “portfolio” ya combinado:
-    return getHistory(range: range, investments: investments);
-  }
-
-  int _mapRangeToLimit(ChartRange range) {
-    switch (range) {
-      case ChartRange.day:
-        return 24;
-      case ChartRange.week:
-        return 7 * 24;
-      case ChartRange.month:
-        return 30 * 24;
-      case ChartRange.year:
-        return 365 * 24;
-      case ChartRange.all:
-        return 2000; // Aproximado para histórico completo
-    }
+    // No se puede añadir el último punto en vivo aquí porque aún no tenemos spotPrices
+    return getHistory(range: range, investments: investments, spotPrices: {});
   }
 }

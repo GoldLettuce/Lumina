@@ -9,7 +9,6 @@ import '../widgets/add_investment_dialog.dart';
 import '../../data/models/investment_model.dart';
 import '../widgets/portfolio_summary_with_chart.dart';
 import '../providers/chart_value_provider.dart';
-import '../../core/chart_range.dart';
 
 class PortfolioSummaryMinimal extends StatelessWidget {
   const PortfolioSummaryMinimal({super.key});
@@ -39,7 +38,6 @@ class PortfolioSummaryMinimal extends StatelessWidget {
     final model = context.watch<InvestmentModel>();
     final chartProvider = context.watch<ChartValueProvider>();
 
-    // Se calcula valor actual leyendo precios por símbolo
     final valorActual = model.investments.fold(0.0, (sum, inv) {
       final price = chartProvider.getPriceFor(inv.symbol) ?? 0;
       return sum + (inv.totalQuantity * price);
@@ -49,9 +47,7 @@ class PortfolioSummaryMinimal extends StatelessWidget {
 
     final rentabilidad = (model.totalInvertido == 0 || mostrarValor == 0)
         ? 0.0
-        : ((mostrarValor - model.totalInvertido) /
-        model.totalInvertido) *
-        100;
+        : ((mostrarValor - model.totalInvertido) / model.totalInvertido) * 100;
 
     final isPositivo = rentabilidad >= 0;
     final signo = isPositivo ? "+" : "-";
@@ -78,10 +74,8 @@ class PortfolioSummaryMinimal extends StatelessWidget {
       width: double.infinity,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final valorWidth =
-          _measureTextWidth(valorText, valorStyle, context);
-          final valorBaseline =
-          _measureBaseline(valorText, valorStyle);
+          final valorWidth = _measureTextWidth(valorText, valorStyle, context);
+          final valorBaseline = _measureBaseline(valorText, valorStyle);
           final percentBaseline = _measureBaseline(percentText, percentStyle);
           final centerX = constraints.maxWidth / 2;
           final valorLeft = centerX - valorWidth / 2;
@@ -118,15 +112,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   @override
   void initState() {
     super.initState();
-
-    // Cargar histórico tras primer frame
     Future.microtask(() {
       final model = context.read<InvestmentModel>();
       final chartProvider = context.read<ChartValueProvider>();
-      chartProvider.loadHistory(
-        ChartRange.month,
-        model.investments,
-      );
+      chartProvider.loadHistory(model.investments);
     });
   }
 
@@ -172,8 +161,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Text(
-                    AppLocalizations.of(context)
-                        ?.emptyPortfolioMessage ??
+                    AppLocalizations.of(context)?.emptyPortfolioMessage ??
                         'No tienes inversiones aún.\n¡Comienza añadiendo la primera!',
                     style: theme.textTheme.bodyLarge,
                     textAlign: TextAlign.center,
@@ -217,8 +205,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                           '€${valorActual.toStringAsFixed(2)}',
                           style: theme.textTheme.bodyLarge!
                               .copyWith(
-                              fontWeight:
-                              FontWeight.w600),
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),

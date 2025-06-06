@@ -10,34 +10,35 @@ import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/domain/repositories/price_repository.dart';
 import 'package:lumina/domain/repositories/history_repository.dart';
 
+/// Provider responsable de los datos del gráfico: precios spot + histórico.
 class ChartValueProvider extends ChangeNotifier {
-  // Ahora instanciamos PriceRepositoryImpl sin pasar ningún servicio externo
+  // ───────────────────────────────── Repositorios
   final PriceRepository _priceRepository = PriceRepositoryImpl();
-
   final HistoryRepository _historyRepository = HistoryRepositoryImpl();
 
-  // Conjunto de símbolos (por ejemplo: "BTC", "ETH", etc.) cuya cotización queremos mostrar
-  final Set<String> _visibleSymbols = {};
-  final Map<String, double> _spotPrices = {};
+  // ───────────────────────────────── Estado interno
+  final Set<String> _visibleSymbols = {};               // símbolos que queremos refrescar
+  final Map<String, double> _spotPrices = {};            // precios en vivo (spot)
+  List<Investment> _lastInvestments = [];                // última lista usada para poder refrescar
 
-  Timer? _timer;
+  Timer? _timer;                                        // auto‑refresh de precios
 
-  ChartRange _currentRange = ChartRange.day;
-  List<Point> _history = [];
+  final ChartRange _range = ChartRange.all;              // único rango activo
+  List<Point> _history = [];                             // puntos del gráfico
 
-  ChartRange get range => _currentRange;
+  // ───────────────────────────────── Getters públicos
+  ChartRange get range => _range;
   List<Point> get history => _history;
 
+  // ───────────────────────────────── Constructor
   ChartValueProvider() {
     _startAutoRefresh();
   }
 
+  // ───────────────────────────────── Timer precios
   void _startAutoRefresh() {
     _timer?.cancel();
-    // Cada 60 segundos actualizamos precios automáticamente
-    _timer = Timer.periodic(const Duration(seconds: 60), (_) {
-      updatePrices();
-    });
+    _timer = Timer.periodic(const Duration(seconds: 60), (_) => updatePrices());
   }
 
   @override
@@ -46,63 +47,66 @@ class ChartValueProvider extends ChangeNotifier {
     super.dispose();
   }
 
-  /// Establece el conjunto de símbolos visibles y dispara la actualización de precios
+  // ───────────────────────────────── Símbolos visibles
   void setVisibleSymbols(Set<String> symbols) {
     _visibleSymbols
       ..clear()
       ..addAll(symbols);
-    debugPrint('🟡 setVisibleSymbols() -> $_visibleSymbols');
     updatePrices();
   }
 
-  /// Actualiza los precios actuales de todos los símbolos en [_visibleSymbols]
+  // ───────────────────────────────── Actualizar precios spot
   Future<void> updatePrices() async {
-    debugPrint('🟡 updatePrices() llamado con símbolos: $_visibleSymbols');
+    if (_visibleSymbols.isEmpty) return;
     try {
-      final prices =
-      await _priceRepository.getPrices(_visibleSymbols, currency: 'USD');
+      final prices = await _priceRepository.getPrices(_visibleSymbols, currency: 'USD');
       _spotPrices
         ..clear()
         ..addAll(prices);
-      debugPrint('🟢 Precios recibidos desde CryptoCompare: $_spotPrices');
+
+      // Re‑construir histórico con estos precios si ya tenemos inversiones cargadas
+      if (_lastInvestments.isNotEmpty) {
+        _history = await _historyRepository.getHistory(
+          range: _range,
+          investments: _lastInvestments,
+          spotPrices: _spotPrices,
+        );
+      }
+
       notifyListeners();
     } catch (e) {
       debugPrint('❌ Error al actualizar precios: $e');
     }
   }
 
-  /// Devuelve el precio actual para un símbolo concreto (puede ser null si no está en caché)
   double? getPriceFor(String symbol) => _spotPrices[symbol];
 
-  /// Carga el histórico para un rango y lista de inversiones
-  Future<void> loadHistory(
-      ChartRange range,
-      List<Investment> investments,
-      ) async {
-    _currentRange = range;
+  // ───────────────────────────────── Cargar histórico completo
+  Future<void> loadHistory(List<Investment> investments) async {
+    _lastInvestments = investments; // guardamos para futuros refrescos
 
     try {
-      // 1. Mostrar datos locales inmediatamente
-      final local = await _historyRepository.getHistory(
-        range: range,
+      // 1️⃣ Histórico inmediato con los spotPrices actuales (pueden estar vacíos al inicio)
+      _history = await _historyRepository.getHistory(
+        range: _range,
+        investments: investments,
+        spotPrices: _spotPrices,
+      );
+      notifyListeners();
+
+      // 2️⃣ Descargar y guardar si falta histórico, luego reconstruir con spotPrices
+      await _historyRepository.downloadAndStoreIfNeeded(
+        range: _range,
         investments: investments,
       );
-      if (local.isNotEmpty) {
-        _history = local;
-        notifyListeners();
-      }
-
-      // 2. Luego intentar sincronizar en segundo plano y recargar
-      final updated = await _historyRepository.downloadAndStoreIfNeeded(
-        range: range,
+      _history = await _historyRepository.getHistory(
+        range: _range,
         investments: investments,
+        spotPrices: _spotPrices,
       );
-      if (updated.isNotEmpty) {
-        _history = updated;
-        notifyListeners();
-      }
+      notifyListeners();
 
-      // 3. Finalmente, actualizar precios spot de todos los símbolos de las inversiones
+      // 3️⃣ Asegurar que estamos pidiendo precios spot de todos los símbolos
       setVisibleSymbols(investments.map((inv) => inv.symbol).toSet());
     } catch (e) {
       debugPrint('❌ Error al cargar histórico: $e');

@@ -35,8 +35,6 @@
 
 ## FASE 5: Integración de Datos en Tiempo Real
 
-## FASE 5: Integración de Datos en Tiempo Real
-
 - [x] Integrar API de CoinGecko para obtener precios de criptos (usando modelo con `idCoinGecko`).
 - [ ] Integrar API de acciones/ETFs si es posible (AlphaVantage, Yahoo Finance, etc.).
 - [x] Selección dinámica de símbolo según tipo de activo.
@@ -46,7 +44,11 @@
 - [x] ✅ Implementado histórico del portafolio completo (valor agregado por minuto, con agrupamiento real).
   - [x] Todos los puntos del histórico se agrupan por minuto para evitar picos artificiales por timestamps diferentes.
 - [x] Uso de caché local de históricos en Hive para evitar peticiones innecesarias.
-- [ ] Recalcular histórico si se añaden operaciones anteriores al rango guardado.
+- [x] ✅ Recalcular histórico si se añaden operaciones anteriores al rango guardado.
+- [x] 🧠 Coordinación automática entre operaciones, histórico y gráfico tras cada cambio.
+- [x] 📊 Recalculo del histórico semanal a partir del primer día con inversión real.
+- [x] 🔁 Punto actual se actualiza cada 60s con los precios en vivo.
+- [x] ✅ Añadir automáticamente punto actual del día con precios en vivo.
 - [ ] Soporte offline: usar datos locales si no hay conexión.
 - [ ] ⚠️ Soporte para filtrar el gráfico por activo individual con tap largo. 👈 PENDIENTE
 - [x] 🔁 Sustituida API de CoinGecko por CryptoCompare (top 100 por market cap).
@@ -56,7 +58,6 @@
 - [x] ✏️ Campo de búsqueda sin bordes, sin placeholder y con icono de lupa único.
 - [x] 📈 Servicio `CryptoCompareHistoryService` funcional con endpoint corregido y parámetros validados.
 - [x] 💵 Servicio `CryptoComparePriceService` implementado para obtener precios en tiempo real desde CryptoCompare.
-
 
 ## FASE 6: Gestión y Edición de Operaciones
 
