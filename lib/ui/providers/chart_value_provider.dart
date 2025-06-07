@@ -97,12 +97,14 @@ class ChartValueProvider extends ChangeNotifier {
     final box = await Hive.openBox<ChartCache>('chart_cache');
     final cache = box.get('all');
 
+    bool huboCambios = false;
+
     if (cache != null) {
       _history = cache.history;
       _spotPrices
         ..clear()
         ..addAll(cache.spotPrices);
-      notifyListeners();
+      huboCambios = true;
     }
 
     if (_shouldUpdate()) {
@@ -119,13 +121,17 @@ class ChartValueProvider extends ChangeNotifier {
         );
 
         await _saveCache();
-        notifyListeners();
+        huboCambios = true;
       } catch (e) {
         debugPrint('❌ Error al cargar histórico: $e');
       }
     }
 
     setVisibleSymbols(investments.map((inv) => inv.symbol).toSet());
+
+    if (huboCambios) {
+      notifyListeners();
+    }
   }
 
   bool _shouldUpdate() {

@@ -76,6 +76,8 @@
 - [x] Añadir comprobación de si ya ha pasado una semana desde el último punto estático guardado.
   - Si no ha pasado, no se fuerza regeneración.
   - Si ha pasado, se añade nuevo punto y se recalcula el gráfico.
+- [x] Optimizado `loadHistory()` para evitar reconstrucciones dobles al abrir la app.
+  → Se agrupa el cambio de estado y se notifica solo una vez si hubo cambios.
 
 # 🧠 Estrategia de reconstrucción eficiente
 - [x] Implementar persistencia del último gráfico mostrado (incluye `history` y `spotPrices`).
