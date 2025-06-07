@@ -59,6 +59,33 @@
 - [x] 📈 Servicio `CryptoCompareHistoryService` funcional con endpoint corregido y parámetros validados.
 - [x] 💵 Servicio `CryptoComparePriceService` implementado para obtener precios en tiempo real desde CryptoCompare.
 
+## 🛠️ Mejoras de Rendimiento y Lógica del Gráfico (Junio 2025)
+
+# 🔧 Optimización de Renderizado
+- [x] El gráfico ya no se reconstruye cada vez que se toca o arrastra el dedo.  
+  → Ahora usamos `context.read()` en lugar de `context.watch()` para evitar rebuilds innecesarios.
+- [x] Eliminado el `ValueKey(spots)` en el widget del gráfico para evitar regeneración completa.
+- [x] Se separó el widget `_PortfolioChart` para aislar cambios solo a `history`.
+
+# ⚡ Precarga desde Hive (datos previos)
+- [x] Si el usuario ya había abierto la app, se muestra inmediatamente el histórico almacenado en Hive.
+- [x] Carga asincrónica de los precios en segundo plano sin bloquear la UI.
+
+# 🔁 Lógica de actualización del histórico
+- [x] Eliminado el cálculo repetido del histórico con cada movimiento táctil.
+- [ ] Añadir comprobación de si ya ha pasado una semana desde el último punto estático guardado.
+  - Si no ha pasado, no se fuerza regeneración.
+  - Si ha pasado, se añade nuevo punto y se recalcula el gráfico.
+
+# 🧠 Estrategia de reconstrucción eficiente
+- [x] Implementar persistencia del último gráfico mostrado (incluye `history` y `spotPrices`).
+- [x] Al abrir la app, se muestra inmediatamente el gráfico anterior.
+- [x] Se actualiza en segundo plano (si hay cambios) sin interferir al usuario.
+
+# 🧪 Pendiente de pruebas
+- [ ] Verificar comportamiento en dispositivos de gama baja (memoria y fluidez).
+- [ ] Validar que no se reconstruya más de una vez por segundo en casos extremos.
+
 ## FASE 6: Gestión y Edición de Operaciones
 
 - [x] `Investment` acepta múltiples operaciones (modelo reorganizado).
