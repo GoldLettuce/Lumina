@@ -54,8 +54,7 @@ class _PortfolioSummaryWithChartState
 
     debugPrint('📈 Puntos visibles en el gráfico: ${spots.length}');
 
-    final isPositive =
-    (spots.isNotEmpty && spots.first.y <= spots.last.y);
+    final isPositive = (spots.isNotEmpty && spots.first.y <= spots.last.y);
     final lineColor = isPositive ? AppColors.positive : AppColors.negative;
 
     return Column(
@@ -78,15 +77,24 @@ class _PortfolioSummaryWithChartState
                   : LineChart(
                 key: ValueKey(spots),
                 LineChartData(
+                  clipData: FlClipData(
+                    top: false,
+                    bottom: false,
+                    left: false,
+                    right: false,
+                  ),
                   lineTouchData: LineTouchData(
                     enabled: true,
                     touchTooltipData: LineTouchTooltipData(
+                      tooltipRoundedRadius: 8,
+                      tooltipMargin: 8,
+                      fitInsideHorizontally: true,
+                      fitInsideVertically: true,
                       getTooltipItems: (touchedSpots) {
                         return touchedSpots.map((spot) {
                           final point = history[spot.spotIndex];
                           final fecha = point.time;
-                          final locale =
-                          Localizations.localeOf(context)
+                          final locale = Localizations.localeOf(context)
                               .toString();
                           final fechaStr = DateFormat(
                             'd MMM yyyy',
