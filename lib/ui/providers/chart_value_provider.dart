@@ -1,5 +1,3 @@
-// lib/ui/providers/chart_value_provider.dart
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -65,16 +63,27 @@ class ChartValueProvider extends ChangeNotifier {
         ..clear()
         ..addAll(prices);
 
-      if (_lastInvestments.isNotEmpty) {
-        _history = await _historyRepository.getHistory(
-          range: _range,
-          investments: _lastInvestments,
-          spotPrices: _spotPrices,
+      if (_lastInvestments.isNotEmpty && _history.isNotEmpty) {
+        final newValue = await _historyRepository.calculateCurrentPortfolioValue(
+          _lastInvestments,
+          _spotPrices,
         );
-      }
 
-      await _saveCache(); // Guardar nueva combinación
-      notifyListeners();
+        final last = _history.last;
+        final diff = (newValue - last.value).abs();
+
+        print('📊 Último valor: ${last.value}, nuevo valor spot: $newValue');
+
+        if (diff > 0.01) {
+          final newPoint = Point(time: last.time, value: newValue);
+          _history[_history.length - 1] = newPoint;
+          await _saveCache();
+          print('✅ Punto final actualizado');
+          notifyListeners();
+        } else {
+          print('⏸️ No se actualiza el gráfico (valor casi igual)');
+        }
+      }
     } catch (e) {
       debugPrint('❌ Error al actualizar precios: $e');
     }
@@ -96,7 +105,6 @@ class ChartValueProvider extends ChangeNotifier {
       notifyListeners();
     }
 
-    // Revisar si hace falta actualizar (más de 7 días desde el último punto fijo)
     if (_shouldUpdate()) {
       try {
         await _historyRepository.downloadAndStoreIfNeeded(

@@ -1,5 +1,3 @@
-// lib/data/repositories_impl/history_repository_impl.dart
-
 import 'package:hive/hive.dart';
 import 'package:lumina/core/chart_range.dart';
 import 'package:lumina/core/point.dart';
@@ -15,7 +13,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
   Future<List<Point>> getHistory({
     required ChartRange range,
     required List<Investment> investments,
-    required Map<String, double> spotPrices, // 👈 nuevo
+    required Map<String, double> spotPrices,
   }) async {
     final historyBox = await Hive.openBox<LocalHistory>('history');
 
@@ -160,7 +158,30 @@ class HistoryRepositoryImpl implements HistoryRepository {
       }
     }
 
-    // No se puede añadir el último punto en vivo aquí porque aún no tenemos spotPrices
     return getHistory(range: range, investments: investments, spotPrices: {});
+  }
+
+  @override
+  Future<double> calculateCurrentPortfolioValue(
+      List<Investment> investments,
+      Map<String, double> spotPrices,
+      ) async {
+    final ahora = DateTime.now();
+    double total = 0.0;
+
+    for (final inv in investments) {
+      final cantidad = inv.operations
+          .where((op) => !op.date.isAfter(ahora))
+          .fold<double>(0.0, (sum, op) => sum + op.quantity);
+
+      if (cantidad <= 0) continue;
+
+      final precio = spotPrices[inv.symbol];
+      if (precio != null) {
+        total += precio * cantidad;
+      }
+    }
+
+    return total;
   }
 }

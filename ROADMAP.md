@@ -73,7 +73,7 @@
 
 # 🔁 Lógica de actualización del histórico
 - [x] Eliminado el cálculo repetido del histórico con cada movimiento táctil.
-- [ ] Añadir comprobación de si ya ha pasado una semana desde el último punto estático guardado.
+- [x] Añadir comprobación de si ya ha pasado una semana desde el último punto estático guardado.
   - Si no ha pasado, no se fuerza regeneración.
   - Si ha pasado, se añade nuevo punto y se recalcula el gráfico.
 
