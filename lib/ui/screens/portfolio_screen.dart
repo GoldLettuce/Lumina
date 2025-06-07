@@ -1,23 +1,24 @@
 // lib/ui/screens/portfolio_screen.dart
 
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../../domain/entities/investment.dart';
+import '../providers/chart_value_provider.dart';
 import '../widgets/add_investment_dialog.dart';
 import '../../data/models/investment_model.dart';
 import '../widgets/portfolio_summary_with_chart.dart';
-import '../providers/chart_value_provider.dart';
 
 class PortfolioSummaryMinimal extends StatelessWidget {
   const PortfolioSummaryMinimal({super.key});
 
-  double _measureTextWidth(
-      String text, TextStyle style, BuildContext context) {
+  double _measureTextWidth(String text, TextStyle style) {
     final tp = TextPainter(
       text: TextSpan(text: text, style: style),
-      textDirection: TextDirection.ltr,
+      textDirection: ui.TextDirection.ltr,
       maxLines: 1,
     )..layout();
     return tp.size.width;
@@ -26,36 +27,53 @@ class PortfolioSummaryMinimal extends StatelessWidget {
   double _measureBaseline(String text, TextStyle style) {
     final tp = TextPainter(
       text: TextSpan(text: text, style: style),
-      textDirection: TextDirection.ltr,
+      textDirection: ui.TextDirection.ltr,
       maxLines: 1,
     )..layout();
-    final lm = tp.computeLineMetrics();
-    return lm.first.baseline;
+    return tp.computeLineMetrics().first.baseline;
   }
 
   @override
   Widget build(BuildContext context) {
     final model = context.watch<InvestmentModel>();
     final chartProvider = context.watch<ChartValueProvider>();
+    final history = chartProvider.history;
 
-    final valorActual = model.investments.fold(0.0, (sum, inv) {
-      final price = chartProvider.getPriceFor(inv.symbol) ?? 0;
-      return sum + (inv.totalQuantity * price);
-    });
+    final hasSelection = chartProvider.selectedIndex != null;
 
-    final mostrarValor = valorActual;
+    // valor mostrado
+    final mostrarValor = hasSelection
+        ? chartProvider.selectedValue!
+        : model.investments.fold<double>(
+      0.0,
+          (sum, inv) =>
+      sum +
+          (chartProvider.getPriceFor(inv.symbol) ?? 0) *
+              inv.totalQuantity,
+    );
 
-    final rentabilidad = (model.totalInvertido == 0 || mostrarValor == 0)
+    // rentabilidad
+    final rentabilidad = hasSelection
+        ? chartProvider.selectedPct!
+        : (model.totalInvertido == 0 || mostrarValor == 0)
         ? 0.0
-        : ((mostrarValor - model.totalInvertido) / model.totalInvertido) * 100;
+        : ((mostrarValor - model.totalInvertido) /
+        model.totalInvertido) *
+        100;
 
-    final isPositivo = rentabilidad >= 0;
-    final signo = isPositivo ? "+" : "-";
-    final colorRent = isPositivo ? Colors.green : Colors.red;
+    // fecha (solo cuando hay selección)
+    final dateText = hasSelection
+        ? DateFormat(
+        'd MMM yyyy', Localizations.localeOf(context).toString())
+        .format(chartProvider.selectedDate!)
+        : '';
 
+    // textos
     final valorText = '€${mostrarValor.toStringAsFixed(2)}';
-    final percentText = '$signo${rentabilidad.abs().toStringAsFixed(2)}%';
+    final sign = rentabilidad >= 0 ? '+' : '-';
+    final percentText = '$sign${rentabilidad.abs().toStringAsFixed(2)}%';
 
+    // estilos
     const valorStyle = TextStyle(
       fontSize: 32,
       fontWeight: FontWeight.bold,
@@ -65,38 +83,58 @@ class PortfolioSummaryMinimal extends StatelessWidget {
     final percentStyle = TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.w600,
-      color: colorRent,
+      color: rentabilidad >= 0 ? Colors.green : Colors.red,
     );
     const spacing = 4.0;
 
-    return SizedBox(
-      height: 42,
-      width: double.infinity,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final valorWidth = _measureTextWidth(valorText, valorStyle, context);
-          final valorBaseline = _measureBaseline(valorText, valorStyle);
-          final percentBaseline = _measureBaseline(percentText, percentStyle);
-          final centerX = constraints.maxWidth / 2;
-          final valorLeft = centerX - valorWidth / 2;
-          final percentTop = valorBaseline - percentBaseline;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: 42,
+          width: double.infinity,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final valorWidth =
+              _measureTextWidth(valorText, valorStyle);
+              final valorBaseline =
+              _measureBaseline(valorText, valorStyle);
+              final percentBaseline =
+              _measureBaseline(percentText, percentStyle);
+              final centerX = constraints.maxWidth / 2;
+              final valorLeft = centerX - valorWidth / 2;
+              final percentTop = valorBaseline - percentBaseline;
 
-          return Stack(
-            children: [
-              Positioned(
-                left: valorLeft,
-                top: 0,
-                child: Text(valorText, style: valorStyle),
-              ),
-              Positioned(
-                left: valorLeft + valorWidth + spacing,
-                top: percentTop,
-                child: Text(percentText, style: percentStyle),
-              ),
-            ],
-          );
-        },
-      ),
+              return Stack(
+                children: [
+                  Positioned(
+                    left: valorLeft,
+                    top: 0,
+                    child: Text(valorText, style: valorStyle),
+                  ),
+                  Positioned(
+                    left: valorLeft + valorWidth + spacing,
+                    top: percentTop,
+                    child: Text(percentText, style: percentStyle),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 4),
+        // Opacity 0 cuando no hay selección (no desplaza el gráfico)
+        Opacity(
+          opacity: hasSelection ? 1.0 : 0.0,
+          child: Text(
+            dateText,
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall!
+                .copyWith(color: Colors.grey),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -112,10 +150,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   @override
   void initState() {
     super.initState();
+    // carga el histórico al iniciar
     Future.microtask(() {
-      final model = context.read<InvestmentModel>();
-      final chartProvider = context.read<ChartValueProvider>();
-      chartProvider.loadHistory(model.investments);
+      final inv = context.read<InvestmentModel>().investments;
+      context.read<ChartValueProvider>().loadHistory(inv);
     });
   }
 
@@ -131,6 +169,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final theme = Theme.of(context);
     final model = context.watch<InvestmentModel>();
     final investments = model.investments;
+    // ← ① Ahora escuchamos ChartValueProvider para reconstruir con precios
     final chartProvider = context.watch<ChartValueProvider>();
 
     return Scaffold(
@@ -161,7 +200,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Text(
-                    AppLocalizations.of(context)?.emptyPortfolioMessage ??
+                    AppLocalizations.of(context)
+                        ?.emptyPortfolioMessage ??
                         'No tienes inversiones aún.\n¡Comienza añadiendo la primera!',
                     style: theme.textTheme.bodyLarge,
                     textAlign: TextAlign.center,
@@ -174,6 +214,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     Divider(color: AppColors.border),
                 itemBuilder: (context, index) {
                   final asset = investments[index];
+                  // ← ② Usamos la instancia que está escuchando
                   final price =
                   chartProvider.getPriceFor(asset.symbol);
                   final valorActual = price != null
@@ -191,23 +232,16 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       '${AppLocalizations.of(context)?.quantity ?? ''}: ${asset.totalQuantity}',
                       style: theme.textTheme.bodyMedium,
                     ),
-                    trailing: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        valorActual == null
-                            ? Text(
-                          'Cargando...',
-                          style: theme.textTheme.bodyMedium
-                              ?.copyWith(color: Colors.grey),
-                        )
-                            : Text(
-                          '€${valorActual.toStringAsFixed(2)}',
-                          style: theme.textTheme.bodyLarge!
-                              .copyWith(
-                              fontWeight: FontWeight.w600),
-                        ),
-                      ],
+                    trailing: valorActual == null
+                        ? Text(
+                      'Cargando...',
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: Colors.grey),
+                    )
+                        : Text(
+                      '€${valorActual.toStringAsFixed(2)}',
+                      style: theme.textTheme.bodyLarge!
+                          .copyWith(fontWeight: FontWeight.w600),
                     ),
                   );
                 },

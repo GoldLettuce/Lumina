@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/chart_value_provider.dart';
 import '../../core/theme.dart';
-import 'package:lumina/core/chart_range.dart';
 import 'package:lumina/l10n/app_localizations.dart';
 import 'package:lumina/domain/entities/investment.dart';
 
@@ -48,13 +47,16 @@ class _PortfolioSummaryWithChartState
     final history = chartProvider.history;
     final loc = AppLocalizations.of(context);
 
-    final spots = history.asMap().entries.map((entry) {
-      return FlSpot(entry.key.toDouble(), entry.value.value);
-    }).toList();
+    // Construimos los puntos
+    final spots = history
+        .asMap()
+        .entries
+        .map((e) => FlSpot(e.key.toDouble(), e.value.value))
+        .toList();
 
     debugPrint('📈 Puntos visibles en el gráfico: ${spots.length}');
 
-    final isPositive = (spots.isNotEmpty && spots.first.y <= spots.last.y);
+    final isPositive = spots.isNotEmpty && spots.first.y <= spots.last.y;
     final lineColor = isPositive ? AppColors.positive : AppColors.negative;
 
     return Column(
@@ -63,10 +65,12 @@ class _PortfolioSummaryWithChartState
           SizedBox(
             height: 200,
             child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 400),
+              duration: Duration(milliseconds: 400),
+              // Aquí reemplazamos el fade por un cambio instantáneo sin transparencia:
+              transitionBuilder: (child, animation) => child,
               child: spots.length <= 1
                   ? Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: EdgeInsets.symmetric(vertical: 16),
                 child: Text(
                   loc?.notEnoughChartData ??
                       'No hay suficientes datos para mostrar el gráfico',
@@ -85,29 +89,29 @@ class _PortfolioSummaryWithChartState
                   ),
                   lineTouchData: LineTouchData(
                     enabled: true,
+                    handleBuiltInTouches: false,
+                    // 1️⃣ Desactivar tooltip
                     touchTooltipData: LineTouchTooltipData(
-                      tooltipRoundedRadius: 8,
-                      tooltipMargin: 8,
-                      fitInsideHorizontally: true,
-                      fitInsideVertically: true,
-                      getTooltipItems: (touchedSpots) {
-                        return touchedSpots.map((spot) {
-                          final point = history[spot.spotIndex];
-                          final fecha = point.time;
-                          final locale = Localizations.localeOf(context)
-                              .toString();
-                          final fechaStr = DateFormat(
-                            'd MMM yyyy',
-                            locale,
-                          ).format(fecha);
-
-                          return LineTooltipItem(
-                            '$fechaStr\n${spot.y.toStringAsFixed(2)} €',
-                            const TextStyle(color: Colors.white),
-                          );
-                        }).toList();
-                      },
+                      getTooltipItems: (_) => [],
                     ),
+                    // 2️⃣ Selección/arrastre y limpieza al soltar
+                    touchCallback:
+                        (FlTouchEvent event, LineTouchResponse? resp) {
+                      final isEnd = event is FlTapUpEvent ||
+                          event is FlTapCancelEvent ||
+                          event is FlLongPressEnd ||
+                          event is FlPanEndEvent;
+                      if (!isEnd) {
+                        final spot = resp?.lineBarSpots?.first;
+                        if (spot != null) {
+                          chartProvider.selectSpot(spot.spotIndex);
+                        }
+                      } else {
+                        chartProvider.clearSelection();
+                      }
+                    },
+                    // 3️⃣ Sin indicador visual
+                    getTouchedSpotIndicator: (_, __) => [],
                   ),
                   gridData: FlGridData(show: false),
                   titlesData: FlTitlesData(show: false),
@@ -128,7 +132,7 @@ class _PortfolioSummaryWithChartState
           )
         else
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: EdgeInsets.symmetric(vertical: 16),
             child: Text(
               loc?.notEnoughChartData ??
                   'No hay suficientes datos para mostrar el gráfico',
@@ -136,7 +140,7 @@ class _PortfolioSummaryWithChartState
               textAlign: TextAlign.center,
             ),
           ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
       ],
     );
   }

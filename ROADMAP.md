@@ -77,6 +77,7 @@
 - [ ] Mejoras visuales (tipografía, iconos minimalistas, modo oscuro opcional).
 - [ ] Optimizaciones para rendimiento y tamaño de app (revisar dependencias y assets).
 - [ ] Internacionalización real (`en`, `es`) y textos bien gestionados.
+- [x] Animaciones de transición suaves (pantallas y gráficos).
 - [ ] Pantalla de ajustes básicos (idioma, moneda base, etc.).
 - [ ] Autenticación con Apple ID (y Google opcional).
 - [ ] Animaciones de transición suaves (pantallas y gráficos).

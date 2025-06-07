@@ -10,41 +10,70 @@ import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/domain/repositories/price_repository.dart';
 import 'package:lumina/domain/repositories/history_repository.dart';
 
-/// Provider responsable de los datos del gráfico: precios spot + histórico.
+/// Provider responsable de los datos del gráfico: precios spot + histórico,
+/// y selección de un punto para actualizar la cabecera.
 class ChartValueProvider extends ChangeNotifier {
   // ───────────────────────────────── Repositorios
   final PriceRepository _priceRepository = PriceRepositoryImpl();
   final HistoryRepository _historyRepository = HistoryRepositoryImpl();
 
   // ───────────────────────────────── Estado interno
-  final Set<String> _visibleSymbols = {};               // símbolos que queremos refrescar
-  final Map<String, double> _spotPrices = {};            // precios en vivo (spot)
-  List<Investment> _lastInvestments = [];                // última lista usada para poder refrescar
+  final Set<String> _visibleSymbols = {};
+  final Map<String, double> _spotPrices = {};
+  List<Investment> _lastInvestments = [];
+  Timer? _timer;
 
-  Timer? _timer;                                        // auto‑refresh de precios
+  final ChartRange _range = ChartRange.all;
+  List<Point> _history = [];
 
-  final ChartRange _range = ChartRange.all;              // único rango activo
-  List<Point> _history = [];                             // puntos del gráfico
+  // ───────────────────────────────── Selección de punto
+  int? _selectedIndex;
 
   // ───────────────────────────────── Getters públicos
   ChartRange get range => _range;
   List<Point> get history => _history;
+
+  /// Índice del punto seleccionado, o null si no hay ninguno.
+  int? get selectedIndex => _selectedIndex;
+
+  /// Valor (y) del punto seleccionado, o null.
+  double? get selectedValue =>
+      (_selectedIndex != null && _history.isNotEmpty)
+          ? _history[_selectedIndex!].value
+          : null;
+
+  /// Fecha (time) del punto seleccionado, o null.
+  DateTime? get selectedDate =>
+      (_selectedIndex != null && _history.isNotEmpty)
+          ? _history[_selectedIndex!].time
+          : null;
+
+  /// Rentabilidad desde el primer punto hasta el seleccionado, en %.
+  double? get selectedPct =>
+      (_selectedIndex != null && _history.length > 1)
+          ? (_history[_selectedIndex!].value - _history.first.value) /
+          _history.first.value *
+          100
+          : null;
 
   // ───────────────────────────────── Constructor
   ChartValueProvider() {
     _startAutoRefresh();
   }
 
-  // ───────────────────────────────── Timer precios
-  void _startAutoRefresh() {
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 60), (_) => updatePrices());
-  }
-
   @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
+  }
+
+  // ───────────────────────────────── Auto-refresh de precios
+  void _startAutoRefresh() {
+    _timer?.cancel();
+    _timer = Timer.periodic(
+      const Duration(seconds: 60),
+          (_) => updatePrices(),
+    );
   }
 
   // ───────────────────────────────── Símbolos visibles
@@ -59,12 +88,15 @@ class ChartValueProvider extends ChangeNotifier {
   Future<void> updatePrices() async {
     if (_visibleSymbols.isEmpty) return;
     try {
-      final prices = await _priceRepository.getPrices(_visibleSymbols, currency: 'USD');
+      final prices = await _priceRepository.getPrices(
+        _visibleSymbols,
+        currency: 'USD',
+      );
       _spotPrices
         ..clear()
         ..addAll(prices);
 
-      // Re‑construir histórico con estos precios si ya tenemos inversiones cargadas
+      // Reconstruir histórico si ya lo teníamos cargado
       if (_lastInvestments.isNotEmpty) {
         _history = await _historyRepository.getHistory(
           range: _range,
@@ -83,10 +115,10 @@ class ChartValueProvider extends ChangeNotifier {
 
   // ───────────────────────────────── Cargar histórico completo
   Future<void> loadHistory(List<Investment> investments) async {
-    _lastInvestments = investments; // guardamos para futuros refrescos
+    _lastInvestments = investments;
 
     try {
-      // 1️⃣ Histórico inmediato con los spotPrices actuales (pueden estar vacíos al inicio)
+      // 1️⃣ Carga inicial con los spotPrices actuales
       _history = await _historyRepository.getHistory(
         range: _range,
         investments: investments,
@@ -94,7 +126,7 @@ class ChartValueProvider extends ChangeNotifier {
       );
       notifyListeners();
 
-      // 2️⃣ Descargar y guardar si falta histórico, luego reconstruir con spotPrices
+      // 2️⃣ Descargar y almacenar datos faltantes
       await _historyRepository.downloadAndStoreIfNeeded(
         range: _range,
         investments: investments,
@@ -106,10 +138,27 @@ class ChartValueProvider extends ChangeNotifier {
       );
       notifyListeners();
 
-      // 3️⃣ Asegurar que estamos pidiendo precios spot de todos los símbolos
+      // 3️⃣ Asegurar precios en vivo de todos los símbolos
       setVisibleSymbols(investments.map((inv) => inv.symbol).toSet());
     } catch (e) {
       debugPrint('❌ Error al cargar histórico: $e');
+    }
+  }
+
+  // ───────────────────────────────── Selección de punto
+  /// Marca un punto como seleccionado y notifica.
+  void selectSpot(int index) {
+    if (_selectedIndex != index) {
+      _selectedIndex = index;
+      notifyListeners();
+    }
+  }
+
+  /// Limpia la selección (vuelve al estado global).
+  void clearSelection() {
+    if (_selectedIndex != null) {
+      _selectedIndex = null;
+      notifyListeners();
     }
   }
 }
