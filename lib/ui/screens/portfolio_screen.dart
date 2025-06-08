@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
-import '../../domain/entities/investment.dart';
+import 'package:lumina/domain/entities/investment.dart';
 import '../providers/chart_value_provider.dart';
 import '../widgets/add_investment_dialog.dart';
 import '../../data/models/investment_model.dart';
@@ -37,43 +37,38 @@ class PortfolioSummaryMinimal extends StatelessWidget {
   Widget build(BuildContext context) {
     final model = context.watch<InvestmentModel>();
     final chartProvider = context.watch<ChartValueProvider>();
-    final history = chartProvider.history;
+    final history = chartProvider.displayHistory;
 
     final hasSelection = chartProvider.selectedIndex != null;
 
-    // valor mostrado
-    final mostrarValor = hasSelection
+    // Valor actual: o bien el punto seleccionado, o bien el último punto de displayHistory
+    final currentValue = hasSelection
         ? chartProvider.selectedValue!
-        : model.investments.fold<double>(
-      0.0,
-          (sum, inv) =>
-      sum +
-          (chartProvider.getPriceFor(inv.symbol) ?? 0) *
-              inv.totalQuantity,
-    );
+        : (history.isNotEmpty ? history.last.value : 0.0);
 
-    // rentabilidad
+    // Valor inicial: primer punto de displayHistory
+    final initialValue = history.isNotEmpty ? history.first.value : 0.0;
+
+    // Rentabilidad: si hay selección, usamos selectedPct,
+    // si no, (current - initial)/initial
     final rentabilidad = hasSelection
         ? chartProvider.selectedPct!
-        : (model.totalInvertido == 0 || mostrarValor == 0)
+        : (initialValue == 0.0
         ? 0.0
-        : ((mostrarValor - model.totalInvertido) /
-        model.totalInvertido) *
-        100;
+        : (currentValue - initialValue) / initialValue * 100);
 
-    // fecha (solo cuando hay selección)
+    // Fecha: solo si hay selección
     final dateText = hasSelection
-        ? DateFormat(
-        'd MMM yyyy', Localizations.localeOf(context).toString())
+        ? DateFormat('d MMM yyyy', Localizations.localeOf(context).toString())
         .format(chartProvider.selectedDate!)
         : '';
 
-    // textos
-    final valorText = '€${mostrarValor.toStringAsFixed(2)}';
+    // Textos
+    final valorText = '€${currentValue.toStringAsFixed(2)}';
     final sign = rentabilidad >= 0 ? '+' : '-';
     final percentText = '$sign${rentabilidad.abs().toStringAsFixed(2)}%';
 
-    // estilos
+    // Estilos
     const valorStyle = TextStyle(
       fontSize: 32,
       fontWeight: FontWeight.bold,
@@ -95,8 +90,7 @@ class PortfolioSummaryMinimal extends StatelessWidget {
           width: double.infinity,
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final valorWidth =
-              _measureTextWidth(valorText, valorStyle);
+              final valorWidth = _measureTextWidth(valorText, valorStyle);
               final valorBaseline =
               _measureBaseline(valorText, valorStyle);
               final percentBaseline =
@@ -123,7 +117,6 @@ class PortfolioSummaryMinimal extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        // Opacity 0 cuando no hay selección (no desplaza el gráfico)
         Opacity(
           opacity: hasSelection ? 1.0 : 0.0,
           child: Text(
@@ -153,7 +146,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     // carga el histórico al iniciar
     Future.microtask(() {
       final inv = context.read<InvestmentModel>().investments;
-      context.read<ChartValueProvider>().loadHistory(inv);
+      context.read<ChartValueProvider>().forceRebuildAndReload(inv);
     });
   }
 
@@ -169,7 +162,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final theme = Theme.of(context);
     final model = context.watch<InvestmentModel>();
     final investments = model.investments;
-    // ← ① Ahora escuchamos ChartValueProvider para reconstruir con precios
     final chartProvider = context.watch<ChartValueProvider>();
 
     return Scaffold(
@@ -214,9 +206,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     Divider(color: AppColors.border),
                 itemBuilder: (context, index) {
                   final asset = investments[index];
-                  // ← ② Usamos la instancia que está escuchando
-                  final price =
-                  chartProvider.getPriceFor(asset.symbol);
+                  final price = chartProvider.getPriceFor(asset.symbol);
                   final valorActual = price != null
                       ? asset.totalQuantity * price
                       : null;

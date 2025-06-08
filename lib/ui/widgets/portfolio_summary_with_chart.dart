@@ -10,7 +10,7 @@ import '../../core/theme.dart';
 import 'package:lumina/l10n/app_localizations.dart';
 import 'package:lumina/domain/entities/investment.dart';
 
-/// Contenedor general: inicializa el histórico, agrupa header + gráfico.
+/// Contenedor general: inicializa símbolos y fuerza la recarga.
 class PortfolioSummaryWithChart extends StatefulWidget {
   final List<Investment> investments;
   const PortfolioSummaryWithChart({Key? key, required this.investments})
@@ -34,7 +34,7 @@ class _PortfolioSummaryWithChartState
       if (symbols.isNotEmpty) {
         final chartProvider = context.read<ChartValueProvider>();
         chartProvider.setVisibleSymbols(symbols);
-        chartProvider.loadHistory(widget.investments);
+        chartProvider.forceRebuildAndReload(widget.investments);
       }
     });
   }
@@ -42,27 +42,26 @@ class _PortfolioSummaryWithChartState
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [
-        const _PortfolioChart(), // gráfico puro
-        const SizedBox(height: 12),
+      children: const [
+        _PortfolioChart(),
+        SizedBox(height: 12),
       ],
     );
   }
 }
 
-/// Widget hijo que solo escucha cambios en `history`.
-/// Al estar construido como `const`, no se reconstruye cuando cambia la selección.
+/// Widget puro que escucha sólo `displayHistory`.
 class _PortfolioChart extends StatelessWidget {
   const _PortfolioChart();
 
   @override
   Widget build(BuildContext context) {
-    // 1️⃣ Solo escuchamos history (no selectedIndex)
+    // 1️⃣ Escuchamos displayHistory, que incluye el punto de hoy.
     final history = context.select<ChartValueProvider, List<Point>>(
-          (p) => p.history,
+          (p) => p.displayHistory,
     );
 
-    // 2️⃣ Para selección de toques, leemos el provider sin suscribirnos
+    // 2️⃣ Para la selección usamos read (sin re-reconstruir el widget).
     final chartProvider = context.read<ChartValueProvider>();
     final loc = AppLocalizations.of(context);
 
@@ -72,7 +71,6 @@ class _PortfolioChart extends StatelessWidget {
         .map((e) => FlSpot(e.key.toDouble(), e.value.value))
         .toList();
 
-    // 📈 Log de reconstrucciones y tamaño de lista
     debugPrint('📈 Puntos visibles en el gráfico: ${spots.length}');
 
     if (spots.isEmpty) {
@@ -97,7 +95,6 @@ class _PortfolioChart extends StatelessWidget {
       child: LineChart(
         LineChartData(
           clipData: FlClipData(top: false, bottom: false, left: false, right: false),
-
           lineTouchData: LineTouchData(
             enabled: true,
             handleBuiltInTouches: false,
@@ -109,18 +106,18 @@ class _PortfolioChart extends StatelessWidget {
                   event is FlPanEndEvent;
               if (!isEnd) {
                 final spot = resp?.lineBarSpots?.first;
-                if (spot != null) chartProvider.selectSpot(spot.spotIndex);
+                if (spot != null) {
+                  chartProvider.selectSpot(spot.spotIndex);
+                }
               } else {
                 chartProvider.clearSelection();
               }
             },
             getTouchedSpotIndicator: (_, __) => [],
           ),
-
           gridData: FlGridData(show: false),
           titlesData: FlTitlesData(show: false),
           borderData: FlBorderData(show: false),
-
           lineBarsData: [
             LineChartBarData(
               spots: spots,

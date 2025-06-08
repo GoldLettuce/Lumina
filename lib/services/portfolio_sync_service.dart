@@ -35,7 +35,8 @@ Future<void> addOperationAndSync({
     scheduleHistoryRebuildIfNeeded();
   }
 
-  await chartProvider.loadHistory(model.investments);
+  // Forzar reconstrucción total tras cualquier cambio
+  await chartProvider.forceRebuildAndReload(model.investments);
 }
 
 /// Editar operación existente
@@ -68,7 +69,8 @@ Future<void> editOperationAndSync({
     scheduleHistoryRebuildIfNeeded();
   }
 
-  await chartProvider.loadHistory(model.investments);
+  // Forzar reconstrucción total tras cualquier cambio
+  await chartProvider.forceRebuildAndReload(model.investments);
 }
 
 /// Eliminar operación
@@ -111,7 +113,8 @@ Future<void> deleteOperationAndSync({
     }
   }
 
-  await chartProvider.loadHistory(model.investments);
+  // Forzar reconstrucción total tras cualquier cambio
+  await chartProvider.forceRebuildAndReload(model.investments);
 }
 
 /// Eliminar activo completo
@@ -127,5 +130,6 @@ Future<void> deleteInvestmentAndSync({
   await historyBox.delete('${symbol}_ALL');
 
   await model.load();
-  await chartProvider.loadHistory(model.investments);
+  // Forzar reconstrucción total tras cualquier cambio
+  await chartProvider.forceRebuildAndReload(model.investments);
 }
