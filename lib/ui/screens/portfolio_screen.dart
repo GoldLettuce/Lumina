@@ -11,6 +11,7 @@ import '../providers/chart_value_provider.dart';
 import '../widgets/add_investment_dialog.dart';
 import '../../data/models/investment_model.dart';
 import '../widgets/portfolio_summary_with_chart.dart';
+import 'asset_detail_screen.dart'; // 📈 NUEVO
 
 class PortfolioSummaryMinimal extends StatelessWidget {
   const PortfolioSummaryMinimal({super.key});
@@ -41,34 +42,27 @@ class PortfolioSummaryMinimal extends StatelessWidget {
 
     final hasSelection = chartProvider.selectedIndex != null;
 
-    // Valor actual: o bien el punto seleccionado, o bien el último punto de displayHistory
     final currentValue = hasSelection
         ? chartProvider.selectedValue!
         : (history.isNotEmpty ? history.last.value : 0.0);
 
-    // Valor inicial: primer punto de displayHistory
     final initialValue = history.isNotEmpty ? history.first.value : 0.0;
 
-    // Rentabilidad: si hay selección, usamos selectedPct,
-    // si no, (current - initial)/initial
     final rentabilidad = hasSelection
         ? chartProvider.selectedPct!
         : (initialValue == 0.0
         ? 0.0
         : (currentValue - initialValue) / initialValue * 100);
 
-    // Fecha: solo si hay selección
     final dateText = hasSelection
         ? DateFormat('d MMM yyyy', Localizations.localeOf(context).toString())
         .format(chartProvider.selectedDate!)
         : '';
 
-    // Textos
     final valorText = '€${currentValue.toStringAsFixed(2)}';
     final sign = rentabilidad >= 0 ? '+' : '-';
     final percentText = '$sign${rentabilidad.abs().toStringAsFixed(2)}%';
 
-    // Estilos
     const valorStyle = TextStyle(
       fontSize: 32,
       fontWeight: FontWeight.bold,
@@ -91,10 +85,8 @@ class PortfolioSummaryMinimal extends StatelessWidget {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final valorWidth = _measureTextWidth(valorText, valorStyle);
-              final valorBaseline =
-              _measureBaseline(valorText, valorStyle);
-              final percentBaseline =
-              _measureBaseline(percentText, percentStyle);
+              final valorBaseline = _measureBaseline(valorText, valorStyle);
+              final percentBaseline = _measureBaseline(percentText, percentStyle);
               final centerX = constraints.maxWidth / 2;
               final valorLeft = centerX - valorWidth / 2;
               final percentTop = valorBaseline - percentBaseline;
@@ -143,10 +135,11 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   @override
   void initState() {
     super.initState();
-    // carga el histórico al iniciar
     Future.microtask(() {
       final inv = context.read<InvestmentModel>().investments;
-      context.read<ChartValueProvider>().forceRebuildAndReload(inv);
+      final provider = context.read<ChartValueProvider>();
+      provider.loadHistory(inv);
+      provider.setVisibleSymbols(inv.map((e) => e.symbol).toSet());
     });
   }
 
@@ -192,8 +185,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Text(
-                    AppLocalizations.of(context)
-                        ?.emptyPortfolioMessage ??
+                    AppLocalizations.of(context)?.emptyPortfolioMessage ??
                         'No tienes inversiones aún.\n¡Comienza añadiendo la primera!',
                     style: theme.textTheme.bodyLarge,
                     textAlign: TextAlign.center,
@@ -233,6 +225,15 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       style: theme.textTheme.bodyLarge!
                           .copyWith(fontWeight: FontWeight.w600),
                     ),
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AssetDetailScreen(asset: asset),
+                        ),
+                      );
+                      context.read<ChartValueProvider>().clearSelection(); // 🧼 limpia al volver
+                    },
                   );
                 },
               ),

@@ -29,6 +29,7 @@ Future<void> main() async {
   Hive.registerAdapter(PointAdapter());
   Hive.registerAdapter(LocalHistoryAdapter());
   Hive.registerAdapter(ChartCacheAdapter()); // ⬅️ Nuevo adaptador registrado
+  Hive.registerAdapter(OperationTypeAdapter());
 
   final investmentRepository = InvestmentRepositoryImpl();
   await investmentRepository.init();

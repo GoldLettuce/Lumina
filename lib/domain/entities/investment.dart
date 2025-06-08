@@ -4,6 +4,11 @@ import 'package:hive/hive.dart';
 
 part 'investment.g.dart';
 
+enum OperationType {
+  buy,
+  sell,
+}
+
 @HiveType(typeId: 0)
 class Investment extends HiveObject {
   @HiveField(0)
@@ -43,9 +48,28 @@ class InvestmentOperation {
   @HiveField(2)
   final DateTime date;
 
+  @HiveField(3)
+  final OperationType type; // NUEVO CAMPO
+
   InvestmentOperation({
     required this.quantity,
     required this.price,
     required this.date,
+    required this.type,
   });
+}
+
+class OperationTypeAdapter extends TypeAdapter<OperationType> {
+  @override
+  final int typeId = 6;
+
+  @override
+  OperationType read(BinaryReader reader) {
+    return OperationType.values[reader.readByte()];
+  }
+
+  @override
+  void write(BinaryWriter writer, OperationType obj) {
+    writer.writeByte(obj.index);
+  }
 }

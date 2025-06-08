@@ -17,6 +17,7 @@
 - [x] Definir repositorio abstracto `InvestmentRepository` en `domain/repositories`.
 - [x] Implementar repositorio concreto en `data/repositories_impl`.
 - [x] Crear caso de uso “añadir inversión” y “listar inversiones” en `domain/usecases`.
+- [x] Añadido campo `OperationType` al modelo de operación para distinguir compras y ventas.
 
 ## FASE 3: UI Básica y Funcionalidad Inicial
 
@@ -78,6 +79,7 @@
   - Si ha pasado, se añade nuevo punto y se recalcula el gráfico.
 - [x] Optimizado `loadHistory()` para evitar reconstrucciones dobles al abrir la app.
   → Se agrupa el cambio de estado y se notifica solo una vez si hubo cambios.
+- [x] Validación de duplicación del punto actual del día: evita que se agregue más de una vez si ya existe en el histórico.
 
 # 🧠 Estrategia de reconstrucción eficiente
 - [x] Implementar persistencia del último gráfico mostrado (incluye `history` y `spotPrices`).
@@ -91,12 +93,15 @@
 ## FASE 6: Gestión y Edición de Operaciones
 
 - [x] `Investment` acepta múltiples operaciones (modelo reorganizado).
-- [ ] Pantalla/modal con detalle de cada activo (listado de operaciones, compras/ventas).
+- [x] Pantalla/modal con detalle de cada activo (listado de operaciones, compras/ventas).
 - [ ] Permitir editar y eliminar operaciones.
 - [ ] Confirmación antes de borrar.
 - [ ] Visualización clara de todas las operaciones históricas.
-- [ ] Acceso al historial con tap sobre activo en la lista principal. 👈 NUEVO
+- [x] Acceso al historial con tap sobre activo en la lista principal. 👈 NUEVO
 - [ ] Filtrar gráfico por activo con tap largo sobre activo. 👈 NUEVO
+- [x] Soporte para registrar operaciones de compra y venta con distinción clara (OperationType). ✅
+- [x] Modal de añadir operación con soporte de tipo (compra/venta), validaciones completas y persistencia.
+
 
 ## FASE 7: Robustez y Experiencia Final
 

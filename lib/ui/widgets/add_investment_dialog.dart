@@ -21,7 +21,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   final _formKey = GlobalKey<FormState>();
 
   String? _type;
-  bool _isBuy = true;
+  OperationType? _operationType; // ✅ nuevo campo
   String? _symbol;
   DateTime? _selectedDate = DateTime.now();
   final _quantityController = TextEditingController();
@@ -80,14 +80,15 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       _formSubmitted = true;
     });
 
-    if (_formKey.currentState!.validate() && _type != null && _symbol != null && _selectedDate != null) {
+    if (_formKey.currentState!.validate() && _type != null && _symbol != null && _selectedDate != null && _operationType != null) {
       final quantity = double.parse(_quantityController.text.trim());
       final price = double.parse(_priceController.text.trim());
 
       final operation = InvestmentOperation(
-        quantity: _isBuy ? quantity : -quantity,
+        quantity: quantity,
         price: price,
         date: _selectedDate!,
+        type: _operationType!, // ✅ usar el nuevo campo
       );
 
       final model = context.read<InvestmentModel>();
@@ -107,6 +108,10 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
         chartProvider: chartProvider,
         model: model,
       );
+
+      // ✅ ACTUALIZA símbolos visibles tras añadir operación
+      final inv = model.investments;
+      chartProvider.setVisibleSymbols(inv.map((e) => e.symbol).toSet());
 
       Navigator.of(context).pop();
     }
@@ -167,6 +172,20 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                     _symbolTouched = false;
                   }),
                   validator: (val) => val == null ? (loc?.selectAssetType ?? 'Seleccione un tipo') : null,
+                ),
+                const SizedBox(height: 16),
+
+                DropdownButtonFormField<OperationType>(
+                  decoration: _inputDecoration('Tipo de operación'),
+                  value: _operationType,
+                  onChanged: (op) => setState(() => _operationType = op),
+                  items: OperationType.values.map((type) {
+                    return DropdownMenuItem(
+                      value: type,
+                      child: Text(type == OperationType.buy ? 'Compra' : 'Venta'),
+                    );
+                  }).toList(),
+                  validator: (val) => val == null ? 'Seleccione tipo de operación' : null,
                 ),
                 const SizedBox(height: 16),
 

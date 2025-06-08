@@ -104,7 +104,18 @@ class ChartValueProvider extends ChangeNotifier {
       );
 
       // 4️⃣ Crear/actualizar punto de hoy en memoria
-      _todayPoint = Point(time: DateTime.now(), value: newValue);
+      final now = DateTime.now();
+      final alreadyHasToday = _history.isNotEmpty &&
+          _history.last.time.year == now.year &&
+          _history.last.time.month == now.month &&
+          _history.last.time.day == now.day;
+
+      if (!alreadyHasToday) {
+        _todayPoint = Point(time: now, value: newValue);
+      } else {
+        _todayPoint = null;
+      }
+
 
       // 5️⃣ Notificar para redibujar con displayHistory
       notifyListeners();
