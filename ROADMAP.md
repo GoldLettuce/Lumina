@@ -109,6 +109,7 @@
 - [x] Modal de añadir operación con soporte de tipo (compra/venta), validaciones completas y persistencia.
 - [x] Separación de activos sin cantidad (>0) en pantalla dedicada de activos archivados. 👈 NUEVO
 - [x] Botón minimalista en la pantalla principal para acceder a activos ocultos. 👈 NUEVO
+- [x]  Ajustes visuales en el modal de compra/venta: unificación de estilos entre botones, aplicación de colores pastel (verde y mostaza), tipografía en negro, y mejoras en la accesibilidad del teclado.
 
 
 ## FASE 7: Robustez y Experiencia Final

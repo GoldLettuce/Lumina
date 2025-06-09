@@ -93,7 +93,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       fontWeight: FontWeight.w500,
     ),
     filled: true,
-    fillColor: Colors.grey[100],
+    fillColor: Colors.white,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide.none,
@@ -218,11 +218,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      'Tipo de operación',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
@@ -231,8 +226,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                                 setState(() => _operationType = OperationType.buy),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: _operationType == OperationType.buy
-                                  ? Colors.green[100]
-                                  : Colors.grey[100],
+                                  ? Colors.green[200]
+                                  : Colors.green[50],
                               foregroundColor: Colors.green[800],
                               elevation: 0,
                               shape: RoundedRectangleBorder(
@@ -245,13 +240,12 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: () => setState(
-                                    () => _operationType = OperationType.sell),
+                            onPressed: () => setState(() => _operationType = OperationType.sell),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: _operationType == OperationType.sell
-                                  ? Colors.red[100]
-                                  : Colors.grey[100],
-                              foregroundColor: Colors.red[800],
+                                  ? Colors.yellow[100] // pastel cuando está activo
+                                  : Colors.yellow[50],  // aún más claro cuando no está activo
+                              foregroundColor: Colors.amber[900], // texto fuerte
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -260,6 +254,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                             child: const Text('Venta'),
                           ),
                         ),
+
                       ],
                     ),
                     if (_formSubmitted && _operationType == null)
@@ -281,59 +276,41 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      loc?.symbol ?? 'Símbolo',
-                      style: TextStyle(
-                        color: Colors.grey[700],
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
                     InkWell(
                       onTap: () {
                         setState(() => _symbolTouched = true);
                         _selectSymbol();
                       },
                       borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: (_symbol == null && (_formSubmitted || _symbolTouched))
-                                ? Theme.of(context).colorScheme.error
-                                : Colors.transparent,
-                          ),
-                        ),
+                      highlightColor: Colors.grey[100],
+                      splashColor: Colors.transparent,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               _symbol ?? (loc?.selectSymbol ?? 'Selecciona un símbolo'),
                               style: TextStyle(
-                                color: _symbol == null ? Colors.black38 : Colors.black87,
-                                fontSize: 16,
+                                color: (_formSubmitted && (_symbol == null || _symbol!.isEmpty))
+                                    ? Theme.of(context).colorScheme.error
+                                    : Colors.black87,
+                                fontSize: 17,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            const Icon(Icons.arrow_drop_down, color: Colors.black54),
+                            Icon(
+                              Icons.chevron_right,
+                              size: 22,
+                              color: (_formSubmitted && (_symbol == null || _symbol!.isEmpty))
+                                  ? Theme.of(context).colorScheme.error
+                                  : Colors.black54,
+                            ),
                           ],
                         ),
                       ),
                     ),
-                    if ((_formSubmitted || _symbolTouched) && _symbol == null)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8, top: 4),
-                        child: Text(
-                          loc?.selectSymbol ?? 'Selecciona un símbolo',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
+
                   ],
                 ),
 
@@ -344,40 +321,36 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      loc?.date ?? 'Fecha',
-                      style: TextStyle(
-                        color: Colors.grey[700],
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15,
-                      ),
-                    ),
                     const SizedBox(height: 8),
                     InkWell(
                       onTap: _pickDate,
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        decoration: const BoxDecoration(), // sin color ni borde
+
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              dateText,
-                              style: const TextStyle(
-                                color: Colors.black87,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
+                            Row(
+                              children: [
+                                const Icon(Icons.calendar_today, size: 18, color: Colors.black54),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Fecha: $dateText',
+                                  style: const TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const Icon(Icons.calendar_today_outlined, color: Colors.black45, size: 20),
                           ],
                         ),
                       ),
                     ),
+
                   ],
                 ),
 
@@ -386,36 +359,44 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 // ── Cantidad ──
                 TextFormField(
                   controller: _quantityController,
-                  keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-                  decoration: _inputDecoration(loc?.quantity ?? 'Cantidad'),
-                  autovalidateMode: _quantityTouched || _formSubmitted
-                      ? AutovalidateMode.always
-                      : AutovalidateMode.disabled,
-                  validator: (val) {
-                    if (!_quantityTouched && !_formSubmitted) return null;
-                    if (val == null || val.isEmpty) {
-                      return loc?.fieldRequired ?? 'Campo obligatorio';
-                    }
-                    final n = double.tryParse(val);
-                    if (n == null || n <= 0) {
-                      return loc?.invalidQuantity ?? 'Cantidad inválida';
-                    }
-                    return null;
-                  },
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    labelText: loc?.quantity ?? "Cantidad",
+                    labelStyle: const TextStyle(
+                      color: Colors.black, // ← texto del label siempre negro
+                      fontWeight: FontWeight.w500,
+                    ),
+                    border: const UnderlineInputBorder(),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  style: const TextStyle(
+                    color: Colors.black, // ← texto introducido siempre negro
+                  ),
+                  autovalidateMode: AutovalidateMode.disabled,
+                  validator: (_) => null,
                   onChanged: (_) {
                     if (!_quantityTouched) setState(() => _quantityTouched = true);
                   },
                 ),
                 const SizedBox(height: 16),
 
+
                 // ── Precio ──
                 TextFormField(
                   controller: _priceController,
-                  keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-                  decoration:
-                  _inputDecoration(loc?.unitPrice ?? 'Precio unitario (€)'),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    labelText: loc?.unitPrice ?? 'Precio por unidad (€)',
+                    labelStyle: const TextStyle(
+                      color: Colors.black, // ← label siempre negro
+                      fontWeight: FontWeight.w500,
+                    ),
+                    border: const UnderlineInputBorder(),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  style: const TextStyle(
+                    color: Colors.black, // ← texto escrito siempre negro
+                  ),
                   autovalidateMode: _priceTouched || _formSubmitted
                       ? AutovalidateMode.always
                       : AutovalidateMode.disabled,
@@ -449,8 +430,27 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: _submit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _operationType == OperationType.buy
+                              ? Colors.green[200]
+                              : _operationType == OperationType.sell
+                              ? Colors.yellow[100] // ← amarillo más pastel
+                              : Colors.grey[200],
+                          foregroundColor: _operationType == OperationType.buy
+                              ? Colors.green[800]
+                              : _operationType == OperationType.sell
+                              ? Colors.amber[900] // Amarillo más fuerte para texto
+                              : Colors.black54,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: const StadiumBorder(),
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         child: Text(loc?.save ?? 'Guardar'),
                       ),
+
                     ),
                   ],
                 ),
