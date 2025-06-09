@@ -250,6 +250,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not enough data to display the chart'**
   String get notEnoughChartData;
+
+  /// No description provided for @archivedAssetsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived assets'**
+  String get archivedAssetsTitle;
+
+  /// No description provided for @noArchivedAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'No hidden assets found.'**
+  String get noArchivedAssets;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

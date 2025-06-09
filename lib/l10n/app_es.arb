@@ -25,6 +25,7 @@
   "sellAll": "Vender todo",
   "exceedQuantity": "Cantidad mayor que disponible",
   "searchAsset": "Buscar activo",
-  "notEnoughChartData": "No hay suficientes datos para mostrar el gráfico"
-
+  "notEnoughChartData": "No hay suficientes datos para mostrar el gráfico",
+  "archivedAssetsTitle": "Activos sin posiciones",
+  "noArchivedAssets": "No hay activos sin posición actualmente."
 }

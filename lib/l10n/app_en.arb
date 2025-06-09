@@ -25,5 +25,7 @@
   "sellAll": "Sell All",
   "exceedQuantity": "Quantity exceeds available",
   "searchAsset": "Search asset",
-  "notEnoughChartData": "Not enough data to display the chart"
+  "notEnoughChartData": "Not enough data to display the chart",
+  "archivedAssetsTitle": "Archived assets",
+  "noArchivedAssets": "No hidden assets found."
 }

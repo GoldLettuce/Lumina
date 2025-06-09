@@ -27,7 +27,11 @@ class Investment extends HiveObject {
   }) : operations = operations ?? [];
 
   double get totalQuantity =>
-      operations.fold(0.0, (sum, op) => sum + op.quantity);
+      operations.fold(0.0, (sum, op) {
+        return op.type == OperationType.buy
+            ? sum + op.quantity
+            : sum - op.quantity;
+      });
 
   double get totalInvested =>
       operations.fold(0.0, (sum, op) => sum + (op.quantity * op.price));

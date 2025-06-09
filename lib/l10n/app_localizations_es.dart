@@ -85,4 +85,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get notEnoughChartData => 'No hay suficientes datos para mostrar el gráfico';
+
+  @override
+  String get archivedAssetsTitle => 'Activos sin posiciones';
+
+  @override
+  String get noArchivedAssets => 'No hay activos sin posición actualmente.';
 }

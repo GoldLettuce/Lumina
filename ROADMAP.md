@@ -97,10 +97,13 @@
 - [ ] Permitir editar y eliminar operaciones.
 - [ ] Confirmación antes de borrar.
 - [ ] Visualización clara de todas las operaciones históricas.
-- [x] Acceso al historial con tap sobre activo en la lista principal. 👈 NUEVO
+- [x] Acceso al historial con tap sobre activo en la lista principal. 👈 NUEVO 
+- [x] Acceso al historial desde pantalla de activos ocultos (archivados). 👈 NUEVO
 - [ ] Filtrar gráfico por activo con tap largo sobre activo. 👈 NUEVO
 - [x] Soporte para registrar operaciones de compra y venta con distinción clara (OperationType). ✅
 - [x] Modal de añadir operación con soporte de tipo (compra/venta), validaciones completas y persistencia.
+- [x] Separación de activos sin cantidad (>0) en pantalla dedicada de activos archivados. 👈 NUEVO
+- [x] Botón minimalista en la pantalla principal para acceder a activos ocultos. 👈 NUEVO
 
 
 ## FASE 7: Robustez y Experiencia Final

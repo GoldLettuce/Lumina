@@ -11,7 +11,8 @@ import '../providers/chart_value_provider.dart';
 import '../widgets/add_investment_dialog.dart';
 import '../../data/models/investment_model.dart';
 import '../widgets/portfolio_summary_with_chart.dart';
-import 'asset_detail_screen.dart'; // 📈 NUEVO
+import 'asset_detail_screen.dart';
+import 'archived_assets_screen.dart'; // 👈 IMPORTACIÓN NUEVA
 
 class PortfolioSummaryMinimal extends StatelessWidget {
   const PortfolioSummaryMinimal({super.key});
@@ -154,7 +155,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final model = context.watch<InvestmentModel>();
-    final investments = model.investments;
+    final investments = model.investments.where((e) => e.totalQuantity > 0).toList();
     final chartProvider = context.watch<ChartValueProvider>();
 
     return Scaffold(
@@ -232,10 +233,30 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                           builder: (_) => AssetDetailScreen(asset: asset),
                         ),
                       );
-                      context.read<ChartValueProvider>().clearSelection(); // 🧼 limpia al volver
+                      context
+                          .read<ChartValueProvider>()
+                          .clearSelection();
                     },
                   );
                 },
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ArchivedAssetsScreen(),
+                  ),
+                );
+              },
+              child: Text(
+                AppLocalizations.of(context)?.archivedAssetsTitle ?? 'Activos sin posición',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey,
+                ),
               ),
             ),
           ],
