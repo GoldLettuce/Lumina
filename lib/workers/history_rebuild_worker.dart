@@ -7,7 +7,8 @@ import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/data/models/local_history.dart';
 import 'package:lumina/data/datasources/cryptocompare/cryptocompare_history_service.dart';
 import 'package:lumina/core/chart_range.dart';
-import 'package:lumina/data/repositories_impl/history_repository_impl.dart';
+import 'package:lumina/data/repositories_impl/history_repository_impl.dart';import 'package:lumina/domain/entities/asset_type.dart';
+
 
 class HistoryRebuildWorker {
   static const taskName = 'historyRebuild';
@@ -106,8 +107,12 @@ class HistoryRebuildWorker {
     required String currency,
   }) async {
     final historyRepo = HistoryRepositoryImpl();
-    final dummyInvestment = Investment(symbol: symbol, name: symbol, operations: []);
-
+    final dummyInvestment = Investment(
+      symbol: symbol,
+      name: symbol,
+      type: AssetType.crypto, // ✅ por defecto
+      operations: [],
+    );
     await historyRepo.downloadAndStoreIfNeeded(
       range: ChartRange.all,
       investments: [dummyInvestment],

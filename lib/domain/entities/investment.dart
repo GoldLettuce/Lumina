@@ -1,6 +1,7 @@
 // lib/domain/entities/investment.dart
 
 import 'package:hive/hive.dart';
+import 'asset_type.dart';
 
 part 'investment.g.dart';
 
@@ -20,9 +21,13 @@ class Investment extends HiveObject {
   @HiveField(2)
   final List<InvestmentOperation> operations;
 
+  @HiveField(3)
+  final AssetType type;
+
   Investment({
     required this.symbol,
     required this.name,
+    required this.type,
     List<InvestmentOperation>? operations,
   }) : operations = operations ?? [];
 
@@ -39,6 +44,18 @@ class Investment extends HiveObject {
   void addOperation(InvestmentOperation operation) {
     operations.add(operation);
   }
+
+  void updateOperation(int index, InvestmentOperation updatedOp) {
+    if (index >= 0 && index < operations.length) {
+      operations[index] = updatedOp;
+    }
+  }
+
+  void removeOperation(int index) {
+    if (index >= 0 && index < operations.length) {
+      operations.removeAt(index);
+    }
+  }
 }
 
 @HiveType(typeId: 1)
@@ -53,7 +70,7 @@ class InvestmentOperation {
   final DateTime date;
 
   @HiveField(3)
-  final OperationType type; // NUEVO CAMPO
+  final OperationType type;
 
   InvestmentOperation({
     required this.quantity,

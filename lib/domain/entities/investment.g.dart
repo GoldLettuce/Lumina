@@ -19,6 +19,7 @@ class InvestmentAdapter extends TypeAdapter<Investment> {
     return Investment(
       symbol: fields[0] as String,
       name: fields[1] as String,
+      type: fields[3] as AssetType,
       operations: (fields[2] as List?)?.cast<InvestmentOperation>(),
     );
   }
@@ -26,13 +27,15 @@ class InvestmentAdapter extends TypeAdapter<Investment> {
   @override
   void write(BinaryWriter writer, Investment obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.symbol)
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.operations);
+      ..write(obj.operations)
+      ..writeByte(3)
+      ..write(obj.type);
   }
 
   @override

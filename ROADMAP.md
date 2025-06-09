@@ -59,6 +59,11 @@
 - [x] ✏️ Campo de búsqueda sin bordes, sin placeholder y con icono de lupa único.
 - [x] 📈 Servicio `CryptoCompareHistoryService` funcional con endpoint corregido y parámetros validados.
 - [x] 💵 Servicio `CryptoComparePriceService` implementado para obtener precios en tiempo real desde CryptoCompare.
+- [x] Eliminado el texto "Cargando..." en la lista de activos si no hay precio aún. 
+- [x] Añadido AnimatedSwitcher para transiciones suaves al mostrar precios. 
+- [x] Se reserva espacio para evitar saltos visuales entre “cargando” y “valor”. 
+- [x] Estilo gráfico más fluido: se evita mostrar el gráfico si aún no hay histórico. 
+- [x] Punto actual (todayPoint) solo se añade si el histórico no lo contiene ya.
 
 ## 🛠️ Mejoras de Rendimiento y Lógica del Gráfico (Junio 2025)
 
@@ -118,6 +123,7 @@
 - [ ] Pantalla de ajustes básicos (idioma, moneda base, etc.).
 - [ ] Autenticación con Apple ID (y Google opcional).
 - [ ] Animaciones de transición suaves (pantallas y gráficos).
+- [x] Ocultado el texto "Cargando..." en la pantalla de selección de símbolos (AssetSelectorModal) si ya hay contenido previo.
 
 ## FASE 8: Publicación y Extras
 

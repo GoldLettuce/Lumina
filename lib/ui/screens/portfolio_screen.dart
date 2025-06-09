@@ -147,7 +147,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   Future<void> _openAddInvestmentDialog(BuildContext context) async {
     await showDialog(
       context: context,
-      builder: (_) => const AddInvestmentDialog(),
+      builder: (_) => AddInvestmentDialog(
+        allowAdvancedAssets: false, // o true si tienes lógica de API-Key
+      ),
+
     );
   }
 
@@ -215,17 +218,18 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       '${AppLocalizations.of(context)?.quantity ?? ''}: ${asset.totalQuantity}',
                       style: theme.textTheme.bodyMedium,
                     ),
-                    trailing: valorActual == null
-                        ? Text(
-                      'Cargando...',
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(color: Colors.grey),
-                    )
-                        : Text(
-                      '€${valorActual.toStringAsFixed(2)}',
-                      style: theme.textTheme.bodyLarge!
-                          .copyWith(fontWeight: FontWeight.w600),
+                    trailing: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: valorActual == null
+                          ? const SizedBox(width: 60) // espacio reservado sin texto
+                          : Text(
+                        '€${valorActual.toStringAsFixed(2)}',
+                        key: ValueKey(valorActual),
+                        style: theme.textTheme.bodyLarge!
+                            .copyWith(fontWeight: FontWeight.w600),
+                      ),
                     ),
+
                     onTap: () async {
                       await Navigator.push(
                         context,

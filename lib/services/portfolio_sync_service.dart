@@ -20,7 +20,9 @@ Future<void> addOperationAndSync({
   final updated = Investment(
     symbol: investment.symbol,
     name: investment.name,
+    type: investment.type,
     operations: [...investment.operations, newOp],
+
   );
 
   await repo.addInvestment(updated);
@@ -54,6 +56,7 @@ Future<void> editOperationAndSync({
   final updated = Investment(
     symbol: investment.symbol,
     name: investment.name,
+    type: investment.type,
     operations: newOps,
   );
 
@@ -90,6 +93,7 @@ Future<void> deleteOperationAndSync({
     final updated = Investment(
       symbol: investment.symbol,
       name: investment.name,
+      type: investment.type,
       operations: updatedOps,
     );
     await repo.addInvestment(updated);

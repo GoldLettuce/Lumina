@@ -17,6 +17,7 @@ import 'ui/providers/asset_list_provider.dart';
 import 'core/point.dart';
 import 'data/models/local_history.dart';
 import 'data/models/chart_cache.dart'; // ⬅️ Añadido
+import 'package:lumina/domain/entities/asset_type.dart'; // ✅ CORRECTO
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,7 @@ Future<void> main() async {
   Hive.registerAdapter(LocalHistoryAdapter());
   Hive.registerAdapter(ChartCacheAdapter()); // ⬅️ Nuevo adaptador registrado
   Hive.registerAdapter(OperationTypeAdapter());
+  Hive.registerAdapter(AssetTypeAdapter());
 
   final investmentRepository = InvestmentRepositoryImpl();
   await investmentRepository.init();

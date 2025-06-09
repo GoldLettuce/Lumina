@@ -32,10 +32,26 @@ class ChartValueProvider extends ChangeNotifier {
   List<Point> get history => _history;
 
   /// Serie para dibujar: histórico cacheado + punto de hoy en memoria.
+  /// Serie para dibujar: histórico + punto “vivo” de hoy (sin duplicar)
   List<Point> get displayHistory {
     if (_todayPoint == null) return _history;
+
+    final last = _history.isNotEmpty ? _history.last : null;
+    final sameDay = last != null &&
+        last.time.year  == _todayPoint!.time.year  &&
+        last.time.month == _todayPoint!.time.month &&
+        last.time.day   == _todayPoint!.time.day;
+
+    if (sameDay) {
+      // ≡ Remplazamos el último punto por el “vivo”
+      final list = List<Point>.from(_history);
+      list[list.length - 1] = _todayPoint!;
+      return list;
+    }
+    // ≡ Historial solo llega hasta ayer → añadimos el punto vivo
     return [..._history, _todayPoint!];
   }
+
 
   int? get selectedIndex => _selectedIndex;
   double? get selectedValue =>
@@ -103,19 +119,8 @@ class ChartValueProvider extends ChangeNotifier {
         _spotPrices,
       );
 
-      // 4️⃣ Crear/actualizar punto de hoy en memoria
-      final now = DateTime.now();
-      final alreadyHasToday = _history.isNotEmpty &&
-          _history.last.time.year == now.year &&
-          _history.last.time.month == now.month &&
-          _history.last.time.day == now.day;
-
-      if (!alreadyHasToday) {
-        _todayPoint = Point(time: now, value: newValue);
-      } else {
-        _todayPoint = null;
-      }
-
+// 4️⃣ Punto “vivo” de hoy: siempre uno solo y se sobre-escribe cada vez
+      _todayPoint = Point(time: DateTime.now(), value: newValue);
 
       // 5️⃣ Notificar para redibujar con displayHistory
       notifyListeners();

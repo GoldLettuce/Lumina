@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../providers/asset_list_provider.dart';
+import '../../domain/entities/asset_type.dart'; // AÑADIR ESTO
 
 class AssetSelectorModal extends StatefulWidget {
-  final String type; // "crypto", "stock", etc.
+  final AssetType type; // CAMBIAR String → AssetType
 
   const AssetSelectorModal({super.key, required this.type});
-
   @override
   State<AssetSelectorModal> createState() => _AssetSelectorModalState();
 }
