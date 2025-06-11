@@ -6,13 +6,12 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
-import 'package:lumina/domain/entities/investment.dart';
 import '../providers/chart_value_provider.dart';
 import '../widgets/add_investment_dialog.dart';
 import '../../data/models/investment_model.dart';
 import '../widgets/portfolio_summary_with_chart.dart';
 import 'asset_detail_screen.dart';
-import 'archived_assets_screen.dart'; // 👈 IMPORTACIÓN NUEVA
+import 'archived_assets_screen.dart';
 
 class PortfolioSummaryMinimal extends StatelessWidget {
   const PortfolioSummaryMinimal({super.key});
@@ -114,10 +113,7 @@ class PortfolioSummaryMinimal extends StatelessWidget {
           opacity: hasSelection ? 1.0 : 0.0,
           child: Text(
             dateText,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall!
-                .copyWith(color: Colors.grey),
+            style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.grey),
           ),
         ),
       ],
@@ -148,9 +144,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     await showDialog(
       context: context,
       builder: (_) => AddInvestmentDialog(
-        allowAdvancedAssets: false, // o true si tienes lógica de API-Key
+        allowAdvancedAssets: false,
       ),
-
     );
   }
 
@@ -198,8 +193,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               )
                   : ListView.separated(
                 itemCount: investments.length,
-                separatorBuilder: (_, __) =>
-                    Divider(color: AppColors.border),
+                separatorBuilder: (_, __) => Divider(color: AppColors.border),
                 itemBuilder: (context, index) {
                   final asset = investments[index];
                   final price = chartProvider.getPriceFor(asset.symbol);
@@ -221,7 +215,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     trailing: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       child: valorActual == null
-                          ? const SizedBox(width: 60) // espacio reservado sin texto
+                          ? const SizedBox(width: 60)
                           : Text(
                         '€${valorActual.toStringAsFixed(2)}',
                         key: ValueKey(valorActual),
@@ -237,9 +231,15 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                           builder: (_) => AssetDetailScreen(asset: asset),
                         ),
                       );
-                      context
-                          .read<ChartValueProvider>()
-                          .clearSelection();
+                      // Recalculamos gráfico y precios al volver de edición
+                      final allInvestments = context.read<InvestmentModel>().investments;
+                      chartProvider.loadHistory(allInvestments);
+                      chartProvider.setVisibleSymbols(
+                        allInvestments.map((e) => e.symbol).toSet(),
+                      );
+                      await chartProvider.forceRebuildAndReload(allInvestments);
+                      await chartProvider.updatePrices();
+                      chartProvider.clearSelection();
                     },
                   );
                 },
@@ -255,7 +255,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 );
               },
               child: Text(
-                AppLocalizations.of(context)?.archivedAssetsTitle ?? 'Activos sin posición',
+                AppLocalizations.of(context)?.archivedAssetsTitle ??
+                    'Activos sin posición',
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,

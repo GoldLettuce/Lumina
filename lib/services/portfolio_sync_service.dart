@@ -3,7 +3,6 @@
 import 'package:hive/hive.dart';
 import 'package:lumina/data/models/investment_model.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
-import 'package:lumina/data/repositories_impl/history_repository_impl.dart';
 import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/data/models/local_history.dart';
 import 'package:lumina/ui/providers/chart_value_provider.dart';

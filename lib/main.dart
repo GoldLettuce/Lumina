@@ -6,7 +6,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'domain/entities/investment.dart';
 import 'data/repositories_impl/investment_repository_impl.dart';
-import 'ui/widgets/add_investment_dialog.dart';
 
 import 'package:provider/provider.dart';
 import 'data/models/investment_model.dart';

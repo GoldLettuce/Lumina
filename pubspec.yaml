@@ -35,6 +35,8 @@ dependencies:
   # Cliente HTTP para llamadas a APIs
   http: ^0.13.5
 
+  uuid: ^4.3.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

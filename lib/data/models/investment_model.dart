@@ -25,19 +25,15 @@ class InvestmentModel extends ChangeNotifier {
   }
 
   Future<void> addInvestment(Investment investment) async {
-    // Guardamos la nueva inversión en Hive a través del repositorio
     await _repository.addInvestment(investment);
     await loadInvestments();
 
-    // Si la inversión no tiene operaciones, no hay histórico que reconstruir
     if (investment.operations.isEmpty) return;
 
-    // Determinamos la fecha más temprana de las operaciones nuevas
     final earliestDate = investment.operations
         .map((op) => op.date)
         .reduce((a, b) => a.isBefore(b) ? a : b);
 
-    // Llamamos al Worker para reconstruir y guardar el histórico completo
     final worker = HistoryRebuildWorker();
     await worker.rebuildAndStore(
       symbol: investment.symbol,
@@ -46,12 +42,9 @@ class InvestmentModel extends ChangeNotifier {
   }
 
   Future<void> removeInvestment(Investment investment) async {
-    // Ahora pasamos investment.symbol en lugar del objeto completo
     await _repository.deleteInvestment(investment.symbol);
     await loadInvestments();
   }
-
-  // --- GETTERS PARA EL RESUMEN SUPERIOR ---
 
   double get totalInvertido {
     double total = 0.0;
@@ -69,7 +62,6 @@ class InvestmentModel extends ChangeNotifier {
     double total = 0.0;
     for (final inv in _investments) {
       final quantity = inv.totalQuantity;
-      // Para el valor actual, obtenemos el precio promedio de todas las operaciones
       final avgPrice = quantity > 0 ? inv.totalInvested / quantity : 0.0;
       total += quantity * avgPrice;
     }
@@ -82,7 +74,6 @@ class InvestmentModel extends ChangeNotifier {
     return ((valorActual - invertido) / invertido) * 100;
   }
 
-  /// Añade una operación a un activo existente y marca su histórico si hace falta reconstruir.
   Future<void> addOperationToInvestment(
       String investmentKey, InvestmentOperation op) async {
     final invBox = await Hive.openBox<Investment>('investments');
@@ -94,18 +85,15 @@ class InvestmentModel extends ChangeNotifier {
     inv.operations.add(op);
     await inv.save();
 
-    // Si la nueva operación amplía hacia atrás el rango histórico, marcamos para reconstruir
     final earliest = inv.operations
         .map((e) => e.date)
         .reduce((a, b) => a.isBefore(b) ? a : b);
 
     final existingHist = histBox.get('all');
     if (existingHist != null && earliest.isBefore(existingHist.from)) {
-      // Marcar el histórico como “requiere reconstrucción”
       existingHist.needsRebuild = true;
       await existingHist.save();
 
-      // Lanzar reconstrucción
       final worker = HistoryRebuildWorker();
       await worker.rebuildAndStore(
         symbol: inv.symbol,
@@ -114,8 +102,45 @@ class InvestmentModel extends ChangeNotifier {
     }
   }
 
-  /// Método auxiliar usado por servicios externos para forzar recarga del modelo
   Future<void> load() async {
     await loadInvestments();
+  }
+
+  /// ✅ Edita una operación existente manteniendo su ID
+  Future<void> editOperation(String investmentKey, InvestmentOperation updatedOp) async {
+    final invBox = await Hive.openBox<Investment>('investments');
+    final inv = invBox.get(investmentKey);
+    if (inv == null) return;
+
+    final newOps = inv.operations.map((op) {
+      return op.id == updatedOp.id ? updatedOp : op;
+    }).toList();
+
+    final updatedInvestment = Investment(
+      symbol: inv.symbol,
+      name: inv.name,
+      type: inv.type,
+      operations: newOps,
+    );
+
+    await invBox.put(investmentKey, updatedInvestment);
+    await loadInvestments();
+
+    final earliest = newOps
+        .map((e) => e.date)
+        .reduce((a, b) => a.isBefore(b) ? a : b);
+
+    final histBox = await Hive.openBox<LocalHistory>('history_$investmentKey');
+    final existingHist = histBox.get('all');
+    if (existingHist != null && earliest.isBefore(existingHist.from)) {
+      existingHist.needsRebuild = true;
+      await existingHist.save();
+
+      final worker = HistoryRebuildWorker();
+      await worker.rebuildAndStore(
+        symbol: updatedInvestment.symbol,
+        currency: 'USD',
+      );
+    }
   }
 }

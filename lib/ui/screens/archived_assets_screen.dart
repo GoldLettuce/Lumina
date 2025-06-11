@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import '../../data/models/investment_model.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';

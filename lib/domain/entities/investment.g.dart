@@ -64,13 +64,14 @@ class InvestmentOperationAdapter extends TypeAdapter<InvestmentOperation> {
       price: fields[1] as double,
       date: fields[2] as DateTime,
       type: fields[3] as OperationType,
+      id: fields[4] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, InvestmentOperation obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.quantity)
       ..writeByte(1)
@@ -78,7 +79,9 @@ class InvestmentOperationAdapter extends TypeAdapter<InvestmentOperation> {
       ..writeByte(2)
       ..write(obj.date)
       ..writeByte(3)
-      ..write(obj.type);
+      ..write(obj.type)
+      ..writeByte(4)
+      ..write(obj.id);
   }
 
   @override

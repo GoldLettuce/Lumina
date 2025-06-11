@@ -3,7 +3,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import 'package:lumina/core/point.dart';
 import '../providers/chart_value_provider.dart';
 import '../../core/theme.dart';

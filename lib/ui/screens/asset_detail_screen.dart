@@ -1,6 +1,12 @@
+// lib/ui/screens/asset_detail_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
 import 'package:lumina/domain/entities/investment.dart';
+import 'package:lumina/data/models/investment_model.dart';
+import 'package:lumina/ui/widgets/add_investment_dialog.dart';
 
 class AssetDetailScreen extends StatelessWidget {
   final Investment asset;
@@ -9,15 +15,22 @@ class AssetDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1️⃣ Obtenemos el modelo y esperamos notificaciones
+    final model = context.watch<InvestmentModel>();
+
+    // 2️⃣ Buscamos el asset actualizado por su símbolo
+    final currentAsset = model.investments
+        .firstWhere((inv) => inv.symbol == asset.symbol);
+
     final theme = Theme.of(context);
     final currencyFormatter = NumberFormat.simpleCurrency(locale: 'en_US');
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(asset.symbol),
+        title: Text(currentAsset.symbol),
         centerTitle: true,
       ),
-      body: asset.operations.isEmpty
+      body: currentAsset.operations.isEmpty
           ? Center(
         child: Text(
           'No hay operaciones registradas.',
@@ -27,10 +40,10 @@ class AssetDetailScreen extends StatelessWidget {
           : ListView.separated(
         padding: const EdgeInsets.all(16),
         separatorBuilder: (_, __) => const Divider(),
-        itemCount: asset.operations.length,
+        itemCount: currentAsset.operations.length,
         itemBuilder: (context, index) {
-          final op = asset.operations[index];
-          final isBuy = op.type == OperationType.buy; // ✅ CORREGIDO
+          final op = currentAsset.operations[index];
+          final isBuy = op.type == OperationType.buy;
           final fecha = DateFormat('d MMM y – HH:mm').format(op.date);
           final color = isBuy ? Colors.green : Colors.red;
 
@@ -45,12 +58,33 @@ class AssetDetailScreen extends StatelessWidget {
               style: theme.textTheme.bodyLarge,
             ),
             subtitle: Text(fecha),
-            trailing: Text(
-              currencyFormatter.format(op.price),
-              style: theme.textTheme.bodyMedium!.copyWith(
-                color: color,
-                fontWeight: FontWeight.w600,
-              ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  currencyFormatter.format(op.price),
+                  style: theme.textTheme.bodyMedium!
+                      .copyWith(color: color, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.edit, size: 20),
+                  onPressed: () async {
+                    final edited = await showDialog<InvestmentOperation>(
+                      context: context,
+                      builder: (_) => AddInvestmentDialog(
+                        allowAdvancedAssets: false,
+                        initialOperation: op,
+                        initialSymbol: currentAsset.symbol,
+                      ),
+                    );
+                    if (edited != null) {
+                      await model.editOperation(currentAsset.symbol, edited);
+                      // No es necesario setState aquí; el watch lo actualizará
+                    }
+                  },
+                ),
+              ],
             ),
           );
         },
