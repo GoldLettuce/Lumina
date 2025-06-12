@@ -143,4 +143,45 @@ class InvestmentModel extends ChangeNotifier {
       );
     }
   }
+
+  /// ✅ Elimina múltiples operaciones por ID
+  Future<void> removeOperations(String investmentKey, List<String> operationIds) async {
+    final invBox = await Hive.openBox<Investment>('investments');
+    final inv = invBox.get(investmentKey);
+    if (inv == null) return;
+
+    final newOps = inv.operations.where((op) => !operationIds.contains(op.id)).toList();
+
+    if (newOps.isEmpty) {
+      // Si no quedan operaciones, elimina el asset por completo
+      await invBox.delete(investmentKey);
+      await loadInvestments();
+      return;
+    }
+
+    final updatedInvestment = Investment(
+      symbol: inv.symbol,
+      name: inv.name,
+      type: inv.type,
+      operations: newOps,
+    );
+
+    await invBox.put(investmentKey, updatedInvestment);
+    await loadInvestments();
+
+    final earliest = newOps.map((e) => e.date).reduce((a, b) => a.isBefore(b) ? a : b);
+
+    final histBox = await Hive.openBox<LocalHistory>('history_$investmentKey');
+    final existingHist = histBox.get('all');
+    if (existingHist != null && earliest.isBefore(existingHist.from)) {
+      existingHist.needsRebuild = true;
+      await existingHist.save();
+
+      final worker = HistoryRebuildWorker();
+      await worker.rebuildAndStore(
+        symbol: updatedInvestment.symbol,
+        currency: 'USD',
+      );
+    }
+  }
 }

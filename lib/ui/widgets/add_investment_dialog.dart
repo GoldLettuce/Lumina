@@ -3,11 +3,18 @@
 
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
+import 'package:lumina/services/portfolio_sync_service.dart';
 
 import '../../domain/entities/investment.dart';
 import '../../domain/entities/asset_type.dart';
 import '../../l10n/app_localizations.dart';
 import 'asset_selector_modal.dart';
+import 'package:provider/provider.dart';
+import 'package:lumina/ui/providers/chart_value_provider.dart';
+import 'package:lumina/data/models/investment_model.dart';
+import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
+
+
 
 /// Diálogo para añadir o editar una operación (compra / venta).
 class AddInvestmentDialog extends StatefulWidget {
@@ -93,6 +100,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
 
   Future<void> _submit() async {
     setState(() => _formSubmitted = true);
+
     if (!_formKey.currentState!.validate() ||
         _symbol == null ||
         _operationType == null ||
@@ -109,8 +117,42 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       type: _operationType!,
     );
 
-    Navigator.of(context).pop(operation);
+    // ✅ Si es edición, devolvemos la operación modificada
+    if (widget.initialOperation != null) {
+      Navigator.of(context).pop(operation);
+      return;
+    }
+
+    // ✅ Si es creación, guardamos y sincronizamos el nuevo activo
+    final model = context.read<InvestmentModel>();
+    final chartProvider = context.read<ChartValueProvider>();
+    final repo = InvestmentRepositoryImpl();
+    await repo.init();
+
+    final newInvestment = Investment(
+      symbol: _symbol!,
+      name: _symbol!,
+      type: _type,
+    );
+
+    await addOperationAndSync(
+      investment: newInvestment,
+      newOp: operation,
+      repo: repo,
+      chartProvider: chartProvider,
+      model: model,
+    );
+
+    chartProvider.setVisibleSymbols(
+      model.investments.map((e) => e.symbol).toSet(),
+    );
+
+    await chartProvider.forceRebuildAndReload(model.investments);
+    await chartProvider.updatePrices();
+
+    Navigator.of(context).pop(); // No devolvemos nada, ya está todo sincronizado
   }
+
 
   @override
   Widget build(BuildContext context) {

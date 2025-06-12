@@ -99,9 +99,9 @@
 
 - [x] `Investment` acepta múltiples operaciones (modelo reorganizado).
 - [x] Pantalla/modal con detalle de cada activo (listado de operaciones, compras/ventas).
-- [ ] Permitir editar y eliminar operaciones.
-- [ ] Confirmación antes de borrar.
-- [ ] Visualización clara de todas las operaciones históricas.
+- [x] Permitir editar y eliminar operaciones.
+- [x] Confirmación antes de borrar.
+- [x] Visualización clara de todas las operaciones históricas.
 - [x] Acceso al historial con tap sobre activo en la lista principal. 👈 NUEVO 
 - [x] Acceso al historial desde pantalla de activos ocultos (archivados). 👈 NUEVO
 - [ ] Filtrar gráfico por activo con tap largo sobre activo. 👈 NUEVO
