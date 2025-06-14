@@ -124,7 +124,7 @@
   - [x] Añadir interruptor de "Modo avanzado" en SettingsScreen. 
   - [x] Guardar el valor en SharedPreferences al cambiarlo. 
   - [x] Leer el valor guardado al iniciar la app o pantalla. 
-  - [ ] Crear SettingsProvider para exponer y reaccionar a los cambios (si no existe ya).
+  - [x] Crear SettingsProvider para exponer y reaccionar a los cambios (si no existe ya).
   - [ ] Pasar el valor de modo avanzado a AddInvestmentDialog (usando allowAdvancedAssets: true/false). 
   - [ ] Ajustar el AssetSelectorModal para que muestre activos avanzados solo si está activado. 
   - [ ] Ocultar activos no cripto en otras pantallas si el modo no está activado (opcional, si ya se han guardado). 
