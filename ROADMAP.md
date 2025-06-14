@@ -125,7 +125,7 @@
   - [x] Guardar el valor en SharedPreferences al cambiarlo. 
   - [x] Leer el valor guardado al iniciar la app o pantalla. 
   - [x] Crear SettingsProvider para exponer y reaccionar a los cambios (si no existe ya).
-  - [ ] Pasar el valor de modo avanzado a AddInvestmentDialog (usando allowAdvancedAssets: true/false). 
+  - [x] Pasar el valor de modo avanzado a AddInvestmentDialog (usando allowAdvancedAssets: true/false). 
   - [ ] Ajustar el AssetSelectorModal para que muestre activos avanzados solo si está activado. 
   - [ ] Ocultar activos no cripto en otras pantallas si el modo no está activado (opcional, si ya se han guardado). 
   - [ ] Opcional: Añadir advertencia o tooltip que diga que se necesita API key para ver precios si se activan estos activos.

@@ -3,6 +3,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../providers/settings_provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
@@ -142,13 +143,16 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   Future<void> _openAddInvestmentDialog(BuildContext context) async {
+    // Obtenemos el flag de modo avanzado desde SettingsProvider
+    final allowAdvanced = context.read<SettingsProvider>().advancedModeEnabled;
     await showDialog(
       context: context,
       builder: (_) => AddInvestmentDialog(
-        allowAdvancedAssets: false,
+        allowAdvancedAssets: allowAdvanced,
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
