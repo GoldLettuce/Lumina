@@ -12,6 +12,7 @@ import '../../data/models/investment_model.dart';
 import '../widgets/portfolio_summary_with_chart.dart';
 import 'asset_detail_screen.dart';
 import 'archived_assets_screen.dart';
+import 'settings_screen.dart';
 
 class PortfolioSummaryMinimal extends StatelessWidget {
   const PortfolioSummaryMinimal({super.key});
@@ -158,12 +159,22 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)?.appTitle ?? ''),
+        leading: IconButton(
+          icon: const Icon(Icons.settings),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            );
+          },
+        ),
+        title: const SizedBox.shrink(), // elimina el texto visible
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: true,
       ),
+
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openAddInvestmentDialog(context),
         backgroundColor: AppColors.primary,

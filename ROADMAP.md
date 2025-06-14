@@ -63,7 +63,9 @@
 - [x] Añadido AnimatedSwitcher para transiciones suaves al mostrar precios. 
 - [x] Se reserva espacio para evitar saltos visuales entre “cargando” y “valor”. 
 - [x] Estilo gráfico más fluido: se evita mostrar el gráfico si aún no hay histórico. 
-- [x] Punto actual (todayPoint) solo se añade si el histórico no lo contiene ya.
+- [x] Punto actual (todayPoint) solo se añade si el histórico no lo contiene ya. 
+- [x] Eliminar título redundante de la AppBar para un diseño más limpio y centrado.
+
 
 ## 🛠️ Mejoras de Rendimiento y Lógica del Gráfico (Junio 2025)
 
@@ -114,7 +116,7 @@
 
 ## FASE 7: Pantalla de Configuración y Personalización
 
-- [ ] Crear pantalla de ajustes accesible desde la pantalla principal.
+- [x] Crear pantalla de ajustes accesible desde la pantalla principal.
 - [ ] Selector de idioma (`es`, `en`).
 - [ ] Selector de moneda base (USD, EUR, etc.).
 - [ ] Alternancia de modo oscuro/manual.
