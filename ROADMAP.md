@@ -110,12 +110,14 @@
 - [x] Separación de activos sin cantidad (>0) en pantalla dedicada de activos archivados. 👈 NUEVO
 - [x] Botón minimalista en la pantalla principal para acceder a activos ocultos. 👈 NUEVO
 - [x]  Ajustes visuales en el modal de compra/venta: unificación de estilos entre botones, aplicación de colores pastel (verde y mostaza), tipografía en negro, y mejoras en la accesibilidad del teclado.
+- [x] Evitar doble guardado en el modal de operación: desactiva campos y botones tras pulsar "Guardar", muestra indicador de carga y conserva estilos visuales.
+
 
 
 ## FASE 7: Robustez y Experiencia Final
 
 - [x] Gráfico y datos cargan de inmediato desde Hive tras hot restart ✅
-- [ ] Persistencia robusta: que los datos no se pierdan nunca (pruebas con cierre/reapertura de app).
+- [x] Persistencia robusta: que los datos no se pierdan nunca (pruebas con cierre/reapertura de app).
 - [ ] Pruebas básicas de funcionalidades críticas.
 - [ ] Mejoras visuales (tipografía, iconos minimalistas, modo oscuro opcional).
 - [ ] Optimizaciones para rendimiento y tamaño de app (revisar dependencias y assets).

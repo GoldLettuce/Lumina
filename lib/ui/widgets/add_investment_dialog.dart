@@ -14,8 +14,6 @@ import 'package:lumina/ui/providers/chart_value_provider.dart';
 import 'package:lumina/data/models/investment_model.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 
-
-
 /// Diálogo para añadir o editar una operación (compra / venta).
 class AddInvestmentDialog extends StatefulWidget {
   const AddInvestmentDialog({
@@ -47,6 +45,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   bool _symbolTouched = false;
   bool _quantityTouched = false;
   bool _priceTouched = false;
+
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -99,12 +99,19 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   }
 
   Future<void> _submit() async {
-    setState(() => _formSubmitted = true);
+    if (_isSaving) return; // ✅ Evita doble guardado
 
+    setState(() {
+      _formSubmitted = true;
+      _isSaving = true;
+    });
     if (!_formKey.currentState!.validate() ||
         _symbol == null ||
         _operationType == null ||
-        _selectedDate == null) return;
+        _selectedDate == null) {
+      setState(() => _isSaving = false); // ✅ Liberamos el bloqueo
+      return;
+    }
 
     final quantity = double.parse(_quantityController.text.trim());
     final price = double.parse(_priceController.text.trim());
@@ -210,8 +217,10 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () =>
-                            setState(() => _operationType = OperationType.buy),
+                        onPressed: _isSaving
+                            ? () {}
+                            : () => setState(() => _operationType = OperationType.buy),
+
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _operationType == OperationType.buy
                               ? Colors.green[200]
@@ -227,8 +236,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () =>
-                            setState(() => _operationType = OperationType.sell),
+                        onPressed: _isSaving
+                            ? () {}
+                            : () => setState(() => _operationType = OperationType.sell),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _operationType == OperationType.sell
                               ? Colors.yellow[100]
@@ -257,7 +267,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
 
                 if (widget.initialOperation == null)
                   InkWell(
-                    onTap: () {
+                    onTap: _isSaving
+                        ? null
+                        : () {
                       setState(() => _symbolTouched = true);
                       _selectSymbol();
                     },
@@ -307,7 +319,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 const SizedBox(height: 16),
 
                 InkWell(
-                  onTap: _pickDate,
+                  onTap: _isSaving ? null : _pickDate,
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -335,6 +347,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   controller: _quantityController,
                   keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
+                  enabled: !_isSaving,
                   decoration: InputDecoration(
                       labelText: loc?.quantity ?? 'Cantidad',
                       labelStyle: const TextStyle(
@@ -385,7 +398,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
                         child: Text(loc?.cancel ?? 'Cancelar'),
                       ),
                     ),
@@ -410,7 +423,17 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
-                        ),                        child: Text(loc?.save ?? 'Guardar'),
+                        ),                       child: _isSaving
+                          ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black87),
+                        ),
+                      )
+                          : Text(loc?.save ?? 'Guardar'),
+
                       ),
                     ),
                   ],
