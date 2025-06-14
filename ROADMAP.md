@@ -121,6 +121,14 @@
 - [ ] Selector de moneda base (USD, EUR, etc.).
 - [ ] Alternancia de modo oscuro/manual.
 - [ ] Activar modo avanzado para permitir otros activos (acciones, metales...).
+  - [x] Añadir interruptor de "Modo avanzado" en SettingsScreen. 
+  - [x] Guardar el valor en SharedPreferences al cambiarlo. 
+  - [x] Leer el valor guardado al iniciar la app o pantalla. 
+  - [ ] Crear SettingsProvider para exponer y reaccionar a los cambios (si no existe ya).
+  - [ ] Pasar el valor de modo avanzado a AddInvestmentDialog (usando allowAdvancedAssets: true/false). 
+  - [ ] Ajustar el AssetSelectorModal para que muestre activos avanzados solo si está activado. 
+  - [ ] Ocultar activos no cripto en otras pantallas si el modo no está activado (opcional, si ya se han guardado). 
+  - [ ] Opcional: Añadir advertencia o tooltip que diga que se necesita API key para ver precios si se activan estos activos.
 - [ ] Gestión de API Key personal (ej. Alpha Vantage o Finhub).
 - [ ] Exportación/Importación manual de datos (JSON o CSV).
 - [ ] Resetear todos los datos del portafolio (con confirmación).
