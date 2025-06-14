@@ -1,14 +1,12 @@
-// lib/data/models/investment_model.dart
-
 import 'package:flutter/foundation.dart';
-import 'package:hive/hive.dart';
 import '../../domain/entities/investment.dart';
 import '../repositories_impl/investment_repository_impl.dart';
 import '../../workers/history_rebuild_worker.dart';
-import '../models/local_history.dart';
+import '../repositories_impl/local_history_repository_impl.dart';
 
 class InvestmentModel extends ChangeNotifier {
   final InvestmentRepositoryImpl _repository;
+  final LocalHistoryRepositoryImpl _historyRepository = LocalHistoryRepositoryImpl();
 
   List<Investment> _investments = [];
 
@@ -74,114 +72,79 @@ class InvestmentModel extends ChangeNotifier {
     return ((valorActual - invertido) / invertido) * 100;
   }
 
-  Future<void> addOperationToInvestment(
-      String investmentKey, InvestmentOperation op) async {
-    final invBox = await Hive.openBox<Investment>('investments');
-    final histBox = await Hive.openBox<LocalHistory>('history_$investmentKey');
+  /// ✅ Añadir operación delegando en el repositorio
+  Future<void> addOperationToInvestment(String investmentKey, InvestmentOperation op) async {
+    await _repository.addOperation(investmentKey, op);
+    await loadInvestments();
 
-    final inv = invBox.get(investmentKey);
-    if (inv == null) return;
-
-    inv.operations.add(op);
-    await inv.save();
+    final inv = _investments.firstWhere(
+          (e) => e.symbol == investmentKey,
+      orElse: () => throw Exception('Investment not found'),
+    );
+    if (inv.operations.isEmpty) return;
 
     final earliest = inv.operations
         .map((e) => e.date)
         .reduce((a, b) => a.isBefore(b) ? a : b);
 
-    final existingHist = histBox.get('all');
-    if (existingHist != null && earliest.isBefore(existingHist.from)) {
-      existingHist.needsRebuild = true;
-      await existingHist.save();
+    await _historyRepository.markAsNeedingRebuildIfNecessary(investmentKey, earliest);
 
-      final worker = HistoryRebuildWorker();
-      await worker.rebuildAndStore(
-        symbol: inv.symbol,
-        currency: 'USD',
-      );
-    }
+    final worker = HistoryRebuildWorker();
+    await worker.rebuildAndStore(
+      symbol: investmentKey,
+      currency: 'USD',
+    );
   }
 
   Future<void> load() async {
     await loadInvestments();
   }
 
-  /// ✅ Edita una operación existente manteniendo su ID
+  /// ✅ Edita una operación existente delegando en el repositorio
   Future<void> editOperation(String investmentKey, InvestmentOperation updatedOp) async {
-    final invBox = await Hive.openBox<Investment>('investments');
-    final inv = invBox.get(investmentKey);
-    if (inv == null) return;
-
-    final newOps = inv.operations.map((op) {
-      return op.id == updatedOp.id ? updatedOp : op;
-    }).toList();
-
-    final updatedInvestment = Investment(
-      symbol: inv.symbol,
-      name: inv.name,
-      type: inv.type,
-      operations: newOps,
-    );
-
-    await invBox.put(investmentKey, updatedInvestment);
+    await _repository.editOperation(investmentKey, updatedOp);
     await loadInvestments();
 
-    final earliest = newOps
+    final inv = _investments.firstWhere(
+          (e) => e.symbol == investmentKey,
+      orElse: () => throw Exception('Investment not found'),
+    );
+    if (inv.operations.isEmpty) return;
+
+    final earliest = inv.operations
         .map((e) => e.date)
         .reduce((a, b) => a.isBefore(b) ? a : b);
 
-    final histBox = await Hive.openBox<LocalHistory>('history_$investmentKey');
-    final existingHist = histBox.get('all');
-    if (existingHist != null && earliest.isBefore(existingHist.from)) {
-      existingHist.needsRebuild = true;
-      await existingHist.save();
+    await _historyRepository.markAsNeedingRebuildIfNecessary(investmentKey, earliest);
 
-      final worker = HistoryRebuildWorker();
-      await worker.rebuildAndStore(
-        symbol: updatedInvestment.symbol,
-        currency: 'USD',
-      );
-    }
+    final worker = HistoryRebuildWorker();
+    await worker.rebuildAndStore(
+      symbol: investmentKey,
+      currency: 'USD',
+    );
   }
 
-  /// ✅ Elimina múltiples operaciones por ID
+  /// ✅ Elimina múltiples operaciones delegando en el repositorio
   Future<void> removeOperations(String investmentKey, List<String> operationIds) async {
-    final invBox = await Hive.openBox<Investment>('investments');
-    final inv = invBox.get(investmentKey);
-    if (inv == null) return;
-
-    final newOps = inv.operations.where((op) => !operationIds.contains(op.id)).toList();
-
-    if (newOps.isEmpty) {
-      // Si no quedan operaciones, elimina el asset por completo
-      await invBox.delete(investmentKey);
-      await loadInvestments();
-      return;
-    }
-
-    final updatedInvestment = Investment(
-      symbol: inv.symbol,
-      name: inv.name,
-      type: inv.type,
-      operations: newOps,
-    );
-
-    await invBox.put(investmentKey, updatedInvestment);
+    await _repository.removeOperations(investmentKey, operationIds);
     await loadInvestments();
 
-    final earliest = newOps.map((e) => e.date).reduce((a, b) => a.isBefore(b) ? a : b);
+    final inv = _investments.firstWhere(
+          (e) => e.symbol == investmentKey,
+      orElse: () => throw Exception('Investment not found'),
+    );
+    if (inv.operations.isEmpty) return;
 
-    final histBox = await Hive.openBox<LocalHistory>('history_$investmentKey');
-    final existingHist = histBox.get('all');
-    if (existingHist != null && earliest.isBefore(existingHist.from)) {
-      existingHist.needsRebuild = true;
-      await existingHist.save();
+    final earliest = inv.operations
+        .map((e) => e.date)
+        .reduce((a, b) => a.isBefore(b) ? a : b);
 
-      final worker = HistoryRebuildWorker();
-      await worker.rebuildAndStore(
-        symbol: updatedInvestment.symbol,
-        currency: 'USD',
-      );
-    }
+    await _historyRepository.markAsNeedingRebuildIfNecessary(investmentKey, earliest);
+
+    final worker = HistoryRebuildWorker();
+    await worker.rebuildAndStore(
+      symbol: investmentKey,
+      currency: 'USD',
+    );
   }
 }

@@ -42,4 +42,54 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
   Future<void> deleteInvestment(String symbol) async {
     await _box.delete(symbol);
   }
+
+  /// ✅ Añadir operación directamente a un activo ya existente
+  Future<void> addOperation(String investmentKey, InvestmentOperation op) async {
+    final inv = _box.get(investmentKey);
+    if (inv == null) return;
+
+    inv.operations.add(op);
+    await inv.save();
+  }
+
+  /// ✅ Editar una operación existente por ID
+  Future<void> editOperation(String investmentKey, InvestmentOperation updatedOp) async {
+    final inv = _box.get(investmentKey);
+    if (inv == null) return;
+
+    final newOps = inv.operations.map((op) {
+      return op.id == updatedOp.id ? updatedOp : op;
+    }).toList();
+
+    final updatedInvestment = Investment(
+      symbol: inv.symbol,
+      name: inv.name,
+      type: inv.type,
+      operations: newOps,
+    );
+
+    await _box.put(investmentKey, updatedInvestment);
+  }
+
+  /// ✅ Eliminar múltiples operaciones por ID
+  Future<void> removeOperations(String investmentKey, List<String> operationIds) async {
+    final inv = _box.get(investmentKey);
+    if (inv == null) return;
+
+    final newOps = inv.operations.where((op) => !operationIds.contains(op.id)).toList();
+
+    if (newOps.isEmpty) {
+      await _box.delete(investmentKey);
+      return;
+    }
+
+    final updatedInvestment = Investment(
+      symbol: inv.symbol,
+      name: inv.name,
+      type: inv.type,
+      operations: newOps,
+    );
+
+    await _box.put(investmentKey, updatedInvestment);
+  }
 }
