@@ -112,9 +112,19 @@
 - [x]  Ajustes visuales en el modal de compra/venta: unificación de estilos entre botones, aplicación de colores pastel (verde y mostaza), tipografía en negro, y mejoras en la accesibilidad del teclado.
 - [x] Evitar doble guardado en el modal de operación: desactiva campos y botones tras pulsar "Guardar", muestra indicador de carga y conserva estilos visuales.
 
+## FASE 7: Pantalla de Configuración y Personalización
 
+- [ ] Crear pantalla de ajustes accesible desde la pantalla principal.
+- [ ] Selector de idioma (`es`, `en`).
+- [ ] Selector de moneda base (USD, EUR, etc.).
+- [ ] Alternancia de modo oscuro/manual.
+- [ ] Activar modo avanzado para permitir otros activos (acciones, metales...).
+- [ ] Gestión de API Key personal (ej. Alpha Vantage o Finhub).
+- [ ] Exportación/Importación manual de datos (JSON o CSV).
+- [ ] Resetear todos los datos del portafolio (con confirmación).
+- [ ] Información sobre la app (versión, créditos, enlace al repositorio).
 
-## FASE 7: Robustez y Experiencia Final
+## FASE 8: Robustez y Experiencia Final
 
 - [x] Gráfico y datos cargan de inmediato desde Hive tras hot restart ✅
 - [x] Persistencia robusta: que los datos no se pierdan nunca (pruebas con cierre/reapertura de app).
@@ -123,15 +133,14 @@
 - [ ] Optimizaciones para rendimiento y tamaño de app (revisar dependencias y assets).
 - [ ] Internacionalización real (`en`, `es`) y textos bien gestionados.
 - [x] Animaciones de transición suaves (pantallas y gráficos).
-- [ ] Pantalla de ajustes básicos (idioma, moneda base, etc.).
 - [ ] Autenticación con Apple ID (y Google opcional).
 - [ ] Animaciones de transición suaves (pantallas y gráficos).
-- [x] Ocultado el texto "Cargando..." en la pantalla de selección de símbolos (AssetSelectorModal) si ya hay contenido previo. 
-- [ ]  Pruebas de resistencia en la interacción del modal (guardar varias veces, cierre brusco, datos inválidos).
-- [ ]  Feedback visual unificado: aplicar patrón de carga (spinner) en otros botones relevantes (como borrar, editar, sincronizar). 
-- [ ]  Refactor de AddInvestmentDialog para modularizar validaciones y lógica de guardado.
+- [x] Ocultado el texto "Cargando..." en la pantalla de selección de símbolos (AssetSelectorModal) si ya hay contenido previo.
+- [ ] Pruebas de resistencia en la interacción del modal (guardar varias veces, cierre brusco, datos inválidos).
+- [ ] Feedback visual unificado: aplicar patrón de carga (spinner) en otros botones relevantes (como borrar, editar, sincronizar).
+- [ ] Refactor de `AddInvestmentDialog` para modularizar validaciones y lógica de guardado.
 
-## FASE 8: Publicación y Extras
+## FASE 9: Publicación y Extras
 
 - [ ] Pruebas en TestFlight (iOS) y dispositivos reales.
 - [ ] Ajustes finales de diseño.
