@@ -129,10 +129,14 @@ class InvestmentModel extends ChangeNotifier {
     await _repository.removeOperations(investmentKey, operationIds);
     await loadInvestments();
 
-    final inv = _investments.firstWhere(
-          (e) => e.symbol == investmentKey,
-      orElse: () => throw Exception('Investment not found'),
-    );
+    late final Investment inv;
+    try {
+      inv = _investments.firstWhere((e) => e.symbol == investmentKey);
+    } catch (_) {
+      return; // 👉 ya ha sido eliminado completamente
+    }
+
+    // ✅ Si ya ha sido eliminado por completo, no hacemos nada más
     if (inv.operations.isEmpty) return;
 
     final earliest = inv.operations

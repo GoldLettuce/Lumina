@@ -126,7 +126,10 @@
 - [ ] Pantalla de ajustes básicos (idioma, moneda base, etc.).
 - [ ] Autenticación con Apple ID (y Google opcional).
 - [ ] Animaciones de transición suaves (pantallas y gráficos).
-- [x] Ocultado el texto "Cargando..." en la pantalla de selección de símbolos (AssetSelectorModal) si ya hay contenido previo.
+- [x] Ocultado el texto "Cargando..." en la pantalla de selección de símbolos (AssetSelectorModal) si ya hay contenido previo. 
+- [ ]  Pruebas de resistencia en la interacción del modal (guardar varias veces, cierre brusco, datos inválidos).
+- [ ]  Feedback visual unificado: aplicar patrón de carga (spinner) en otros botones relevantes (como borrar, editar, sincronizar). 
+- [ ]  Refactor de AddInvestmentDialog para modularizar validaciones y lógica de guardado.
 
 ## FASE 8: Publicación y Extras
 

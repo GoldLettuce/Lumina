@@ -39,7 +39,10 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Eliminar operaciones'),
-        content: const Text('¿Estás seguro de que quieres eliminar las operaciones seleccionadas? Esta acción no se puede deshacer.'),
+        content: const Text(
+          '¿Estás seguro de que quieres eliminar las operaciones seleccionadas? '
+              'Esta acción no se puede deshacer.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -57,10 +60,16 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
       final model = context.read<InvestmentModel>();
       await model.removeOperations(asset.symbol, _selectedIds.toList());
       _clearSelection();
+
+      // ✅ Si ya no existe (porque no quedan operaciones), salimos de la pantalla
+      final stillExists = model.investments.any((e) => e.symbol == asset.symbol);
+      if (!stillExists && mounted) {
+        Navigator.of(context).pop();
+      }
     }
   }
 
-  @override@override
+  @override
   Widget build(BuildContext context) {
     final model = context.watch<InvestmentModel>();
     final theme = Theme.of(context);
@@ -96,7 +105,6 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
           ),
         ],
       ),
-
       body: currentAsset.operations.isEmpty
           ? Center(
         child: Text(
@@ -149,8 +157,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                     IconButton(
                       icon: const Icon(Icons.edit, size: 20),
                       onPressed: () async {
-                        final edited =
-                        await showDialog<InvestmentOperation>(
+                        final edited = await showDialog<InvestmentOperation>(
                           context: context,
                           builder: (_) => AddInvestmentDialog(
                             allowAdvancedAssets: false,
@@ -173,5 +180,4 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
       ),
     );
   }
-
 }
