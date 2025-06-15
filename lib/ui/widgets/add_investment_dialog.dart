@@ -13,6 +13,8 @@ import 'package:provider/provider.dart';
 import 'package:lumina/ui/providers/chart_value_provider.dart';
 import 'package:lumina/data/models/investment_model.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
+import 'package:lumina/ui/providers/settings_provider.dart';
+
 
 /// Diálogo para añadir o editar una operación (compra / venta).
 class AddInvestmentDialog extends StatefulWidget {
@@ -164,6 +166,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
+    final settings = Provider.of<SettingsProvider>(context);
+    final allowAdvancedAssets = settings.advancedModeEnabled;
     final dateText = _selectedDate == null
         ? (loc?.selectDate ?? 'Seleccionar fecha')
         : MaterialLocalizations.of(context).formatMediumDate(_selectedDate!);
@@ -192,26 +196,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                       ?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 20),
-
-                if (widget.allowAdvancedAssets) ...[
-                  DropdownButtonFormField<AssetType>(
-                    decoration:
-                    _inputDecoration(loc?.assetType ?? 'Tipo de activo'),
-                    value: _type,
-                    onChanged: (val) => setState(() {
-                      _type = val!;
-                      _symbol = null;
-                      _symbolTouched = false;
-                    }),
-                    items: AssetType.values
-                        .map((e) => DropdownMenuItem(
-                      value: e,
-                      child: Text(e.name.toUpperCase()),
-                    ))
-                        .toList(),
-                  ),
-                  const SizedBox(height: 16),
-                ],
 
                 Row(
                   children: [
@@ -253,6 +237,46 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                     ),
                   ],
                 ),
+                if (allowAdvancedAssets)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20, bottom: 16),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: AssetType.values.map((t) {
+                        final selected = _type == t;
+
+                        return ChoiceChip(
+                          label: Text(
+                            t.name.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: selected ? Colors.white : Colors.blue.shade700,
+                            ),
+                          ),
+                          selected: selected,
+                          showCheckmark: false,
+                          backgroundColor: Colors.blue.shade50,
+                          selectedColor: Theme.of(context).colorScheme.primary,
+                          shape: StadiumBorder(
+                            side: selected
+                                ? BorderSide.none
+                                : BorderSide(color: Colors.blue.shade100),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          onSelected: (_) {
+                            setState(() {
+                              _type = t;
+                              _symbol = null;
+                              _symbolTouched = false;
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ),
+
                 if (_formSubmitted && _operationType == null)
                   Padding(
                     padding: const EdgeInsets.only(top: 4, left: 8),

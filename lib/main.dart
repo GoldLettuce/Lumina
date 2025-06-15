@@ -10,11 +10,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'domain/entities/investment.dart';
 import 'data/repositories_impl/investment_repository_impl.dart';
-
 import 'data/models/investment_model.dart';
+
 import 'ui/providers/chart_value_provider.dart';
 import 'ui/providers/asset_list_provider.dart';
-import 'ui/providers/settings_provider.dart'; // Nuevo import
+import 'ui/providers/settings_provider.dart';
 
 import 'ui/screens/portfolio_screen.dart';
 import 'core/point.dart';
@@ -32,12 +32,19 @@ Future<void> main() async {
   Hive.registerAdapter(InvestmentOperationAdapter());
   Hive.registerAdapter(PointAdapter());
   Hive.registerAdapter(LocalHistoryAdapter());
-  Hive.registerAdapter(ChartCacheAdapter()); // Nuevo adaptador registrado
+  Hive.registerAdapter(ChartCacheAdapter());
   Hive.registerAdapter(OperationTypeAdapter());
   Hive.registerAdapter(AssetTypeAdapter());
 
   final investmentRepository = InvestmentRepositoryImpl();
   await investmentRepository.init();
+
+  // Inicializamos SettingsProvider y esperamos que cargue prefs y exchanges
+  final settings = SettingsProvider();
+  await Future.doWhile(() async {
+    await Future.delayed(const Duration(milliseconds: 50));
+    return !settings.isInitialized;
+  });
 
   runApp(
     MultiProvider(
@@ -45,7 +52,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => AssetListProvider()),
         ChangeNotifierProvider(create: (_) => InvestmentModel(investmentRepository)),
         ChangeNotifierProvider(create: (_) => ChartValueProvider()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()), // Añadido SettingsProvider
+        ChangeNotifierProvider.value(value: settings), // ya cargado manualmente
       ],
       child: const PortfolioApp(),
     ),
