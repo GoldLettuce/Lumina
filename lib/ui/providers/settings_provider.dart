@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Provider para gestionar la configuración de la aplicación
-/// (modo avanzado, API key, etc.)
+/// Provider para gestionar la configuración de la aplicación (modo avanzado, API key, etc.)
 class SettingsProvider extends ChangeNotifier {
   static const _advancedModeKey = 'advanced_mode_enabled';
   static const _apiKeyKey = 'finnhub_api_key';
@@ -32,6 +31,7 @@ class SettingsProvider extends ChangeNotifier {
     await prefs.setBool(_advancedModeKey, enabled);
     _advancedModeEnabled = enabled;
     if (!enabled) {
+      // al desactivar, limpiamos la API key
       _apiKey = null;
       await prefs.remove(_apiKeyKey);
     }
