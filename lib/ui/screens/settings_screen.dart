@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/settings_provider.dart';
 import '../widgets/language_selector.dart';
+import '../widgets/currency_selector.dart';
 import '../../l10n/app_localizations.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -24,7 +25,8 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         children: const [
           LanguageSelector(),
-          // Aquí puedes añadir más ajustes en el futuro
+          SizedBox(height: 24),
+          CurrencySelector(),
         ],
       ),
     );

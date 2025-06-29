@@ -22,6 +22,7 @@ import 'core/point.dart';
 import 'data/models/local_history.dart';
 import 'data/models/chart_cache.dart';
 import 'package:lumina/domain/entities/asset_type.dart';
+import 'package:lumina/ui/providers/currency_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,6 +49,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => ChartValueProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
+        ChangeNotifierProvider(create: (_) => CurrencyProvider()),
       ],
       child: const PortfolioApp(),
     ),
