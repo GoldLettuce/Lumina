@@ -14,16 +14,14 @@ import 'package:lumina/ui/providers/chart_value_provider.dart';
 import 'package:lumina/data/models/investment_model.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 
-/// Diálogo para añadir o editar una operación (compra / venta).
+/// Diálogo para añadir o editar una operación **solo de criptomonedas**.
 class AddInvestmentDialog extends StatefulWidget {
   const AddInvestmentDialog({
     super.key,
-    required this.allowAdvancedAssets,
     this.initialOperation,
     this.initialSymbol,
   });
 
-  final bool allowAdvancedAssets;
   final InvestmentOperation? initialOperation;
   final String? initialSymbol;
 
@@ -34,7 +32,6 @@ class AddInvestmentDialog extends StatefulWidget {
 class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   final _formKey = GlobalKey<FormState>();
 
-  AssetType _type = AssetType.crypto;
   OperationType? _operationType;
   String? _symbol;
   DateTime? _selectedDate = DateTime.now();
@@ -69,6 +66,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     super.dispose();
   }
 
+  // ────────────────────────────────────────────────────────────────────────
+  // Pickers
+  // ────────────────────────────────────────────────────────────────────────
   Future<void> _pickDate() async {
     final now = DateTime.now();
     final picked = await showDatePicker(
@@ -88,7 +88,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) => AssetSelectorModal(type: _type),
+      builder: (_) => const AssetSelectorModal(type: AssetType.crypto),
     );
     if (selected != null) {
       setState(() {
@@ -98,18 +98,22 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     }
   }
 
+  // ────────────────────────────────────────────────────────────────────────
+  // Guardar
+  // ────────────────────────────────────────────────────────────────────────
   Future<void> _submit() async {
-    if (_isSaving) return; // ✅ Evita doble guardado
+    if (_isSaving) return;
 
     setState(() {
       _formSubmitted = true;
       _isSaving = true;
     });
+
     if (!_formKey.currentState!.validate() ||
         _symbol == null ||
         _operationType == null ||
         _selectedDate == null) {
-      setState(() => _isSaving = false); // ✅ Liberamos el bloqueo
+      setState(() => _isSaving = false);
       return;
     }
 
@@ -124,13 +128,13 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       type: _operationType!,
     );
 
-    // ✅ Si es edición, devolvemos la operación modificada
+    // Edición
     if (widget.initialOperation != null) {
       Navigator.of(context).pop(operation);
       return;
     }
 
-    // ✅ Si es creación, guardamos y sincronizamos el nuevo activo
+    // Alta
     final model = context.read<InvestmentModel>();
     final chartProvider = context.read<ChartValueProvider>();
     final repo = InvestmentRepositoryImpl();
@@ -139,7 +143,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     final newInvestment = Investment(
       symbol: _symbol!,
       name: _symbol!,
-      type: _type,
+      type: AssetType.crypto, // fijo a CRIPTO
     );
 
     await addOperationAndSync(
@@ -157,10 +161,12 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     await chartProvider.forceRebuildAndReload(model.investments);
     await chartProvider.updatePrices();
 
-    Navigator.of(context).pop(); // No devolvemos nada, ya está todo sincronizado
+    Navigator.of(context).pop();
   }
 
-
+  // ────────────────────────────────────────────────────────────────────────
+  // UI
+  // ────────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
@@ -177,8 +183,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
         child: SingleChildScrollView(
           child: Form(
             key: _formKey,
-            autovalidateMode:
-            _formSubmitted ? AutovalidateMode.always : AutovalidateMode.disabled,
+            autovalidateMode: _formSubmitted
+                ? AutovalidateMode.always
+                : AutovalidateMode.disabled,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -193,34 +200,15 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 ),
                 const SizedBox(height: 20),
 
-                if (widget.allowAdvancedAssets) ...[
-                  DropdownButtonFormField<AssetType>(
-                    decoration:
-                    _inputDecoration(loc?.assetType ?? 'Tipo de activo'),
-                    value: _type,
-                    onChanged: (val) => setState(() {
-                      _type = val!;
-                      _symbol = null;
-                      _symbolTouched = false;
-                    }),
-                    items: AssetType.values
-                        .map((e) => DropdownMenuItem(
-                      value: e,
-                      child: Text(e.name.toUpperCase()),
-                    ))
-                        .toList(),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-
+                // ─── Tipo BUY/SELL ────────────────────────────────────
                 Row(
                   children: [
                     Expanded(
                       child: ElevatedButton(
                         onPressed: _isSaving
                             ? () {}
-                            : () => setState(() => _operationType = OperationType.buy),
-
+                            : () => setState(
+                                () => _operationType = OperationType.buy),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _operationType == OperationType.buy
                               ? Colors.green[200]
@@ -238,7 +226,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                       child: ElevatedButton(
                         onPressed: _isSaving
                             ? () {}
-                            : () => setState(() => _operationType = OperationType.sell),
+                            : () => setState(
+                                () => _operationType = OperationType.sell),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _operationType == OperationType.sell
                               ? Colors.yellow[100]
@@ -265,6 +254,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   ),
                 const SizedBox(height: 16),
 
+                // ─── Selector símbolo ────────────────────────────────
                 if (widget.initialOperation == null)
                   InkWell(
                     onTap: _isSaving
@@ -283,14 +273,11 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         children: [
                           Text(
                             _symbol ??
-                                (loc?.selectSymbol ??
-                                    'Selecciona un símbolo'),
+                                (loc?.selectSymbol ?? 'Selecciona un símbolo'),
                             style: TextStyle(
                               color: (_formSubmitted &&
                                   (_symbol == null || _symbol!.isEmpty))
-                                  ? Theme.of(context)
-                                  .colorScheme
-                                  .error
+                                  ? Theme.of(context).colorScheme.error
                                   : Colors.black87,
                               fontSize: 17,
                               fontWeight: FontWeight.w500,
@@ -301,9 +288,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                             size: 22,
                             color: (_formSubmitted &&
                                 (_symbol == null || _symbol!.isEmpty))
-                                ? Theme.of(context)
-                                .colorScheme
-                                .error
+                                ? Theme.of(context).colorScheme.error
                                 : Colors.black54,
                           ),
                         ],
@@ -313,11 +298,13 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 else
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    child: Text(_symbol!, style: Theme.of(context).textTheme.bodyLarge),
+                    child: Text(_symbol!,
+                        style: Theme.of(context).textTheme.bodyLarge),
                   ),
 
                 const SizedBox(height: 16),
 
+                // ─── Fecha ───────────────────────────────────────────
                 InkWell(
                   onTap: _isSaving ? null : _pickDate,
                   borderRadius: BorderRadius.circular(12),
@@ -343,6 +330,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
 
                 const SizedBox(height: 16),
 
+                // ─── Cantidad ────────────────────────────────────────
                 TextFormField(
                   controller: _quantityController,
                   keyboardType:
@@ -362,6 +350,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 ),
                 const SizedBox(height: 16),
 
+                // ─── Precio ──────────────────────────────────────────
                 TextFormField(
                   controller: _priceController,
                   keyboardType:
@@ -394,11 +383,13 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 ),
                 const SizedBox(height: 24),
 
+                // ─── Botones final ───────────────────────────────────
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
+                        onPressed:
+                        _isSaving ? null : () => Navigator.of(context).pop(),
                         child: Text(loc?.cancel ?? 'Cancelar'),
                       ),
                     ),
@@ -423,17 +414,18 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
-                        ),                       child: _isSaving
-                          ? const SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black87),
                         ),
-                      )
-                          : Text(loc?.save ?? 'Guardar'),
-
+                        child: _isSaving
+                            ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.black87),
+                          ),
+                        )
+                            : Text(loc?.save ?? 'Guardar'),
                       ),
                     ),
                   ],
@@ -453,7 +445,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     filled: true,
     fillColor: Colors.white,
     border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none),
+    contentPadding:
+    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
   );
 }

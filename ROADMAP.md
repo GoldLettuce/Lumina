@@ -21,7 +21,6 @@
 
 ## FASE 3: UI Básica y Funcionalidad Inicial
 
-- ~~[ ] Pantalla de inicio (welcome/minimalista, logo y nombre).~~ DESESTIMADO
 - [x] Pantalla principal con listado de inversiones (vacío al principio).
 - [x] Pantalla/modal para añadir inversión (tipo, símbolo, cantidad, fecha, precio de compra).
 - [x] Validación de formularios y UX amigable (campos obligatorios, errores claros).
@@ -37,7 +36,6 @@
 ## FASE 5: Integración de Datos en Tiempo Real
 
 - [x] Integrar API de CoinGecko para obtener precios de criptos (usando modelo con `idCoinGecko`).
-- [ ] Integrar API de acciones/ETFs si es posible (AlphaVantage, Yahoo Finance, etc.).
 - [x] Selección dinámica de símbolo según tipo de activo.
 - [x] Cálculo automático de valor actual y rentabilidad con precios reales.
 - [x] Actualización automática/periódica de datos de precios.
@@ -120,16 +118,6 @@
 - [ ] Selector de idioma (`es`, `en`).
 - [ ] Selector de moneda base (USD, EUR, etc.).
 - [ ] Alternancia de modo oscuro/manual.
-- [ ] Activar modo avanzado para permitir otros activos (acciones, metales...).
-  - [x] Añadir interruptor de "Modo avanzado" en SettingsScreen. 
-  - [x] Guardar el valor en SharedPreferences al cambiarlo. 
-  - [x] Leer el valor guardado al iniciar la app o pantalla. 
-  - [x] Crear SettingsProvider para exponer y reaccionar a los cambios (si no existe ya).
-  - [x] Pasar el valor de modo avanzado a AddInvestmentDialog (usando allowAdvancedAssets: true/false). 
-  - [ ] Ajustar el AssetSelectorModal para que muestre activos avanzados solo si está activado. 
-  - [ ] Ocultar activos no cripto en otras pantallas si el modo no está activado (opcional, si ya se han guardado). 
-  - [ ] Opcional: Añadir advertencia o tooltip que diga que se necesita API key para ver precios si se activan estos activos.
-- [ ] Gestión de API Key personal (ej. Alpha Vantage o Finhub).
 - [ ] Exportación/Importación manual de datos (JSON o CSV).
 - [ ] Resetear todos los datos del portafolio (con confirmación).
 - [ ] Información sobre la app (versión, créditos, enlace al repositorio).

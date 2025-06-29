@@ -143,16 +143,11 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   Future<void> _openAddInvestmentDialog(BuildContext context) async {
-    // Obtenemos el flag de modo avanzado desde SettingsProvider
-    final allowAdvanced = context.read<SettingsProvider>().advancedModeEnabled;
     await showDialog(
       context: context,
-      builder: (_) => AddInvestmentDialog(
-        allowAdvancedAssets: allowAdvanced,
-      ),
+      builder: (_) => const AddInvestmentDialog(),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {

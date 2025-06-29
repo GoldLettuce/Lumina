@@ -160,7 +160,6 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                         final edited = await showDialog<InvestmentOperation>(
                           context: context,
                           builder: (_) => AddInvestmentDialog(
-                            allowAdvancedAssets: false,
                             initialOperation: op,
                             initialSymbol: currentAsset.symbol,
                           ),
