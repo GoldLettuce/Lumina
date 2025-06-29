@@ -27,5 +27,17 @@
   "searchAsset": "Buscar activo",
   "notEnoughChartData": "No hay suficientes datos para mostrar el gráfico",
   "archivedAssetsTitle": "Activos sin posiciones",
-  "noArchivedAssets": "No hay activos sin posición actualmente."
+  "noArchivedAssets": "No hay activos sin posición actualmente.",
+  "settings": "Ajustes",
+  "language": "Idioma",
+  "loadSymbolsError": "No se pudieron cargar los símbolos",
+  "noSymbolsFound": "No se encontraron símbolos",  "deleteOperations": "Eliminar operaciones",
+  "deleteOperationsMessage": "¿Estás seguro de que quieres eliminar las operaciones seleccionadas? Esta acción no se puede deshacer.",
+  "delete": "Eliminar",
+  "noOperations": "No hay operaciones registradas.",
+  "editOperation": "Editar operación",
+  "selectOperationType": "Seleccione tipo de operación",
+  "dateLabel": "Fecha:",
+  "spanish": "Español",
+  "english": "Inglés"
 }

@@ -262,6 +262,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No hidden assets found.'**
   String get noArchivedAssets;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @loadSymbolsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load symbols'**
+  String get loadSymbolsError;
+
+  /// No description provided for @noSymbolsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No symbols found'**
+  String get noSymbolsFound;
+
+  /// No description provided for @deleteOperations.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete operations'**
+  String get deleteOperations;
+
+  /// No description provided for @deleteOperationsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete the selected operations? This action cannot be undone.'**
+  String get deleteOperationsMessage;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @noOperations.
+  ///
+  /// In en, this message translates to:
+  /// **'No operations recorded.'**
+  String get noOperations;
+
+  /// No description provided for @editOperation.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit operation'**
+  String get editOperation;
+
+  /// No description provided for @selectOperationType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select operation type'**
+  String get selectOperationType;
+
+  /// No description provided for @dateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date:'**
+  String get dateLabel;
+
+  /// No description provided for @spanish.
+  ///
+  /// In en, this message translates to:
+  /// **'Spanish'**
+  String get spanish;
+
+  /// No description provided for @english.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get english;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

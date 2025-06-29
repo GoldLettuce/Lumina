@@ -169,9 +169,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   // ────────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
+    final loc = AppLocalizations.of(context)!;
     final dateText = _selectedDate == null
-        ? (loc?.selectDate ?? 'Seleccionar fecha')
+        ? (loc.selectDate)
         : MaterialLocalizations.of(context).formatMediumDate(_selectedDate!);
 
     return Dialog(
@@ -191,8 +191,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
               children: [
                 Text(
                   widget.initialOperation != null
-                      ? 'Editar operación'
-                      : (loc?.newOperation ?? 'Nueva operación'),
+                      ? loc.editOperation
+                      : loc.newOperation,
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge
@@ -218,7 +218,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
                         ),
-                        child: const Text('Compra'),
+                        child: Text(loc.buy),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -237,7 +237,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
                         ),
-                        child: const Text('Venta'),
+                        child: Text(loc.sell),
+
                       ),
                     ),
                   ],
@@ -246,7 +247,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   Padding(
                     padding: const EdgeInsets.only(top: 4, left: 8),
                     child: Text(
-                      'Seleccione tipo de operación',
+                      loc.selectOperationType,
                       style: TextStyle(
                           color: Theme.of(context).colorScheme.error,
                           fontSize: 12),
@@ -273,7 +274,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         children: [
                           Text(
                             _symbol ??
-                                (loc?.selectSymbol ?? 'Selecciona un símbolo'),
+                                (loc.selectSymbol),
                             style: TextStyle(
                               color: (_formSubmitted &&
                                   (_symbol == null || _symbol!.isEmpty))
@@ -317,7 +318,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                             size: 18, color: Colors.black54),
                         const SizedBox(width: 8),
                         Text(
-                          'Fecha: $dateText',
+                          '${loc.dateLabel} $dateText',
                           style: const TextStyle(
                               color: Colors.black87,
                               fontSize: 15,
@@ -337,7 +338,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   const TextInputType.numberWithOptions(decimal: true),
                   enabled: !_isSaving,
                   decoration: InputDecoration(
-                      labelText: loc?.quantity ?? 'Cantidad',
+                      labelText: loc.quantity,
                       labelStyle: const TextStyle(
                           color: Colors.black, fontWeight: FontWeight.w500),
                       border: const UnderlineInputBorder(),
@@ -356,7 +357,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
-                      labelText: loc?.unitPrice ?? 'Precio por unidad (€)',
+                      labelText: loc.unitPrice,
                       labelStyle: const TextStyle(
                           color: Colors.black, fontWeight: FontWeight.w500),
                       border: const UnderlineInputBorder(),
@@ -369,11 +370,11 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   validator: (val) {
                     if (!_priceTouched && !_formSubmitted) return null;
                     if (val == null || val.isEmpty) {
-                      return loc?.fieldRequired ?? 'Campo obligatorio';
+                      return loc.fieldRequired;
                     }
                     final n = double.tryParse(val);
                     if (n == null || n <= 0) {
-                      return loc?.invalidPrice ?? 'Precio inválido';
+                      return loc.invalidPrice;
                     }
                     return null;
                   },
@@ -390,7 +391,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                       child: OutlinedButton(
                         onPressed:
                         _isSaving ? null : () => Navigator.of(context).pop(),
-                        child: Text(loc?.cancel ?? 'Cancelar'),
+                        child: Text(loc.cancel),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -425,7 +426,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                                 Colors.black87),
                           ),
                         )
-                            : Text(loc?.save ?? 'Guardar'),
+                            : Text(loc.save),
                       ),
                     ),
                   ],

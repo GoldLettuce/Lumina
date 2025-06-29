@@ -91,4 +91,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noArchivedAssets => 'No hidden assets found.';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get loadSymbolsError => 'Failed to load symbols';
+
+  @override
+  String get noSymbolsFound => 'No symbols found';
+
+  @override
+  String get deleteOperations => 'Delete operations';
+
+  @override
+  String get deleteOperationsMessage => 'Are you sure you want to delete the selected operations? This action cannot be undone.';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get noOperations => 'No operations recorded.';
+
+  @override
+  String get editOperation => 'Edit operation';
+
+  @override
+  String get selectOperationType => 'Select operation type';
+
+  @override
+  String get dateLabel => 'Date:';
+
+  @override
+  String get spanish => 'Spanish';
+
+  @override
+  String get english => 'English';
 }

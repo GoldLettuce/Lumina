@@ -1,11 +1,9 @@
-// lib/ui/screens/archived_assets_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/models/investment_model.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
-import 'asset_detail_screen.dart'; // ✅ añadido para navegar
+import 'asset_detail_screen.dart';
 
 class ArchivedAssetsScreen extends StatelessWidget {
   const ArchivedAssetsScreen({super.key});
@@ -15,10 +13,11 @@ class ArchivedAssetsScreen extends StatelessWidget {
     final model = context.watch<InvestmentModel>();
     final archived = model.investments.where((inv) => inv.totalQuantity == 0).toList();
     final theme = Theme.of(context);
+    final t = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)?.archivedAssetsTitle ?? 'Activos sin posición'),
+        title: Text(t.archivedAssetsTitle),
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
         centerTitle: true,
@@ -26,7 +25,7 @@ class ArchivedAssetsScreen extends StatelessWidget {
       body: archived.isEmpty
           ? Center(
         child: Text(
-          AppLocalizations.of(context)?.noArchivedAssets ?? 'No hay activos sin posición.',
+          t.noArchivedAssets,
           style: theme.textTheme.bodyLarge,
         ),
       )
@@ -43,7 +42,7 @@ class ArchivedAssetsScreen extends StatelessWidget {
               style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
-              '${AppLocalizations.of(context)?.quantity ?? 'Cantidad'}: ${asset.totalQuantity}',
+              '${t.quantity}: ${asset.totalQuantity}',
               style: theme.textTheme.bodyMedium,
             ),
             onTap: () async {

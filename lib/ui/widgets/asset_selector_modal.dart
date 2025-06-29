@@ -38,7 +38,7 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     return FractionallySizedBox(
       heightFactor: 0.65,
@@ -56,7 +56,7 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                 height: 48,
                 alignment: Alignment.center,
                 child: Text(
-                  loc?.selectSymbol ?? 'Select a symbol',
+                  loc.selectSymbol,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -87,11 +87,10 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                     if (prov.isLoading) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (prov.error != null) {
-                      return Center(child: Text(prov.error!));
+                      return Center(child: Text(loc.loadSymbolsError));
                     } else if (prov.filteredSymbols.isEmpty) {
-                      // Texto literal en lugar de loc?.noSymbolsFound
                       return Center(
-                        child: Text('No symbols found'),
+                        child: Text(loc.noSymbolsFound),
                       );
                     }
 

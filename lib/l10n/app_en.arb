@@ -27,5 +27,18 @@
   "searchAsset": "Search asset",
   "notEnoughChartData": "Not enough data to display the chart",
   "archivedAssetsTitle": "Archived assets",
-  "noArchivedAssets": "No hidden assets found."
+  "noArchivedAssets": "No hidden assets found.",
+  "settings": "Settings",
+  "language": "Language",
+  "loadSymbolsError": "Failed to load symbols",
+  "noSymbolsFound": "No symbols found",
+  "deleteOperations": "Delete operations",
+  "deleteOperationsMessage": "Are you sure you want to delete the selected operations? This action cannot be undone.",
+  "delete": "Delete",
+  "noOperations": "No operations recorded.",
+  "editOperation": "Edit operation",
+  "selectOperationType": "Select operation type",
+  "dateLabel": "Date:",
+  "spanish": "Spanish",
+  "english": "English"
 }

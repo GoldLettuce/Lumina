@@ -91,4 +91,43 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noArchivedAssets => 'No hay activos sin posición actualmente.';
+
+  @override
+  String get settings => 'Ajustes';
+
+  @override
+  String get language => 'Idioma';
+
+  @override
+  String get loadSymbolsError => 'No se pudieron cargar los símbolos';
+
+  @override
+  String get noSymbolsFound => 'No se encontraron símbolos';
+
+  @override
+  String get deleteOperations => 'Eliminar operaciones';
+
+  @override
+  String get deleteOperationsMessage => '¿Estás seguro de que quieres eliminar las operaciones seleccionadas? Esta acción no se puede deshacer.';
+
+  @override
+  String get delete => 'Eliminar';
+
+  @override
+  String get noOperations => 'No hay operaciones registradas.';
+
+  @override
+  String get editOperation => 'Editar operación';
+
+  @override
+  String get selectOperationType => 'Seleccione tipo de operación';
+
+  @override
+  String get dateLabel => 'Fecha:';
+
+  @override
+  String get spanish => 'Español';
+
+  @override
+  String get english => 'Inglés';
 }

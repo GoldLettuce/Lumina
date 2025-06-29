@@ -1,5 +1,3 @@
-// lib/ui/screens/asset_detail_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/data/models/investment_model.dart';
 import 'package:lumina/ui/widgets/add_investment_dialog.dart';
+import '../../l10n/app_localizations.dart';
 
 class AssetDetailScreen extends StatefulWidget {
   final Investment asset;
@@ -35,22 +34,21 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
   }
 
   Future<void> _confirmDelete(BuildContext context, Investment asset) async {
+    final t = AppLocalizations.of(context)!;
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Eliminar operaciones'),
-        content: const Text(
-          '¿Estás seguro de que quieres eliminar las operaciones seleccionadas? '
-              'Esta acción no se puede deshacer.',
-        ),
+        title: Text(t.deleteOperations),
+        content: Text(t.deleteOperationsMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(t.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Eliminar'),
+            child: Text(t.delete),
           ),
         ],
       ),
@@ -61,7 +59,6 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
       await model.removeOperations(asset.symbol, _selectedIds.toList());
       _clearSelection();
 
-      // ✅ Si ya no existe (porque no quedan operaciones), salimos de la pantalla
       final stillExists = model.investments.any((e) => e.symbol == asset.symbol);
       if (!stillExists && mounted) {
         Navigator.of(context).pop();
@@ -73,14 +70,13 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
   Widget build(BuildContext context) {
     final model = context.watch<InvestmentModel>();
     final theme = Theme.of(context);
+    final t = AppLocalizations.of(context)!;
 
     final currentAsset = model.investments
         .where((inv) => inv.symbol == widget.asset.symbol)
         .firstOrNull;
 
-    // 🔒 Si el activo ya no existe (ha sido eliminado al quedarse sin operaciones), salimos de la pantalla
     if (currentAsset == null) {
-      // Ejecutamos la salida al final del frame actual para evitar errores de contexto
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Navigator.of(context).canPop()) Navigator.of(context).pop();
       });
@@ -98,17 +94,15 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
             icon: const Icon(Icons.delete),
             onPressed: _selectedIds.isNotEmpty
                 ? () => _confirmDelete(context, currentAsset)
-                : null, // 👉 deshabilita si está vacío
-            color: _selectedIds.isNotEmpty
-                ? Colors.red // 👉 rojo si activo
-                : Colors.grey, // 👉 gris si desactivado
+                : null,
+            color: _selectedIds.isNotEmpty ? Colors.red : Colors.grey,
           ),
         ],
       ),
       body: currentAsset.operations.isEmpty
           ? Center(
         child: Text(
-          'No hay operaciones registradas.',
+          t.noOperations,
           style: theme.textTheme.bodyLarge,
         ),
       )
@@ -139,7 +133,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                   color: color,
                 ),
                 title: Text(
-                  '${isBuy ? 'Compra' : 'Venta'} de ${op.quantity}',
+                  '${isBuy ? t.buy : t.sell} de ${op.quantity}',
                   style: theme.textTheme.bodyLarge,
                 ),
                 subtitle: Text(fecha),
@@ -165,8 +159,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                           ),
                         );
                         if (edited != null) {
-                          await model.editOperation(
-                              currentAsset.symbol, edited);
+                          await model.editOperation(currentAsset.symbol, edited);
                         }
                       },
                     ),

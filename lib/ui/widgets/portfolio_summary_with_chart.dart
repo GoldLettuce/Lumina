@@ -62,7 +62,7 @@ class _PortfolioChart extends StatelessWidget {
 
     // 2️⃣ Para la selección usamos read (sin re-reconstruir el widget).
     final chartProvider = context.read<ChartValueProvider>();
-    final loc = AppLocalizations.of(context);
+    final loc = AppLocalizations.of(context)!;
 
     final spots = history
         .asMap()
@@ -77,8 +77,7 @@ class _PortfolioChart extends StatelessWidget {
         height: 200,
         child: Center(
           child: Text(
-            loc?.notEnoughChartData ??
-                'No hay suficientes datos para mostrar el gráfico',
+            loc.notEnoughChartData,
             style: Theme.of(context).textTheme.bodyMedium,
             textAlign: TextAlign.center,
           ),

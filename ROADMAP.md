@@ -115,7 +115,7 @@
 ## FASE 7: Pantalla de Configuración y Personalización
 
 - [x] Crear pantalla de ajustes accesible desde la pantalla principal.
-- [ ] Selector de idioma (`es`, `en`).
+- [x] Selector de idioma (`es`, `en`).
 - [ ] Selector de moneda base (USD, EUR, etc.).
 - [ ] Alternancia de modo oscuro/manual.
 - [ ] Exportación/Importación manual de datos (JSON o CSV).

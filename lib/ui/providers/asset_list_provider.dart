@@ -33,7 +33,7 @@ class AssetListProvider extends ChangeNotifier {
       _allSymbols = symbols;
       _filteredSymbols = List<String>.from(_allSymbols);
     } catch (e) {
-      _error = 'No se pudieron cargar los símbolos';
+      _error = 'loadSymbolsError'; // Usamos la clave de localización
     }
 
     _isLoading = false;

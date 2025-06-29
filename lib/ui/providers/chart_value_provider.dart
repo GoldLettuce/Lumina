@@ -1,5 +1,3 @@
-// lib/ui/providers/chart_value_provider.dart
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -10,7 +8,7 @@ import 'package:lumina/data/repositories_impl/price_repository_impl.dart';
 import 'package:lumina/data/repositories_impl/history_repository_impl.dart';
 import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/domain/repositories/price_repository.dart';
-import 'package:lumina/domain/entities/asset_type.dart'; // <-- NUEVA LÍNEA
+import 'package:lumina/domain/entities/asset_type.dart';
 import 'package:lumina/domain/repositories/history_repository.dart';
 
 class ChartValueProvider extends ChangeNotifier {
@@ -32,7 +30,6 @@ class ChartValueProvider extends ChangeNotifier {
   // ───────────────────────────────────────── UI getters ────
   List<Point> get history => _history;
 
-  /// Histórico + punto “vivo” de hoy (sin duplicar si coincide fecha).
   List<Point> get displayHistory {
     if (_todayPoint == null) return _history;
 
@@ -50,7 +47,7 @@ class ChartValueProvider extends ChangeNotifier {
     return [..._history, _todayPoint!];
   }
 
-  int?   get selectedIndex => _selectedIndex;
+  int? get selectedIndex => _selectedIndex;
   double? get selectedValue =>
       (_selectedIndex != null && displayHistory.isNotEmpty)
           ? displayHistory[_selectedIndex!].value
@@ -93,12 +90,9 @@ class ChartValueProvider extends ChangeNotifier {
     updatePrices();
   }
 
-  /// 1) Actualiza precios spot.
-  /// 2) Calcula valor actual del portafolio y genera el punto “vivo”.
   Future<void> updatePrices() async {
     if (_visibleSymbols.isEmpty) return;
     try {
-      // 1️⃣ Precios spot
       final prices = await _priceRepository.getPrices(
         _visibleSymbols,
         currency: 'USD',
@@ -108,11 +102,8 @@ class ChartValueProvider extends ChangeNotifier {
         ..addAll(prices);
       notifyListeners();
 
-      // 2️⃣ Si no hay histórico cacheado, salimos: no podemos generar punto de hoy.
       if (_history.isEmpty) return;
 
-      // 3️⃣ Valor actual del portafolio (solo criptos)
-      //    TODO: reactivar soporte para acciones cuando se decida.
       final cryptoInvestments = _lastInvestments
           .where((e) => e.type == AssetType.crypto)
           .toList();
@@ -122,18 +113,15 @@ class ChartValueProvider extends ChangeNotifier {
         _spotPrices,
       );
 
-      // 4️⃣ Punto “vivo” de hoy (se sobre-escribe cada minuto)
       _todayPoint = Point(time: DateTime.now(), value: newValue);
-
       notifyListeners();
     } catch (e) {
-      debugPrint('❌ Error actualizando precios: $e');
+      // Silenciado
     }
   }
 
   double? getPriceFor(String symbol) => _spotPrices[symbol];
 
-  /// Fuerza la reconstrucción completa del histórico (borra caché).
   Future<void> forceRebuildAndReload(List<Investment> investments) async {
     _lastInvestments = investments;
     final box = await Hive.openBox<ChartCache>('chart_cache');
@@ -142,15 +130,14 @@ class ChartValueProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Carga histórico desde caché o API si expiró.
   Future<void> loadHistory(List<Investment> investments) async {
     _lastInvestments = investments;
-    final box   = await Hive.openBox<ChartCache>('chart_cache');
+    final box = await Hive.openBox<ChartCache>('chart_cache');
     final cache = box.get('all');
 
     if (cache != null && !_shouldUpdate()) {
-      _history       = cache.history;
-      _historyStart  = _history.isNotEmpty ? _history.first.time : null;
+      _history = cache.history;
+      _historyStart = _history.isNotEmpty ? _history.first.time : null;
       _spotPrices
         ..clear()
         ..addAll(cache.spotPrices);
@@ -165,7 +152,6 @@ class ChartValueProvider extends ChangeNotifier {
   // ───────────────────────────────────────── Internals ────
   Future<void> _loadAndCacheHistory() async {
     try {
-      // Solo procesamos criptoactivos. TODO: reactivar soporte stock si se habilita.
       final cryptoInvestments = _lastInvestments
           .where((e) => e.type == AssetType.crypto)
           .toList();
@@ -181,16 +167,13 @@ class ChartValueProvider extends ChangeNotifier {
         spotPrices: _spotPrices,
       );
 
-      if (hist.isEmpty) {
-        debugPrint('⚠️ Histórico incompleto: no hay puntos de API');
-        return;
-      }
+      if (hist.isEmpty) return;
 
-      _history      = hist;
+      _history = hist;
       _historyStart = _history.first.time;
       await _saveCache();
     } catch (e) {
-      debugPrint('❌ Error cargando histórico: $e');
+      // Silenciado
     }
   }
 

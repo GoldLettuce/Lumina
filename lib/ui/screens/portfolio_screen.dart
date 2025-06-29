@@ -42,6 +42,7 @@ class PortfolioSummaryMinimal extends StatelessWidget {
     final chartProvider = context.watch<ChartValueProvider>();
     final history = chartProvider.displayHistory;
 
+
     final hasSelection = chartProvider.selectedIndex != null;
 
     final currentValue = hasSelection
@@ -152,6 +153,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final t = AppLocalizations.of(context)!;
     final model = context.watch<InvestmentModel>();
     final investments = model.investments.where((e) => e.totalQuantity > 0).toList();
     final chartProvider = context.watch<ChartValueProvider>();
@@ -194,8 +196,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Text(
-                    AppLocalizations.of(context)?.emptyPortfolioMessage ??
-                        'No tienes inversiones aún.\n¡Comienza añadiendo la primera!',
+                    t.emptyPortfolioMessage,
                     style: theme.textTheme.bodyLarge,
                     textAlign: TextAlign.center,
                   ),
@@ -218,10 +219,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       style: theme.textTheme.bodyLarge!
                           .copyWith(fontWeight: FontWeight.bold),
                     ),
-                    subtitle: Text(
-                      '${AppLocalizations.of(context)?.quantity ?? ''}: ${asset.totalQuantity}',
-                      style: theme.textTheme.bodyMedium,
-                    ),
+                      subtitle: Text(
+                        '${t.quantity}: ${asset.totalQuantity}',
+                        style: theme.textTheme.bodyMedium,
+                      ),
                     trailing: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       child: valorActual == null
@@ -265,8 +266,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 );
               },
               child: Text(
-                AppLocalizations.of(context)?.archivedAssetsTitle ??
-                    'Activos sin posición',
+                t.archivedAssetsTitle,
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,

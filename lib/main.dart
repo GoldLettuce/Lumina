@@ -14,7 +14,8 @@ import 'data/repositories_impl/investment_repository_impl.dart';
 import 'data/models/investment_model.dart';
 import 'ui/providers/chart_value_provider.dart';
 import 'ui/providers/asset_list_provider.dart';
-import 'ui/providers/settings_provider.dart'; // Nuevo import
+import 'ui/providers/settings_provider.dart';
+import 'ui/providers/locale_provider.dart';
 
 import 'ui/screens/portfolio_screen.dart';
 import 'core/point.dart';
@@ -32,7 +33,7 @@ Future<void> main() async {
   Hive.registerAdapter(InvestmentOperationAdapter());
   Hive.registerAdapter(PointAdapter());
   Hive.registerAdapter(LocalHistoryAdapter());
-  Hive.registerAdapter(ChartCacheAdapter()); // Nuevo adaptador registrado
+  Hive.registerAdapter(ChartCacheAdapter());
   Hive.registerAdapter(OperationTypeAdapter());
   Hive.registerAdapter(AssetTypeAdapter());
 
@@ -45,7 +46,8 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => AssetListProvider()),
         ChangeNotifierProvider(create: (_) => InvestmentModel(investmentRepository)),
         ChangeNotifierProvider(create: (_) => ChartValueProvider()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()), // Añadido SettingsProvider
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
       ],
       child: const PortfolioApp(),
     ),
@@ -57,10 +59,13 @@ class PortfolioApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.watch<LocaleProvider>().locale; // 🌍 Escucha idioma
+
     return MaterialApp(
       title: 'Mi Portafolio',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      locale: locale, // ✅ Aplica idioma dinámico
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
