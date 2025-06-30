@@ -1,5 +1,9 @@
+// lib/ui/screens/archived_assets_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import 'package:lumina/ui/providers/currency_provider.dart';  // por si se necesita conversión en el futuro
 import '../../data/models/investment_model.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
@@ -11,7 +15,8 @@ class ArchivedAssetsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final model = context.watch<InvestmentModel>();
-    final archived = model.investments.where((inv) => inv.totalQuantity == 0).toList();
+    final archived =
+    model.investments.where((inv) => inv.totalQuantity == 0).toList();
     final theme = Theme.of(context);
     final t = AppLocalizations.of(context)!;
 
@@ -30,7 +35,8 @@ class ArchivedAssetsScreen extends StatelessWidget {
         ),
       )
           : ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        padding:
+        const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         itemCount: archived.length,
         separatorBuilder: (_, __) => Divider(color: AppColors.border),
         itemBuilder: (context, index) {
@@ -39,7 +45,8 @@ class ArchivedAssetsScreen extends StatelessWidget {
             contentPadding: EdgeInsets.zero,
             title: Text(
               asset.symbol,
-              style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.bodyLarge!
+                  .copyWith(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${t.quantity}: ${asset.totalQuantity}',

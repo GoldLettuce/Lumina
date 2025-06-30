@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../providers/chart_value_provider.dart';
+import '../providers/currency_provider.dart'; // Import CurrencyProvider
 import '../widgets/add_investment_dialog.dart';
 import '../../data/models/investment_model.dart';
 import '../widgets/portfolio_summary_with_chart.dart';
@@ -38,31 +39,35 @@ class PortfolioSummaryMinimal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = context.watch<InvestmentModel>();
     final chartProvider = context.watch<ChartValueProvider>();
+    final fx = context.watch<CurrencyProvider>(); // Obtener provider de cambio
     final history = chartProvider.displayHistory;
-
 
     final hasSelection = chartProvider.selectedIndex != null;
 
-    final currentValue = hasSelection
+    final currentValueUsd = hasSelection
         ? chartProvider.selectedValue!
         : (history.isNotEmpty ? history.last.value : 0.0);
+    final initialValueUsd = history.isNotEmpty ? history.first.value : 0.0;
 
-    final initialValue = history.isNotEmpty ? history.first.value : 0.0;
+    // Convertir a moneda seleccionada
+    final currentValue = currentValueUsd * fx.exchangeRate;
+    final initialValue = initialValueUsd * fx.exchangeRate;
 
     final rentabilidad = hasSelection
         ? chartProvider.selectedPct!
-        : (initialValue == 0.0
+        : (initialValueUsd == 0.0
         ? 0.0
-        : (currentValue - initialValue) / initialValue * 100);
+        : (currentValueUsd - initialValueUsd) / initialValueUsd * 100);
 
     final dateText = hasSelection
         ? DateFormat('d MMM yyyy', Localizations.localeOf(context).toString())
         .format(chartProvider.selectedDate!)
         : '';
 
-    final valorText = '€${currentValue.toStringAsFixed(2)}';
+    // Formatear valor actual
+    final valorText = NumberFormat.simpleCurrency(name: fx.currency)
+        .format(currentValue);
     final sign = rentabilidad >= 0 ? '+' : '-';
     final percentText = '$sign${rentabilidad.abs().toStringAsFixed(2)}%';
 
@@ -157,6 +162,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final model = context.watch<InvestmentModel>();
     final investments = model.investments.where((e) => e.totalQuantity > 0).toList();
     final chartProvider = context.watch<ChartValueProvider>();
+    final fx = context.watch<CurrencyProvider>(); // Obtener provider de cambio
 
     return Scaffold(
       appBar: AppBar(
@@ -169,7 +175,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             );
           },
         ),
-        title: const SizedBox.shrink(), // elimina el texto visible
+        title: const SizedBox.shrink(),
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
@@ -207,9 +213,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 separatorBuilder: (_, __) => Divider(color: AppColors.border),
                 itemBuilder: (context, index) {
                   final asset = investments[index];
-                  final price = chartProvider.getPriceFor(asset.symbol);
-                  final valorActual = price != null
-                      ? asset.totalQuantity * price
+                  final priceUsd = chartProvider.getPriceFor(asset.symbol);
+                  final valorActual = priceUsd != null
+                      ? asset.totalQuantity * priceUsd * fx.exchangeRate
                       : null;
 
                   return ListTile(
@@ -219,16 +225,17 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       style: theme.textTheme.bodyLarge!
                           .copyWith(fontWeight: FontWeight.bold),
                     ),
-                      subtitle: Text(
-                        '${t.quantity}: ${asset.totalQuantity}',
-                        style: theme.textTheme.bodyMedium,
-                      ),
+                    subtitle: Text(
+                      '${t.quantity}: ${asset.totalQuantity}',
+                      style: theme.textTheme.bodyMedium,
+                    ),
                     trailing: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       child: valorActual == null
                           ? const SizedBox(width: 60)
                           : Text(
-                        '€${valorActual.toStringAsFixed(2)}',
+                        NumberFormat.simpleCurrency(name: fx.currency)
+                            .format(valorActual),
                         key: ValueKey(valorActual),
                         style: theme.textTheme.bodyLarge!
                             .copyWith(fontWeight: FontWeight.w600),
@@ -243,7 +250,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                         ),
                       );
                       // Recalculamos gráfico y precios al volver de edición
-                      final allInvestments = context.read<InvestmentModel>().investments;
+                      final allInvestments = context
+                          .read<InvestmentModel>()
+                          .investments;
                       chartProvider.loadHistory(allInvestments);
                       chartProvider.setVisibleSymbols(
                         allInvestments.map((e) => e.symbol).toSet(),

@@ -3,6 +3,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import 'package:lumina/ui/providers/currency_provider.dart';
 import 'package:lumina/core/point.dart';
 import '../providers/chart_value_provider.dart';
 import '../../core/theme.dart';
@@ -12,24 +14,18 @@ import 'package:lumina/domain/entities/investment.dart';
 /// Contenedor general: inicializa símbolos y fuerza la recarga.
 class PortfolioSummaryWithChart extends StatefulWidget {
   final List<Investment> investments;
-  const PortfolioSummaryWithChart({Key? key, required this.investments})
-      : super(key: key);
+  const PortfolioSummaryWithChart({Key? key, required this.investments}) : super(key: key);
 
   @override
-  _PortfolioSummaryWithChartState createState() =>
-      _PortfolioSummaryWithChartState();
+  _PortfolioSummaryWithChartState createState() => _PortfolioSummaryWithChartState();
 }
 
-class _PortfolioSummaryWithChartState
-    extends State<PortfolioSummaryWithChart> {
+class _PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final symbols = widget.investments
-          .map((inv) => inv.symbol)
-          .where((s) => s.isNotEmpty)
-          .toSet();
+      final symbols = widget.investments.map((inv) => inv.symbol).where((s) => s.isNotEmpty).toSet();
       if (symbols.isNotEmpty) {
         final chartProvider = context.read<ChartValueProvider>();
         chartProvider.setVisibleSymbols(symbols);
@@ -39,12 +35,35 @@ class _PortfolioSummaryWithChartState
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
-    return Column(
-      children: const [
-        _PortfolioChart(),
-        SizedBox(height: 12),
-      ],
+    // Solo el gráfico, el total se muestra en PortfolioSummaryMinimal
+    return const _PortfolioChart();
+  }
+}
+
+/// Widget que muestra el total convertido del portafolio
+class _PortfolioTotal extends StatelessWidget {
+  final List<Investment> investments;
+  const _PortfolioTotal({Key? key, required this.investments}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final fx = context.watch<CurrencyProvider>();
+    final chartProvider = context.read<ChartValueProvider>();
+
+    final totalUsd = investments.fold<double>(0, (sum, inv) {
+      final price = chartProvider.getPriceFor(inv.symbol) ?? 0;
+      return sum + inv.totalQuantity * price;
+    });
+
+    final converted = totalUsd * fx.exchangeRate;
+    final formatted = NumberFormat.simpleCurrency(name: fx.currency).format(converted);
+
+    return Text(
+      formatted,
+      style: Theme.of(context).textTheme.headlineMedium,
+      textAlign: TextAlign.center,
     );
   }
 }
@@ -55,20 +74,15 @@ class _PortfolioChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1️⃣ Escuchamos displayHistory, que incluye el punto de hoy.
-    final history = context.select<ChartValueProvider, List<Point>>(
-          (p) => p.displayHistory,
-    );
-
-    // 2️⃣ Para la selección usamos read (sin re-reconstruir el widget).
+    final history = context.select<ChartValueProvider, List<Point>>((p) => p.displayHistory);
     final chartProvider = context.read<ChartValueProvider>();
+    final fx = context.watch<CurrencyProvider>();
     final loc = AppLocalizations.of(context)!;
 
-    final spots = history
-        .asMap()
-        .entries
-        .map((e) => FlSpot(e.key.toDouble(), e.value.value))
-        .toList();
+    final spots = history.asMap().entries.map((e) => FlSpot(
+      e.key.toDouble(),
+      e.value.value * fx.exchangeRate,
+    )).toList();
 
     debugPrint('📈 Puntos visibles en el gráfico: ${spots.length}');
 
@@ -98,15 +112,10 @@ class _PortfolioChart extends StatelessWidget {
             handleBuiltInTouches: false,
             touchTooltipData: LineTouchTooltipData(getTooltipItems: (_) => []),
             touchCallback: (event, resp) {
-              final isEnd = event is FlTapUpEvent ||
-                  event is FlTapCancelEvent ||
-                  event is FlLongPressEnd ||
-                  event is FlPanEndEvent;
+              final isEnd = event is FlTapUpEvent || event is FlTapCancelEvent || event is FlLongPressEnd || event is FlPanEndEvent;
               if (!isEnd) {
                 final spot = resp?.lineBarSpots?.first;
-                if (spot != null) {
-                  chartProvider.selectSpot(spot.spotIndex);
-                }
+                if (spot != null) chartProvider.selectSpot(spot.spotIndex);
               } else {
                 chartProvider.clearSelection();
               }

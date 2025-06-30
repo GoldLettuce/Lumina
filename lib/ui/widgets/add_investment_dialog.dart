@@ -13,6 +13,8 @@ import 'package:provider/provider.dart';
 import 'package:lumina/ui/providers/chart_value_provider.dart';
 import 'package:lumina/data/models/investment_model.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
+import 'package:lumina/ui/providers/currency_provider.dart';
+
 
 /// Diálogo para añadir o editar una operación **solo de criptomonedas**.
 class AddInvestmentDialog extends StatefulWidget {
@@ -52,12 +54,23 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     if (op != null) {
       _operationType = op.type;
       _quantityController.text = op.quantity.toString();
-      _priceController.text = op.price.toString();
       _selectedDate = op.date;
       _symbol = widget.initialSymbol;
       _symbolTouched = widget.initialSymbol != null;
     }
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (widget.initialOperation != null && !_priceTouched) {
+      final fx = context.read<CurrencyProvider>();
+      // Convertimos el precio USD a moneda local
+      final local = widget.initialOperation!.price * fx.exchangeRate;
+      _priceController.text = local.toStringAsFixed(2);
+    }
+  }
+
 
   @override
   void dispose() {
@@ -118,12 +131,16 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     }
 
     final quantity = double.parse(_quantityController.text.trim());
-    final price = double.parse(_priceController.text.trim());
+    final priceLocal = double.parse(_priceController.text.trim());
+
+    final fx = context.read<CurrencyProvider>();      // tasa actual
+    final priceUsd = priceLocal / fx.exchangeRate;    // ① conviertes a USD
+
 
     final operation = InvestmentOperation(
       id: widget.initialOperation?.id ?? const Uuid().v4(),
       quantity: quantity,
-      price: price,
+      price: priceUsd,
       date: _selectedDate!,
       type: _operationType!,
     );
@@ -154,13 +171,16 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       model: model,
     );
 
+// <<< corregido >>>
     chartProvider.setVisibleSymbols(
       model.investments.map((e) => e.symbol).toSet(),
     );
-
-    await chartProvider.forceRebuildAndReload(model.investments);
-    await chartProvider.updatePrices();
-
+// ① primero recargamos el gráfico con la nueva lista (o lista vacía)
+    if (mounted) {
+      await chartProvider.forceRebuildAndReload(model.investments);
+      await chartProvider.updatePrices();
+    }
+// ② y **al final** cerramos el diálogo
     Navigator.of(context).pop();
   }
 
@@ -171,9 +191,10 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final dateText = _selectedDate == null
-        ? (loc.selectDate)
+        ? loc.selectDate
         : MaterialLocalizations.of(context).formatMediumDate(_selectedDate!);
 
+// Obtenemos el provider y calculamos el total convertido
     return Dialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

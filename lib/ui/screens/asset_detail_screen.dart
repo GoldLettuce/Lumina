@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/data/models/investment_model.dart';
 import 'package:lumina/ui/widgets/add_investment_dialog.dart';
+import 'package:lumina/ui/providers/currency_provider.dart'; // Import CurrencyProvider
 import '../../l10n/app_localizations.dart';
 
 class AssetDetailScreen extends StatefulWidget {
@@ -69,6 +70,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final model = context.watch<InvestmentModel>();
+    final fx = context.watch<CurrencyProvider>(); // Obtener provider
     final theme = Theme.of(context);
     final t = AppLocalizations.of(context)!;
 
@@ -83,7 +85,8 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
       return const SizedBox.shrink();
     }
 
-    final currencyFormatter = NumberFormat.simpleCurrency(locale: 'en_US');
+    // Formatter para la moneda seleccionada, usando su nombre
+    final currencyFormatter = NumberFormat.simpleCurrency(name: fx.currency);
 
     return Scaffold(
       appBar: AppBar(
@@ -117,6 +120,10 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
           final color = isBuy ? Colors.green : Colors.red;
           final selected = _selectedIds.contains(op.id);
 
+          // Convertir precio USD a moneda seleccionada
+          final convertedPrice = op.price * fx.exchangeRate;
+          final priceText = currencyFormatter.format(convertedPrice);
+
           return GestureDetector(
             onLongPress: () => _toggleSelection(op.id),
             onTap: () {
@@ -141,7 +148,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      currencyFormatter.format(op.price),
+                      priceText,
                       style: theme.textTheme.bodyMedium!.copyWith(
                         color: color,
                         fontWeight: FontWeight.w600,
