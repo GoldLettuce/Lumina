@@ -1,3 +1,4 @@
+// lib/ui/providers/currency_provider.dart
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/services/fx_current_rate_service.dart';  // Servicio de tasas de cambio
@@ -10,9 +11,12 @@ class CurrencyProvider extends ChangeNotifier {
 
   late Box _box;
 
-  // Moneda base seleccionada
+  // Moneda base seleccionada (p.ej. "USD")
   String _currency = '';
   String get currency => _currency;
+
+  /// **Alias en minúsculas** para usar en APIs (p.ej. "usd").
+  String get currencyCode => _currency.toLowerCase();
 
   // Lista de monedas disponibles
   Map<String, String> _currencies = {};

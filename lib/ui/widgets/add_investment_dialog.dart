@@ -15,7 +15,6 @@ import 'package:lumina/data/models/investment_model.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 import 'package:lumina/ui/providers/currency_provider.dart';
 
-
 /// Diálogo para añadir o editar una operación **solo de criptomonedas**.
 class AddInvestmentDialog extends StatefulWidget {
   const AddInvestmentDialog({
@@ -35,7 +34,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   final _formKey = GlobalKey<FormState>();
 
   OperationType? _operationType;
-  String? _symbol;
+  String? _displaySymbol;
+  String? _coingeckoId;
   DateTime? _selectedDate = DateTime.now();
   final _quantityController = TextEditingController();
   final _priceController = TextEditingController();
@@ -52,11 +52,13 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     super.initState();
     final op = widget.initialOperation;
     if (op != null) {
-      _operationType = op.type;
+      // Si venimos de editar, inicializamos también el símbolo y el ID
+      _operationType     = op.type;
       _quantityController.text = op.quantity.toString();
-      _selectedDate = op.date;
-      _symbol = widget.initialSymbol;
-      _symbolTouched = widget.initialSymbol != null;
+      _selectedDate      = op.date;
+      _displaySymbol     = widget.initialSymbol;
+      _coingeckoId       = op.id;
+      _symbolTouched     = widget.initialSymbol != null;
     }
   }
 
@@ -70,7 +72,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       _priceController.text = local.toStringAsFixed(2);
     }
   }
-
 
   @override
   void dispose() {
@@ -94,7 +95,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   }
 
   Future<void> _selectSymbol() async {
-    final selected = await showModalBottomSheet<String>(
+    final result = await showModalBottomSheet<Map<String, String>>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
@@ -103,9 +104,10 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       ),
       builder: (_) => const AssetSelectorModal(type: AssetType.crypto),
     );
-    if (selected != null) {
+    if (result != null) {
       setState(() {
-        _symbol = selected;
+        _displaySymbol = result['symbol'];
+        _coingeckoId   = result['id'];
         _symbolTouched = true;
       });
     }
@@ -122,27 +124,27 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       _isSaving = true;
     });
 
+    // Validación: exigimos símbolo, ID, tipo y fecha
     if (!_formKey.currentState!.validate() ||
-        _symbol == null ||
+        _displaySymbol == null ||
+        _coingeckoId   == null ||
         _operationType == null ||
-        _selectedDate == null) {
+        _selectedDate  == null) {
       setState(() => _isSaving = false);
       return;
     }
 
-    final quantity = double.parse(_quantityController.text.trim());
+    final quantity   = double.parse(_quantityController.text.trim());
     final priceLocal = double.parse(_priceController.text.trim());
-
-    final fx = context.read<CurrencyProvider>();      // tasa actual
-    final priceUsd = priceLocal / fx.exchangeRate;    // ① conviertes a USD
-
+    final fx         = context.read<CurrencyProvider>();
+    final priceUsd   = priceLocal / fx.exchangeRate;
 
     final operation = InvestmentOperation(
-      id: widget.initialOperation?.id ?? const Uuid().v4(),
+      id:       widget.initialOperation?.id ?? const Uuid().v4(),
       quantity: quantity,
-      price: priceUsd,
-      date: _selectedDate!,
-      type: _operationType!,
+      price:    priceUsd,
+      date:     _selectedDate!,
+      type:     _operationType!,
     );
 
     // Edición
@@ -152,35 +154,43 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     }
 
     // Alta
-    final model = context.read<InvestmentModel>();
+    final model         = context.read<InvestmentModel>();
     final chartProvider = context.read<ChartValueProvider>();
-    final repo = InvestmentRepositoryImpl();
+    final repo          = InvestmentRepositoryImpl();
     await repo.init();
 
+    // Leer moneda de referencia (p.ej. "usd")
+    final currencyCode = context
+        .read<CurrencyProvider>()
+        .currencyCode
+        .toLowerCase();
+
+    // Crear Investment con símbolo, nombre, ID y vsCurrency
     final newInvestment = Investment(
-      symbol: _symbol!,
-      name: _symbol!,
-      type: AssetType.crypto, // fijo a CRIPTO
+      symbol:      _displaySymbol!,
+      name:        _displaySymbol!,
+      type:        AssetType.crypto,
+      coingeckoId: _coingeckoId!,
+      vsCurrency:  currencyCode,
     );
 
     await addOperationAndSync(
       investment: newInvestment,
-      newOp: operation,
-      repo: repo,
+      newOp:      operation,
+      repo:       repo,
       chartProvider: chartProvider,
-      model: model,
+      model:         model,
     );
 
-// <<< corregido >>>
+    // Actualizar gráfico
     chartProvider.setVisibleSymbols(
       model.investments.map((e) => e.symbol).toSet(),
     );
-// ① primero recargamos el gráfico con la nueva lista (o lista vacía)
     if (mounted) {
       await chartProvider.forceRebuildAndReload(model.investments);
       await chartProvider.updatePrices();
     }
-// ② y **al final** cerramos el diálogo
+
     Navigator.of(context).pop();
   }
 
@@ -189,12 +199,11 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   // ────────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
+    final loc      = AppLocalizations.of(context)!;
     final dateText = _selectedDate == null
         ? loc.selectDate
         : MaterialLocalizations.of(context).formatMediumDate(_selectedDate!);
 
-// Obtenemos el provider y calculamos el total convertido
     return Dialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -227,9 +236,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: _isSaving
-                            ? () {}
-                            : () => setState(
-                                () => _operationType = OperationType.buy),
+                            ? null
+                            : () => setState(() => _operationType = OperationType.buy),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _operationType == OperationType.buy
                               ? Colors.green[200]
@@ -246,9 +254,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: _isSaving
-                            ? () {}
-                            : () => setState(
-                                () => _operationType = OperationType.sell),
+                            ? null
+                            : () => setState(() => _operationType = OperationType.sell),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _operationType == OperationType.sell
                               ? Colors.yellow[100]
@@ -259,7 +266,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                               borderRadius: BorderRadius.circular(12)),
                         ),
                         child: Text(loc.sell),
-
                       ),
                     ),
                   ],
@@ -279,9 +285,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 // ─── Selector símbolo ────────────────────────────────
                 if (widget.initialOperation == null)
                   InkWell(
-                    onTap: _isSaving
-                        ? null
-                        : () {
+                    onTap: _isSaving ? null : () {
                       setState(() => _symbolTouched = true);
                       _selectSymbol();
                     },
@@ -294,11 +298,10 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            _symbol ??
-                                (loc.selectSymbol),
+                            _displaySymbol ?? loc.selectSymbol,
                             style: TextStyle(
                               color: (_formSubmitted &&
-                                  (_symbol == null || _symbol!.isEmpty))
+                                  (_displaySymbol == null || _displaySymbol!.isEmpty))
                                   ? Theme.of(context).colorScheme.error
                                   : Colors.black87,
                               fontSize: 17,
@@ -309,7 +312,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                             Icons.chevron_right,
                             size: 22,
                             color: (_formSubmitted &&
-                                (_symbol == null || _symbol!.isEmpty))
+                                (_displaySymbol == null || _displaySymbol!.isEmpty))
                                 ? Theme.of(context).colorScheme.error
                                 : Colors.black54,
                           ),
@@ -320,8 +323,10 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 else
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    child: Text(_symbol!,
-                        style: Theme.of(context).textTheme.bodyLarge),
+                    child: Text(
+                      _displaySymbol!,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
                   ),
 
                 const SizedBox(height: 16),
@@ -331,8 +336,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   onTap: _isSaving ? null : _pickDate,
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 14, horizontal: 16),
+                    padding:
+                    const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                     child: Row(
                       children: [
                         const Icon(Icons.calendar_today,
@@ -367,9 +372,11 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                       const EdgeInsets.symmetric(vertical: 12)),
                   style: const TextStyle(color: Colors.black),
                   onChanged: (_) {
-                    if (!_quantityTouched) setState(() => _quantityTouched = true);
+                    if (!_quantityTouched)
+                      setState(() => _quantityTouched = true);
                   },
                 ),
+
                 const SizedBox(height: 16),
 
                 // ─── Precio ──────────────────────────────────────────
@@ -385,7 +392,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                       contentPadding:
                       const EdgeInsets.symmetric(vertical: 12)),
                   style: const TextStyle(color: Colors.black),
-                  autovalidateMode: _priceTouched || _formSubmitted
+                  autovalidateMode:
+                  _priceTouched || _formSubmitted
                       ? AutovalidateMode.always
                       : AutovalidateMode.disabled,
                   validator: (val) {
@@ -403,6 +411,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                     if (!_priceTouched) setState(() => _priceTouched = true);
                   },
                 ),
+
                 const SizedBox(height: 24),
 
                 // ─── Botones final ───────────────────────────────────
@@ -425,12 +434,15 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                               : _operationType == OperationType.sell
                               ? Colors.yellow[100]
                               : Colors.grey[200],
-                          foregroundColor: _operationType == OperationType.buy
+                          foregroundColor: _operationType ==
+                              OperationType.buy
                               ? Colors.green[800]
-                              : _operationType == OperationType.sell
+                              : _operationType ==
+                              OperationType.sell
                               ? Colors.amber[900]
                               : Colors.black54,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding:
+                          const EdgeInsets.symmetric(vertical: 16),
                           shape: const StadiumBorder(),
                           textStyle: const TextStyle(
                             fontSize: 16,
@@ -460,16 +472,17 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     );
   }
 
-  InputDecoration _inputDecoration(String label) => InputDecoration(
-    labelText: label,
-    labelStyle:
-    const TextStyle(color: Colors.black54, fontWeight: FontWeight.w500),
-    filled: true,
-    fillColor: Colors.white,
-    border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none),
-    contentPadding:
-    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-  );
+  InputDecoration _inputDecoration(String label) =>
+      InputDecoration(
+        labelText: label,
+        labelStyle:
+        const TextStyle(color: Colors.black54, fontWeight: FontWeight.w500),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none),
+        contentPadding:
+        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      );
 }

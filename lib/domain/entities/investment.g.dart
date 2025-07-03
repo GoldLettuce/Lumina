@@ -20,6 +20,8 @@ class InvestmentAdapter extends TypeAdapter<Investment> {
       symbol: fields[0] as String,
       name: fields[1] as String,
       type: fields[3] as AssetType,
+      coingeckoId: fields[4] as String,
+      vsCurrency: fields[5] as String,
       operations: (fields[2] as List?)?.cast<InvestmentOperation>(),
     );
   }
@@ -27,7 +29,7 @@ class InvestmentAdapter extends TypeAdapter<Investment> {
   @override
   void write(BinaryWriter writer, Investment obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.symbol)
       ..writeByte(1)
@@ -35,7 +37,11 @@ class InvestmentAdapter extends TypeAdapter<Investment> {
       ..writeByte(2)
       ..write(obj.operations)
       ..writeByte(3)
-      ..write(obj.type);
+      ..write(obj.type)
+      ..writeByte(4)
+      ..write(obj.coingeckoId)
+      ..writeByte(5)
+      ..write(obj.vsCurrency);
   }
 
   @override

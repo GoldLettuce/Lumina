@@ -4,28 +4,26 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../providers/asset_list_provider.dart';
-import '../../domain/entities/asset_type.dart'; // AÑADIR ESTO
+import '../../domain/entities/asset_type.dart';
 
 class AssetSelectorModal extends StatefulWidget {
-  final AssetType type; // CAMBIAR String → AssetType
-
+  final AssetType type;
   const AssetSelectorModal({super.key, required this.type});
+
   @override
   State<AssetSelectorModal> createState() => _AssetSelectorModalState();
 }
 
 class _AssetSelectorModalState extends State<AssetSelectorModal> {
-  late AssetListProvider _assetProvider;
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // Cargar la lista de símbolos la primera vez que se muestre el modal
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _assetProvider = context.read<AssetListProvider>();
-      if (!_assetProvider.isLoading && _assetProvider.filteredSymbols.isEmpty) {
-        _assetProvider.loadAllSymbols();
+      final provider = context.read<AssetListProvider>();
+      if (!provider.isLoading && provider.filteredSymbols.isEmpty) {
+        provider.loadAllSymbols();
       }
     });
   }
@@ -40,6 +38,10 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
 
+    if (widget.type != AssetType.crypto) {
+      return const SizedBox.shrink();
+    }
+
     return FractionallySizedBox(
       heightFactor: 0.65,
       child: SafeArea(
@@ -51,62 +53,55 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(
             children: [
-              // Título
-              Container(
+              SizedBox(
                 height: 48,
-                alignment: Alignment.center,
-                child: Text(
-                  loc.selectSymbol,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                child: Center(
+                  child: Text(
+                    loc.selectSymbol,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
               const SizedBox(height: 8),
-
-              // Campo de búsqueda
-            TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none
+              TextField(
+                controller: _searchController,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search),
+                  hintText: 'Ej. BTC, Ethereum…',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) => context.read<AssetListProvider>().filter(value),
               ),
-              onChanged: (value) {
-                _assetProvider.filter(value);
-              },
-            ),
               const SizedBox(height: 12),
-
-              // Lista scrollable
               Expanded(
                 child: Consumer<AssetListProvider>(
                   builder: (context, prov, _) {
                     if (prov.isLoading) {
                       return const Center(child: CircularProgressIndicator());
-                    } else if (prov.error != null) {
-                      return Center(child: Text(loc.loadSymbolsError));
-                    } else if (prov.filteredSymbols.isEmpty) {
-                      return Center(
-                        child: Text(loc.noSymbolsFound),
-                      );
                     }
-
+                    if (prov.error != null) {
+                      return Center(child: Text(loc.loadSymbolsError));
+                    }
+                    if (prov.filteredSymbols.isEmpty) {
+                      return Center(child: Text(loc.noSymbolsFound));
+                    }
                     return ListView.separated(
                       itemCount: prov.filteredSymbols.length,
-                      separatorBuilder: (_, __) =>
-                          Divider(color: Colors.grey.shade300),
+                      separatorBuilder: (_, __) => Divider(color: Colors.grey.shade300),
                       itemBuilder: (context, index) {
-                        final symbol = prov.filteredSymbols[index];
+                        final coin = prov.filteredSymbols[index];
                         return ListTile(
                           title: Text(
-                            symbol,
+                            '${coin.symbol} – ${coin.name}',
                             style: const TextStyle(fontWeight: FontWeight.w500),
                           ),
                           onTap: () {
-                            Navigator.of(context).pop(symbol);
+                            // Devuelve un Map<String,String> para no romper la lógica existente
+                            Navigator.of(context).pop(<String, String>{
+                              'id': coin.id,
+                              'symbol': coin.symbol,
+                              'name': coin.name,
+                            });
                           },
                         );
                       },

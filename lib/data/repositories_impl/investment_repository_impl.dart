@@ -65,6 +65,8 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
       symbol: inv.symbol,
       name: inv.name,
       type: inv.type,
+      coingeckoId: inv.coingeckoId,   // ← aquí
+      vsCurrency: inv.vsCurrency,     // ← y aquí
       operations: newOps,
     );
 
@@ -87,8 +89,11 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
       symbol: inv.symbol,
       name: inv.name,
       type: inv.type,
+      coingeckoId: inv.coingeckoId,   // ← aquí
+      vsCurrency: inv.vsCurrency,     // ← y aquí
       operations: newOps,
     );
+
 
     await _box.put(investmentKey, updatedInvestment);
   }

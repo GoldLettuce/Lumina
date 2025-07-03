@@ -104,13 +104,16 @@ class HistoryRebuildWorker {
 
   Future<void> rebuildAndStore({
     required String symbol,
-    required String currency,
+    required String vsCurrency,
   }) async {
     final historyRepo = HistoryRepositoryImpl();
+    // Para el dummy investment usamos el mismo coingeckoId que el símbolo en minúsculas
     final dummyInvestment = Investment(
       symbol: symbol,
       name: symbol,
       type: AssetType.crypto, // ✅ por defecto
+      coingeckoId: symbol.toLowerCase(),
+      vsCurrency: vsCurrency,
       operations: [],
     );
     await historyRepo.downloadAndStoreIfNeeded(

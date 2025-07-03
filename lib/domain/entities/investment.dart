@@ -22,10 +22,18 @@ class Investment extends HiveObject {
   @HiveField(3)
   final AssetType type;
 
+  @HiveField(4)
+  final String coingeckoId;    // p.ej. "bitcoin"
+
+  @HiveField(5)
+  final String vsCurrency;     // p.ej. "usd"
+
   Investment({
     required this.symbol,
     required this.name,
     required this.type,
+    required this.coingeckoId,
+    this.vsCurrency = 'usd',
     List<InvestmentOperation>? operations,
   }) : operations = operations ?? [];
 
@@ -70,7 +78,7 @@ class InvestmentOperation {
   @HiveField(3)
   final OperationType type;
 
-  @HiveField(4) // ✅ nuevo campo añadido al final
+  @HiveField(4)
   final String id;
 
   InvestmentOperation({

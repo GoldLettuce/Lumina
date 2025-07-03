@@ -64,6 +64,15 @@
 - [x] Punto actual (todayPoint) solo se añade si el histórico no lo contiene ya. 
 - [x] Eliminar título redundante de la AppBar para un diseño más limpio y centrado.
 
+## FASE 5.5: Migración a CoinGecko
+
+- [x] Sustituir todos los endpoints de CryptoCompare por CoinGecko (`/coins/markets`, `/simple/price`, `/coins/{id}/market_chart`).
+- [x] Añadir campo `coingeckoId` al modelo `InvestmentModel` y regenerar adapters Hive.
+- [x] Actualizar `AssetListProvider` para usar `CoinGeckoAssetsDatasource` y exponer `filteredSymbols` de `CoinGeckoAsset`.
+- [x] Modificar `AssetSelectorModal` para devolver `Map<String, String>` con `id`, `symbol` y `name`.
+- [x] Implementar `CoinGeckoPriceService` en lugar de `CryptoComparePriceService`.
+- [x] Ajustar `PortfolioSyncService` para calcular valor actual usando `coingeckoId`.
+- [x] Probar flujo completo de selección, guardado y visualización de precios con CoinGecko API.
 
 ## 🛠️ Mejoras de Rendimiento y Lógica del Gráfico (Junio 2025)
 

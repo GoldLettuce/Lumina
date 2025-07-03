@@ -1,3 +1,5 @@
+// lib/data/models/investment_model.dart
+
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/investment.dart';
 import '../repositories_impl/investment_repository_impl.dart';
@@ -35,7 +37,7 @@ class InvestmentModel extends ChangeNotifier {
     final worker = HistoryRebuildWorker();
     await worker.rebuildAndStore(
       symbol: investment.symbol,
-      currency: 'USD',
+      vsCurrency: investment.vsCurrency,
     );
   }
 
@@ -92,7 +94,7 @@ class InvestmentModel extends ChangeNotifier {
     final worker = HistoryRebuildWorker();
     await worker.rebuildAndStore(
       symbol: investmentKey,
-      currency: 'USD',
+      vsCurrency: inv.vsCurrency,
     );
   }
 
@@ -120,7 +122,7 @@ class InvestmentModel extends ChangeNotifier {
     final worker = HistoryRebuildWorker();
     await worker.rebuildAndStore(
       symbol: investmentKey,
-      currency: 'USD',
+      vsCurrency: inv.vsCurrency,
     );
   }
 
@@ -148,7 +150,7 @@ class InvestmentModel extends ChangeNotifier {
     final worker = HistoryRebuildWorker();
     await worker.rebuildAndStore(
       symbol: investmentKey,
-      currency: 'USD',
+      vsCurrency: inv.vsCurrency,
     );
   }
 }

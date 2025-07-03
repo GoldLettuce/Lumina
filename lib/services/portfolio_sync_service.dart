@@ -20,8 +20,9 @@ Future<void> addOperationAndSync({
     symbol: investment.symbol,
     name: investment.name,
     type: investment.type,
+    coingeckoId: investment.coingeckoId,
+    vsCurrency: investment.vsCurrency,
     operations: [...investment.operations, newOp],
-
   );
 
   await repo.addInvestment(updated);
@@ -56,6 +57,8 @@ Future<void> editOperationAndSync({
     symbol: investment.symbol,
     name: investment.name,
     type: investment.type,
+    coingeckoId: investment.coingeckoId,
+    vsCurrency: investment.vsCurrency,
     operations: newOps,
   );
 
@@ -93,6 +96,8 @@ Future<void> deleteOperationAndSync({
       symbol: investment.symbol,
       name: investment.name,
       type: investment.type,
+      coingeckoId: investment.coingeckoId,
+      vsCurrency: investment.vsCurrency,
       operations: updatedOps,
     );
     await repo.addInvestment(updated);
