@@ -257,8 +257,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       chartProvider.setVisibleSymbols(
                         allInvestments.map((e) => e.symbol).toSet(),
                       );
-                      await chartProvider.forceRebuildAndReload(allInvestments);
-                      await chartProvider.updatePrices();
                       chartProvider.clearSelection();
                     },
                   );

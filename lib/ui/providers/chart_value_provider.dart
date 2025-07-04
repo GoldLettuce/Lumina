@@ -14,46 +14,30 @@ import 'package:lumina/domain/entities/asset_type.dart';
 import 'package:lumina/domain/repositories/history_repository.dart';
 
 /// Proveedor del valor total de la cartera y su histórico.
-///
-/// 🔹 **Evita** llamar a `clear()` sobre colecciones que puedan venir inmutables
-///    desde Hive u otros orígenes (por eso reasignamos en lugar de vaciar).
-/// 🔹 Pensado para un **diseño minimalista** y buen rendimiento.
 class ChartValueProvider extends ChangeNotifier {
-  // ───────────────────────────────────────── Dependencias ────
   final PriceRepository _priceRepository = PriceRepositoryImpl();
   final HistoryRepository _historyRepository = HistoryRepositoryImpl();
 
-  // ───────────────────────────────────────── Estado ────
-  /// Símbolos visibles en la pantalla (BTC, ETH, …). Usamos `Set` modificable.
   Set<String> _visibleSymbols = <String>{};
-
-  /// Precios spot en USD.
   final Map<String, double> _spotPrices = <String, double>{};
-
-  /// Últimas inversiones (para recalcular el valor actual).
   List<Investment> _lastInvestments = [];
-
-  Timer? _timer; // refresco automático de precios
+  Timer? _timer;
 
   final ChartRange _range = ChartRange.all;
   List<Point> _history = [];
   Point? _todayPoint;
   DateTime? _historyStart;
-
-  int? _selectedIndex; // índice seleccionado en el gráfico
+  int? _selectedIndex;
 
   // ───────────────────────────────────────── Getters ────
   List<Point> get history => _history;
-
   List<Point> get displayHistory {
     if (_todayPoint == null) return _history;
-
     final last = _history.isNotEmpty ? _history.last : null;
     final sameDay = last != null &&
         last.time.year  == _todayPoint!.time.year  &&
         last.time.month == _todayPoint!.time.month &&
         last.time.day   == _todayPoint!.time.day;
-
     if (sameDay) {
       final list = List<Point>.from(_history);
       list[list.length - 1] = _todayPoint!;
@@ -61,7 +45,6 @@ class ChartValueProvider extends ChangeNotifier {
     }
     return [..._history, _todayPoint!];
   }
-
   int? get selectedIndex => _selectedIndex;
   double? get selectedValue =>
       (_selectedIndex != null && displayHistory.isNotEmpty)
@@ -77,7 +60,6 @@ class ChartValueProvider extends ChangeNotifier {
           displayHistory.first.value * 100
           : null;
 
-  // ───────────────────────────────────────── Lifecycle ────
   ChartValueProvider() {
     _startAutoRefresh();
   }
@@ -90,15 +72,17 @@ class ChartValueProvider extends ChangeNotifier {
 
   void _startAutoRefresh() {
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 60), (_) => updatePrices());
+    _timer = Timer.periodic(
+      const Duration(seconds: 60),
+          (_) => updatePrices(),
+    );
   }
 
   // ───────────────────────────────────────── API pública ────
-  /// Actualiza los símbolos visibles recibidos desde la UI.
-  /// Reasignamos el `Set` completo para evitar mutar colecciones inmutables.
+
+  /// Cambia los símbolos visibles y dispara un updatePrices().
   void setVisibleSymbols(Set<String> symbols) {
     _visibleSymbols = symbols.toSet();
-
     if (_visibleSymbols.isEmpty) {
       _resetState();
     } else {
@@ -106,19 +90,20 @@ class ChartValueProvider extends ChangeNotifier {
     }
   }
 
-  /// Devuelve el precio spot de un símbolo concreto.
   double? getPriceFor(String symbol) => _spotPrices[symbol];
 
-  /// Fuerza la descarga de histórico y cache.
+  /// Fuerza la descarga de histórico, notifica y luego recarga precio “hoy”.
   Future<void> forceRebuildAndReload(List<Investment> investments) async {
     _lastInvestments = investments;
     final box = await Hive.openBox<ChartCache>('chart_cache');
     if (await box.containsKey('all')) await box.delete('all');
     await _loadAndCacheHistory();
     notifyListeners();
+    // Tras rebuild del histórico, recargamos precio “hoy”
+    await updatePrices();
   }
 
-  /// Carga histórico desde caché o backend.
+  /// Carga histórico (cache o backend), notifica y recarga precio “hoy”.
   Future<void> loadHistory(List<Investment> investments) async {
     _lastInvestments = investments;
     final box = await Hive.openBox<ChartCache>('chart_cache');
@@ -131,14 +116,17 @@ class ChartValueProvider extends ChangeNotifier {
         ..clear()
         ..addAll(cache.spotPrices);
       notifyListeners();
+      // Tras cargar desde caché, recargamos precio “hoy”
+      await updatePrices();
       return;
     }
 
     await _loadAndCacheHistory();
     notifyListeners();
+    // Tras descarga nueva del histórico, recargamos precio “hoy”
+    await updatePrices();
   }
 
-  /// Selecciona un punto del gráfico.
   void selectSpot(int index) {
     if (_selectedIndex != index) {
       _selectedIndex = index;
@@ -146,7 +134,6 @@ class ChartValueProvider extends ChangeNotifier {
     }
   }
 
-  /// Limpia la selección del gráfico.
   void clearSelection() {
     if (_selectedIndex != null) {
       _selectedIndex = null;
@@ -155,48 +142,62 @@ class ChartValueProvider extends ChangeNotifier {
   }
 
   // ───────────────────────────────────────── Internos ────
+
   Future<void> updatePrices() async {
     if (_visibleSymbols.isEmpty) return;
     try {
-      final prices = await _priceRepository.getPrices(_visibleSymbols, currency: 'USD');
+      // 1) Descargar precios spot
+      final prices = await _priceRepository.getPrices(
+        _visibleSymbols,
+        currency: 'USD',
+      );
       _spotPrices
         ..clear()
         ..addAll(prices);
       notifyListeners();
 
-      if (_history.isEmpty) return;
 
-      final cryptoInvestments = _lastInvestments.where((e) => e.type == AssetType.crypto).toList();
+      // 2) Calcular valor total actual
+      final cryptoInvestments = _lastInvestments
+          .where((e) => e.type == AssetType.crypto)
+          .toList();
 
-      final newValue = await _historyRepository.calculateCurrentPortfolioValue(
-        cryptoInvestments,
-        _spotPrices,
-      );
+      double totalValue = 0;
+      for (var inv in cryptoInvestments) {
+        final spot = _spotPrices[inv.symbol] ?? 0;
+        final invValue = inv.operations.fold<double>(
+          0,
+              (sum, op) {
+            final sign = op.type == OperationType.buy ? 1 : -1;
+            return sum + (op.quantity * spot * sign);
+          },
+        );
+        totalValue += invValue;
+      }
 
-      _todayPoint = Point(time: DateTime.now(), value: newValue);
+      // 3) Actualizar punto “hoy”
+      _todayPoint = Point(time: DateTime.now(), value: totalValue);
       notifyListeners();
     } catch (_) {
-      // Silenciado para evitar saturar la consola
+      // Silenciado para no saturar la consola
     }
   }
 
   Future<void> _loadAndCacheHistory() async {
     try {
-      final cryptoInvestments = _lastInvestments.where((e) => e.type == AssetType.crypto).toList();
-
+      final cryptoInvestments = _lastInvestments
+          .where((e) => e.type == AssetType.crypto)
+          .toList();
       await _historyRepository.downloadAndStoreIfNeeded(
         range: _range,
         investments: cryptoInvestments,
       );
-
       final hist = await _historyRepository.getHistory(
         range: _range,
         investments: cryptoInvestments,
         spotPrices: _spotPrices,
       );
-
       if (hist.isEmpty) return;
-
       _history      = hist;
       _historyStart = _history.first.time;
       await _saveCache();

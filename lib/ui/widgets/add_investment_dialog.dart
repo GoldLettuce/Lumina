@@ -184,10 +184,11 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
 
     // Actualizar gráfico
     chartProvider.setVisibleSymbols(
-      model.investments.map((e) => e.symbol).toSet(),
-    );
+      context.read<InvestmentModel>().investments.map((e) => e.symbol).toSet(),    );
     if (mounted) {
-      await chartProvider.forceRebuildAndReload(model.investments);
+      await chartProvider.forceRebuildAndReload(
+        context.read<InvestmentModel>().investments,
+      );
       await chartProvider.updatePrices();
     }
 
