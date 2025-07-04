@@ -1,75 +1,89 @@
-// lib/data/repositories_impl/price_repository_impl.dart
-
 import 'dart:collection';
-import 'package:lumina/data/datasources/cryptocompare/cryptocompare_price_service.dart';
+
+import 'package:lumina/data/datasources/coingecko/coingecko_assets_datasource.dart';
+import 'package:lumina/data/datasources/coingecko/coingecko_price_service.dart';
 import 'package:lumina/domain/repositories/price_repository.dart';
 
+/// Repositorio de precios basado **solo** en la petición bulk de CoinGecko.
+/// Mantiene TTL de 60 s por símbolo y la misma interfaz pública.
 class PriceRepositoryImpl implements PriceRepository {
-  final CryptoComparePriceService _service = CryptoComparePriceService();
+  final CoinGeckoPriceService _service = CoinGeckoPriceService();
 
-  // Caché local de precios
-  final Map<String, double> _cachedPrices = {};
-  DateTime? _lastFetch;
-  final Duration _ttl = const Duration(seconds: 60);
+  // ─────────── Mapa símbolo → id (BTC → bitcoin) ───────────
+  final _assetsDs     = CoinGeckoAssetsDatasource();
+  Map<String, String> _symbolToId = {};
 
-  @override
-  Future<double?> getCurrentPrice(String symbol, {String currency = 'USD'}) async {
-    final now = DateTime.now();
-
-    // Si la caché sigue vigente y existe el símbolo, devolvemos el valor cacheado.
-    if (_lastFetch != null &&
-        now.difference(_lastFetch!) < _ttl &&
-        _cachedPrices.containsKey(symbol)) {
-      return _cachedPrices[symbol];
+  Future<void> _ensureMap() async {
+    if (_symbolToId.isEmpty) {
+      final list = await _assetsDs.fetchAssets();
+      _symbolToId = {
+        for (final a in list) a.symbol.toUpperCase(): a.id,
+      };
     }
-
-    // De lo contrario, pedimos al servicio CryptoCompare y actualizamos caché.
-    final price = await _service.getPrice(symbol, currency: currency);
-    if (price != null) {
-      _cachedPrices[symbol] = price;
-      _lastFetch = now;
-    }
-    return price;
   }
 
+  // ─────────── Caché en memoria ───────────
+  static const _ttl = Duration(seconds: 60);
+  final _cache = HashMap<String, _CachedPrice>();
+
+  DateTime _now() => DateTime.now();
+
+  // ─────────── API pública ───────────
   @override
   Future<Map<String, double>> getPrices(
       Set<String> symbols, {
         String currency = 'USD',
       }) async {
-    final now = DateTime.now();
+    if (symbols.isEmpty) return {};
 
-    // Limpiar símbolos vacíos
-    final cleanSymbols = symbols.where((s) => s.trim().isNotEmpty).toSet();
-    if (cleanSymbols.isEmpty) return {};
+    await _ensureMap();
+    currency = currency.toLowerCase();
+    final now = _now();
 
-    // Si la caché está viva y contiene todos los símbolos, devolvemos subset
-    if (_lastFetch != null &&
-        now.difference(_lastFetch!) < _ttl &&
-        _cachedPrices.keys.toSet().containsAll(cleanSymbols)) {
-      return Map.fromEntries(
-        cleanSymbols.map((s) => MapEntry(s, _cachedPrices[s]!)),
-      );
-    }
+    final fresh   = <String, double>{};
+    final toFetch = <String, String>{}; // symbol → id
 
-    // Para los símbolos faltantes o expirados, llamamos a getCurrentPrice uno a uno
-    final Map<String, double> result = {};
+    for (final symbol in symbols) {
+      final key    = symbol.toUpperCase();
+      final cached = _cache[key];
 
-    for (final symbol in cleanSymbols) {
-      double? price;
-      // Si existe en caché y TTL no expira, reutilizamos
-      if (_lastFetch != null &&
-          now.difference(_lastFetch!) < _ttl &&
-          _cachedPrices.containsKey(symbol)) {
-        price = _cachedPrices[symbol];
+      if (cached != null && now.difference(cached.ts) < _ttl) {
+        fresh[key] = cached.value;
       } else {
-        price = await getCurrentPrice(symbol, currency: currency);
-      }
-      if (price != null) {
-        result[symbol] = price;
+        final id = _symbolToId[key] ?? key.toLowerCase(); // fallback
+        toFetch[key] = id;
       }
     }
 
-    return result;
+    // Una sola llamada bulk para los símbolos caducados/faltantes
+    if (toFetch.isNotEmpty) {
+      final prices =
+      await _service.getPrices(toFetch.values.toList(), currency: currency);
+      for (final entry in toFetch.entries) {
+        final price = prices[entry.value]; // id
+        if (price != null) {
+          _cache[entry.key] = _CachedPrice(price, now); // symbol
+          fresh[entry.key]  = price;
+        }
+      }
+    }
+
+    return fresh;
   }
+
+  @override
+  Future<double?> getCurrentPrice(
+      String symbol, {
+        String currency = 'USD',
+      }) async {
+    final map = await getPrices({symbol}, currency: currency);
+    return map[symbol.toUpperCase()];
+  }
+}
+
+// Helper interno para la caché
+class _CachedPrice {
+  final double    value;
+  final DateTime  ts;
+  _CachedPrice(this.value, this.ts);
 }
