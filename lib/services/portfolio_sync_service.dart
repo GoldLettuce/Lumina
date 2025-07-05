@@ -1,12 +1,9 @@
-// lib/services/portfolio_sync_service.dart
-
 import 'package:hive/hive.dart';
 import 'package:lumina/data/models/investment_model.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/data/models/local_history.dart';
 import 'package:lumina/ui/providers/chart_value_provider.dart';
-import 'package:lumina/workers/history_rebuild_worker.dart';
 
 /// Añadir operación y sincronizar histórico + gráfico
 Future<void> addOperationAndSync({
@@ -16,6 +13,7 @@ Future<void> addOperationAndSync({
   required ChartValueProvider chartProvider,
   required InvestmentModel model,
 }) async {
+  // Creamos un nuevo Investment con la operación añadida
   final updated = Investment(
     symbol: investment.symbol,
     name: investment.name,
@@ -28,16 +26,7 @@ Future<void> addOperationAndSync({
   await repo.addInvestment(updated);
   await model.load();
 
-  final historyBox = await Hive.openBox<LocalHistory>('history');
-  final key = '${investment.symbol}_ALL';
-  final hist = historyBox.get(key);
-  if (hist != null && newOp.date.isBefore(hist.from)) {
-    hist.needsRebuild = true;
-    await hist.save();
-    scheduleHistoryRebuildIfNeeded();
-  }
-
-  // Forzar reconstrucción total tras cualquier cambio
+  // El HistoryRepository descargará automáticamente los días faltantes
   await chartProvider.forceRebuildAndReload(model.investments);
 }
 
@@ -50,8 +39,7 @@ Future<void> editOperationAndSync({
   required ChartValueProvider chartProvider,
   required InvestmentModel model,
 }) async {
-  final newOps = [...investment.operations];
-  newOps[operationIndex] = editedOp;
+  final newOps = [...investment.operations]..[operationIndex] = editedOp;
 
   final updated = Investment(
     symbol: investment.symbol,
@@ -65,16 +53,6 @@ Future<void> editOperationAndSync({
   await repo.addInvestment(updated);
   await model.load();
 
-  final historyBox = await Hive.openBox<LocalHistory>('history');
-  final key = '${investment.symbol}_ALL';
-  final hist = historyBox.get(key);
-  if (hist != null && editedOp.date.isBefore(hist.from)) {
-    hist.needsRebuild = true;
-    await hist.save();
-    scheduleHistoryRebuildIfNeeded();
-  }
-
-  // Forzar reconstrucción total tras cualquier cambio
   await chartProvider.forceRebuildAndReload(model.investments);
 }
 
@@ -86,10 +64,10 @@ Future<void> deleteOperationAndSync({
   required InvestmentModel model,
   required ChartValueProvider chartProvider,
 }) async {
-  final oldOps = investment.operations;
-  final updatedOps = [...oldOps]..removeAt(operationIndex);
+  final updatedOps = [...investment.operations]..removeAt(operationIndex);
 
   if (updatedOps.isEmpty) {
+    // Si ya no quedan operaciones, eliminamos la inversión completa
     await repo.deleteInvestment(investment.symbol);
   } else {
     final updated = Investment(
@@ -104,24 +82,6 @@ Future<void> deleteOperationAndSync({
   }
 
   await model.load();
-
-  final deletedOpDate = oldOps[operationIndex].date;
-  final remainingOldest = updatedOps.isNotEmpty
-      ? updatedOps.map((op) => op.date).reduce((a, b) => a.isBefore(b) ? a : b)
-      : null;
-
-  if (remainingOldest != null && deletedOpDate.isBefore(remainingOldest)) {
-    final historyBox = await Hive.openBox<LocalHistory>('history');
-    final key = '${investment.symbol}_ALL';
-    final hist = historyBox.get(key);
-    if (hist != null) {
-      hist.needsRebuild = true;
-      await hist.save();
-      scheduleHistoryRebuildIfNeeded();
-    }
-  }
-
-  // Forzar reconstrucción total tras cualquier cambio
   await chartProvider.forceRebuildAndReload(model.investments);
 }
 
@@ -134,10 +94,10 @@ Future<void> deleteInvestmentAndSync({
 }) async {
   await repo.deleteInvestment(symbol);
 
+  // Limpiamos también el histórico almacenado para liberar espacio
   final historyBox = await Hive.openBox<LocalHistory>('history');
   await historyBox.delete('${symbol}_ALL');
 
   await model.load();
-  // Forzar reconstrucción total tras cualquier cambio
   await chartProvider.forceRebuildAndReload(model.investments);
 }

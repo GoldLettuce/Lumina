@@ -1,15 +1,16 @@
+import 'dart:math';
 import 'package:hive/hive.dart';
 import 'package:lumina/core/chart_range.dart';
 import 'package:lumina/core/point.dart';
 import 'package:lumina/data/models/local_history.dart';
-import 'package:lumina/data/datasources/cryptocompare/cryptocompare_history_service.dart';
+import 'package:lumina/data/datasources/coingecko/coingecko_history_service.dart';
 import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/domain/repositories/history_repository.dart';
 
 class HistoryRepositoryImpl implements HistoryRepository {
-  final CryptoCompareHistoryService _service = CryptoCompareHistoryService();
+  final CoinGeckoHistoryService _service = CoinGeckoHistoryService();
 
-  // ---------- HISTÓRICO SEMANAL + PUNTO HOY ----------
+  // ---------- HISTÓRICO DIARIO + PUNTO HOY ----------
   @override
   Future<List<Point>> getHistory({
     required ChartRange range,
@@ -19,11 +20,10 @@ class HistoryRepositoryImpl implements HistoryRepository {
     final historyBox = await Hive.openBox<LocalHistory>('history');
     const rangeKey = 'ALL';
 
-    // 🔸 Normalizamos a “fecha + hora:min” para agrupar velas diarias
-    DateTime _roundToMinute(DateTime dt) =>
-        DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute);
+    DateTime _roundToDay(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
 
-    final Set<DateTime> allTimestamps = {};
+    /// 1. Unión de todas las fechas que tenemos en disco
+    final Set<DateTime> allDays = {};
     final Map<String, LocalHistory> histories = {};
 
     for (final inv in investments) {
@@ -31,88 +31,53 @@ class HistoryRepositoryImpl implements HistoryRepository {
       final hist = historyBox.get(key);
       if (hist == null) continue;
       histories[inv.symbol] = hist;
-
-      for (final pt in hist.points) {
-        allTimestamps.add(_roundToMinute(pt.time));
+      for (final p in hist.points) {
+        allDays.add(_roundToDay(p.time));
       }
     }
+    if (allDays.isEmpty) return [];
 
-    if (allTimestamps.isEmpty) return [];
+    /// 2. Para cada día calculamos el valor total del portfolio
+    final List<Point> out = [];
+    final sortedDays = allDays.toList()..sort();
 
-    final sortedTs = allTimestamps.toList()..sort();
-    final List<Point> result = [];
-
-    bool hasInvestment = false;
-    DateTime? nextMonday; // Próximo lunes que hay que añadir
-
-    for (final ts in sortedTs) {
+    for (final day in sortedDays) {
       double total = 0.0;
-
       for (final inv in investments) {
-        // 1️⃣ Cantidad acumulada hasta ese momento
         final qty = inv.operations
-            .where((op) => !op.date.isAfter(ts))
-            .fold<double>(0, (sum, op) => sum + op.quantity);
+            .where((op) => !op.date.isAfter(day))
+            .fold<double>(0, (s, op) => s + op.quantity);
         if (qty <= 0) continue;
 
-        // 2️⃣ Precio más reciente anterior o igual al timestamp
         final hist = histories[inv.symbol];
         if (hist == null) continue;
-
-        double price = 0.0;
-        for (int i = hist.points.length - 1; i >= 0; i--) {
-          final pt = hist.points[i];
-          final ptRounded = _roundToMinute(pt.time);
-          if (!ptRounded.isAfter(ts)) {
-            price = pt.value;
-            break;
-          }
-        }
+        final price = hist.points
+            .firstWhere(
+              (p) => _roundToDay(p.time) == day,
+          orElse: () => Point(time: day, value: 0),
+        )
+            .value;
         total += price * qty;
       }
-
-      // Primer punto con inversión
-      if (!hasInvestment) {
-        if (total <= 0) continue;
-        hasInvestment = true;
-        result.add(Point(time: ts, value: total));
-
-        // Calculamos el siguiente lunes a partir de este ts
-        final weekday = ts.weekday;
-        final daysUntilNextMonday =
-        weekday == DateTime.monday ? 7 : (8 - weekday);
-        nextMonday = DateTime(ts.year, ts.month, ts.day)
-            .add(Duration(days: daysUntilNextMonday));
-        continue;
-      }
-
-      if (ts.isBefore(nextMonday!)) continue; // aún no es lunes objetivo
-
-      // Añadimos punto semanal (lunes)
-      result.add(Point(time: ts, value: total));
-      nextMonday = ts.add(const Duration(days: 7));
+      if (total > 0) out.add(Point(time: day, value: total));
     }
 
-    // 🔸 Punto HOY con precios spot
+    /// 3. Añadimos el punto de HOY con precios spot
     final now = DateTime.now();
     double totalToday = 0.0;
     for (final inv in investments) {
       final qty = inv.operations
           .where((op) => !op.date.isAfter(now))
-          .fold<double>(0, (sum, op) => sum + op.quantity);
-      if (qty <= 0) continue;
+          .fold<double>(0, (s, op) => s + op.quantity);
       final price = spotPrices[inv.symbol];
-      if (price != null) totalToday += price * qty;
+      if (qty > 0 && price != null) totalToday += price * qty;
     }
-    if (totalToday > 0) {
-      result.add(Point(time: now, value: totalToday));
-    }
+    if (totalToday > 0) out.add(Point(time: now, value: totalToday));
 
-    // 🧹 Si “hoy” cae en lunes ya existía un punto ➜ nos quedamos con el más reciente
-    return _dedupeByDay(result);
+    return _dedupeByDay(out);
   }
 
-  // ---------- DESCARGA INCREMENTAL DE LUNES FALTANTES ----------
+  // ---------- DESCARGA DIARIA INCREMENTAL ----------
   @override
   Future<List<Point>> downloadAndStoreIfNeeded({
     required ChartRange range,
@@ -122,90 +87,85 @@ class HistoryRepositoryImpl implements HistoryRepository {
     const rangeKey = 'ALL';
     final today = DateTime.now();
 
-    // Último lunes completado (hoy no incluido si no es lunes)
-    DateTime _lastMondayBefore(DateTime date) => date.weekday == DateTime.monday
-        ? DateTime(date.year, date.month, date.day)
-        : DateTime(date.year, date.month, date.day)
-        .subtract(Duration(days: date.weekday - 1));
+    DateTime _roundToDay(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
 
     for (final inv in investments) {
       final key = '${inv.symbol}_$rangeKey';
       LocalHistory? hist = historyBox.get(key);
 
-      // -------- caso 1: no hay histórico ➜ descarga completa --------
+      // --- Sin histórico ➜ descargamos año completo ---
       if (hist == null) {
-        final raw = await _service.getFullHistoday(
-          inv.symbol,
-          currency: 'USD',
+        final pts = await _service.getMarketChart(
+          id: inv.coingeckoId ?? inv.symbol,
+          currency: 'usd',
+          days: 365,
         );
-        if (raw.isEmpty) continue;
-
-        final pts = raw
-            .map((e) => Point(
-          time: DateTime.fromMillisecondsSinceEpoch(
-              (e['time'] as num).toInt() * 1000),
-          value: (e['close'] as num?)?.toDouble() ?? 0.0,
-        ))
-            .toList()
-          ..sort((a, b) => a.time.compareTo(b.time));
-
-        hist = LocalHistory(from: pts.first.time, to: pts.last.time, points: pts);
-        await historyBox.put(key, hist);
-        continue; // pasamos al siguiente activo
+        if (pts.isEmpty) continue;
+        await historyBox.put(
+          key,
+          LocalHistory(from: pts.first.time, to: pts.last.time, points: pts),
+        );
+        continue;
       }
 
-      // -------- caso 2: histórico existe ➜ ¿faltan lunes? --------
-      // Último lunes guardado
-          final lastMondaySaved = hist!.points
-              .lastWhere((p) => p.time.weekday == DateTime.monday,
-                  orElse: () => hist!.points.last);
+      // ---------- 🔻 NUEVO: RANGO HACIA ATRÁS ----------
+      if (inv.operations.isNotEmpty) {
+        final earliestOp = inv.operations
+            .map((op) => op.date)
+            .reduce((a, b) => a.isBefore(b) ? a : b);
 
-      final nextNeededMonday = DateTime(
-          lastMondaySaved.time.year,
-          lastMondaySaved.time.month,
-          lastMondaySaved.time.day)
-          .add(const Duration(days: 7));
+        if (earliestOp.isBefore(hist.from)) {
+          final daysBack =
+          min(hist.from.difference(earliestOp).inDays + 1, 365);
 
-      final lastMondayBeforeToday = _lastMondayBefore(today);
+          final older = await _service.getMarketChart(
+            id: inv.coingeckoId ?? inv.symbol,
+            currency: 'usd',
+            days: daysBack,
+          );
 
-      // ¿Está al día?
-      if (nextNeededMonday.isAfter(lastMondayBeforeToday)) continue;
+          final prev = older
+              .where((p) => p.time.isBefore(hist.from))
+              .toList();
 
-      // ➜ Descargamos solo el tramo pendiente
-      final daysToFetch =
-          today.difference(nextNeededMonday).inDays + 1; // +1 por solape
-      final raw = await _service.getHistoday(
-        inv.symbol,
-        currency: 'USD',
-        limit: daysToFetch + 1
-      );
+          if (prev.isNotEmpty) {
+            hist.points.insertAll(0, prev);
+            hist.from = prev.first.time;
+            await historyBox.put(key, hist);
+          }
+        }
+      }
+      // ---------- 🔺 NUEVO ----------
 
-      if (raw.isEmpty) continue;
+      // --- Con histórico ➜ ¿faltan días hacia adelante? ---
+      final lastSavedDay = _roundToDay(hist.to);
+      final lastNeededDay =
+      _roundToDay(today.subtract(const Duration(days: 1)));
 
-      final nuevos = raw
-          .map((e) => Point(
-        time: DateTime.fromMillisecondsSinceEpoch(
-            (e['time'] as num).toInt() * 1000),
-        value: (e['close'] as num?)?.toDouble() ?? 0.0,
-      ))
-      // Filtramos los lunes que realmente faltan
-          .where((p) =>
-      p.time.isAfter(lastMondaySaved.time) &&
-          p.time.weekday == DateTime.monday)
-          .toList();
-
-      if (nuevos.isEmpty) continue;
-
-      hist.points.addAll(nuevos);
-      hist.to = nuevos.last.time;
-      await historyBox.put(key, hist);
+      if (lastSavedDay.isBefore(lastNeededDay)) {
+        final missingDays = today.difference(lastSavedDay).inDays;
+        final newPts = await _service.getMarketChart(
+          id: inv.coingeckoId ?? inv.symbol,
+          currency: 'usd',
+          days: min(missingDays + 1, 365),
+        );
+        if (newPts.isNotEmpty) {
+          final toAdd =
+          newPts.where((p) => p.time.isAfter(lastSavedDay)).toList();
+          if (toAdd.isNotEmpty) {
+            hist.points.addAll(toAdd);
+            hist.to = toAdd.last.time;
+            await historyBox.put(key, hist);
+          }
+        }
+      }
     }
 
-    // Devolvemos el history ya actualizado (spotPrices vacío porque no lo necesitamos aquí)
+    // SpotPrices vacío: sólo queremos forzar recálculo interno
     return getHistory(range: range, investments: investments, spotPrices: {});
   }
 
-  // ---------- VALOR ACTUAL DEL PORTAFOLIO ----------
+  // ---------- VALOR ACTUAL ----------
   @override
   Future<double> calculateCurrentPortfolioValue(
       List<Investment> investments,
@@ -213,27 +173,22 @@ class HistoryRepositoryImpl implements HistoryRepository {
       ) async {
     final now = DateTime.now();
     double total = 0.0;
-
     for (final inv in investments) {
       final qty = inv.operations
           .where((op) => !op.date.isAfter(now))
-          .fold<double>(0, (sum, op) => sum + op.quantity);
-      if (qty <= 0) continue;
-
+          .fold<double>(0, (s, op) => s + op.quantity);
       final price = spotPrices[inv.symbol];
-      if (price != null) total += price * qty;
+      if (qty > 0 && price != null) total += price * qty;
     }
     return total;
   }
 
   // ---------- HELPERS ----------
-  /// Elimina duplicados por día (YYYY-MM-DD).
-  /// Si hay varios puntos el mismo día conserva el **último** (normalmente el de HOY).
-  List<Point> _dedupeByDay(List<Point> input) {
+  List<Point> _dedupeByDay(List<Point> pts) {
     final map = <String, Point>{};
-    for (final p in input) {
-      final key = '${p.time.year}-${p.time.month}-${p.time.day}';
-      map[key] = p; // sobreescribe → mantiene el último
+    for (final p in pts) {
+      final k = '${p.time.year}-${p.time.month}-${p.time.day}';
+      map[k] = p; // se queda con el último (normalmente “hoy”)
     }
     final out = map.values.toList()
       ..sort((a, b) => a.time.compareTo(b.time));
