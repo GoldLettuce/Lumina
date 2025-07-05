@@ -19,22 +19,23 @@ class HistoryRepositoryImpl implements HistoryRepository {
   /*──────────────────────── helpers ───────────────────────*/
   DateTime _roundToDay(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
 
-  /// Mantiene **máximo 365 puntos** y ajusta `hist.from`.
+  /// Mantiene ~365 puntos: descarta todo lo anterior a hoy-365 días
+  /// Sin recorte por longitud → nunca perdemos días válidos.
   void _trimToLast365(LocalHistory hist) {
-    final cut = DateTime.now().subtract(const Duration(days: 365));
+    // Corte exacto: hoy-365 días (hora local) truncado a medianoche
+    final cut = _roundToDay(
+        DateTime.now().toLocal().subtract(const Duration(days: 364)));
 
-    // 1. Elimina puntos anteriores al corte temporal
+    // Elimina puntos anteriores al corte
     hist.points.removeWhere((p) => p.time.isBefore(cut));
 
-    // 2. Si aún quedan >365 (CoinGecko a veces devuelve 366) recorta por longitud
-    while (hist.points.length > 365) {
-      hist.points.removeAt(0); // quita el más antiguo
-    }
-
+    // Ajusta “from”
     if (hist.points.isNotEmpty) hist.from = hist.points.first.time;
 
     _log('🗑️  Trim → ${hist.points.length}/≤365 pts');
+    _log('🗑️  Trim → ${hist.points.length} pts (fecha ≥ $cut)');
   }
+
 
   /*──────────────────────── API ───────────────────────────*/
   @override
@@ -45,8 +46,9 @@ class HistoryRepositoryImpl implements HistoryRepository {
   }) async {
     final historyBox = await Hive.openBox<LocalHistory>('history');
     const rangeKey = 'ALL';
-    final cut = DateTime.now().subtract(const Duration(days: 365));
 
+    final cut = _roundToDay(
+        DateTime.now().toLocal().subtract(const Duration(days: 364)));
     final Set<DateTime> allDays = {};
     final Map<String, LocalHistory> histories = {};
 
@@ -150,7 +152,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
               .reduce((a, b) => a.isBefore(b) ? a : b));
 
       final earliestAllowed =
-      DateTime.now().subtract(const Duration(days: 365));
+      DateTime.now().subtract(const Duration(days: 364));
       if (earliestNeeded != null && earliestNeeded.isBefore(earliestAllowed)) {
         earliestNeeded = earliestAllowed;
       }
@@ -159,7 +161,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
         final earliestDate = _roundToDay(earliestNeeded);
         //  ★ Nuevo límite: exactamente hoy-365 (UTC→local ya convertidos)
         final limitDate = _roundToDay(
-            DateTime.now().subtract(const Duration(days: 365)));
+            DateTime.now().subtract(const Duration(days: 364)));
 
         final diffDays = limitDate.difference(earliestDate).inDays;
         final daysBack = min(diffDays, 365);
