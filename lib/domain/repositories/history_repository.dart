@@ -8,13 +8,14 @@ abstract class HistoryRepository {
   Future<List<Point>> getHistory({
     required ChartRange range,
     required List<Investment> investments,
-    required Map<String, double> spotPrices, // ✅ Usar precios actuales sin llamar a la API
+    required Map<String, double> spotPrices,
   });
 
   /// Descarga y guarda el histórico si falta o está incompleto, y lo devuelve
   Future<List<Point>> downloadAndStoreIfNeeded({
     required ChartRange range,
     required List<Investment> investments,
+    DateTime? earliestOverride,
   });
 
   /// Calcula el valor actual del portafolio usando los precios spot actuales

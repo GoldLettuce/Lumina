@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
@@ -14,9 +16,8 @@ import 'package:lumina/domain/repositories/price_repository.dart';
 import 'package:lumina/domain/repositories/history_repository.dart';
 
 /// ChartValueProvider – estilo CryptoCompare pero usando CoinGecko.
-///
-/// * Recupera histórico + precios del cache al arrancar.
-/// * Lanza petición de precios inmediata (no espera 60 s).
+/// * Cachea histórico + precios al arrancar.
+/// * Pide precios spot cada 60 s (throttle para evitar 429).
 /// * Nunca muestra valor 0 $.
 class ChartValueProvider extends ChangeNotifier {
   // Servicios
@@ -36,6 +37,9 @@ class ChartValueProvider extends ChangeNotifier {
 
   int? _selectedIndex;
   Timer? _timer;
+
+  // Throttle de precios
+  bool _isUpdatingPrices = false;
 
   // ───────── Getters
   List<Point> get history => _history;
@@ -137,6 +141,37 @@ class ChartValueProvider extends ChangeNotifier {
     unawaited(updatePrices());
   }
 
+  /// Recalcula únicamente el punto de HOY (tras operaciones nuevas)
+  void recalcTodayOnly() {
+    _recalcTodayPoint();
+    notifyListeners();
+  }
+
+  /// Descarga histórico SOLO de [inv] si earliestNeeded < hist.from
+  Future<void> backfillHistory({
+    required Investment inv,
+    required DateTime earliestNeeded,
+  }) async {
+    await _histRepo.downloadAndStoreIfNeeded(
+      range: _range,
+      investments: [inv],
+      earliestOverride: earliestNeeded,
+    );
+
+    // recalcula histórico completo sin tocar precios spot
+    final cryptoInv =
+    _lastInvestments.where((e) => e.type == AssetType.crypto).toList();
+    _history = await _histRepo.getHistory(
+      range: _range,
+      investments: cryptoInv,
+      spotPrices: _spotPrices,
+    );
+    _historyStart = _history.isNotEmpty ? _history.first.time : null;
+    _recalcTodayPoint();
+    await _saveCache();
+    notifyListeners();
+  }
+
   Future<void> forceRebuildAndReload(List<Investment> investments) async {
     _lastInvestments = investments;
     final box = await Hive.openBox<ChartCache>('chart_cache');
@@ -148,7 +183,8 @@ class ChartValueProvider extends ChangeNotifier {
 
   // ───────── Precios
   Future<void> updatePrices() async {
-    if (_visibleSymbols.isEmpty) return;
+    if (_visibleSymbols.isEmpty || _isUpdatingPrices) return;
+    _isUpdatingPrices = true;
     try {
       final prices = await _priceRepo.getPrices(_visibleSymbols, currency: 'USD');
       if (prices.isNotEmpty) {
@@ -156,13 +192,15 @@ class ChartValueProvider extends ChangeNotifier {
           ..clear()
           ..addAll(prices);
         await _saveCache();  // guarda precios para próximo arranque
-        notifyListeners();
       }
 
-      if (_history.isEmpty) return; // aún sin histórico
-      _recalcTodayPoint();
+      if (_history.isNotEmpty) {
+        _recalcTodayPoint();
+      }
       notifyListeners();
-    } catch (_) {/* silenciado */}
+    } catch (_) {/* silenciado */} finally {
+      _isUpdatingPrices = false;
+    }
   }
 
   void _recalcTodayPoint() {
@@ -184,6 +222,8 @@ class ChartValueProvider extends ChangeNotifier {
   Future<void> _downloadAndCacheHistory() async {
     final cryptoInv = _lastInvestments.where((e) => e.type == AssetType.crypto).toList();
     await _histRepo.downloadAndStoreIfNeeded(range: _range, investments: cryptoInv);
+
+
     final hist = await _histRepo.getHistory(
       range: _range,
       investments: cryptoInv,

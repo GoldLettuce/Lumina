@@ -37,6 +37,25 @@ class Investment extends HiveObject {
     List<InvestmentOperation>? operations,
   }) : operations = operations ?? [];
 
+  /// Crea una copia de este Investment, sobrescribiendo solo los campos que se pasen.
+  Investment copyWith({
+    String? symbol,
+    String? name,
+    List<InvestmentOperation>? operations,
+    AssetType? type,
+    String? coingeckoId,
+    String? vsCurrency,
+  }) {
+    return Investment(
+      symbol: symbol ?? this.symbol,
+      name: name ?? this.name,
+      type: type ?? this.type,
+      coingeckoId: coingeckoId ?? this.coingeckoId,
+      vsCurrency: vsCurrency ?? this.vsCurrency,
+      operations: operations ?? this.operations,
+    );
+  }
+
   double get totalQuantity =>
       operations.fold(0.0, (sum, op) {
         return op.type == OperationType.buy

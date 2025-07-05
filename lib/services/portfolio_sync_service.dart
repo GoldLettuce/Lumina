@@ -1,3 +1,5 @@
+// lib/services/portfolio_sync_service.dart
+
 import 'package:hive/hive.dart';
 import 'package:lumina/data/models/investment_model.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
@@ -13,21 +15,28 @@ Future<void> addOperationAndSync({
   required ChartValueProvider chartProvider,
   required InvestmentModel model,
 }) async {
-  // Creamos un nuevo Investment con la operación añadida
-  final updated = Investment(
-    symbol: investment.symbol,
-    name: investment.name,
-    type: investment.type,
-    coingeckoId: investment.coingeckoId,
-    vsCurrency: investment.vsCurrency,
+  // 1️⃣ Guardamos la operación
+  final updated = investment.copyWith(
     operations: [...investment.operations, newOp],
   );
-
   await repo.addInvestment(updated);
   await model.load();
 
-  // El HistoryRepository descargará automáticamente los días faltantes
-  await chartProvider.forceRebuildAndReload(model.investments);
+  // 2️⃣ ¿Realmente necesitamos back-fill?
+  final histBox = await Hive.openBox<LocalHistory>('history');
+  final hist = histBox.get('${investment.symbol}_ALL');
+  final needsBackfill = hist != null && newOp.date.isBefore(hist.from);
+
+  if (needsBackfill) {
+    // Solo rellenar hacia atrás para este activo
+    await chartProvider.backfillHistory(
+      inv: updated,
+      earliestNeeded: newOp.date,
+    );
+  } else {
+    // Recalc solo el punto "hoy"
+    chartProvider.recalcTodayOnly();
+  }
 }
 
 /// Editar operación existente
@@ -40,20 +49,23 @@ Future<void> editOperationAndSync({
   required InvestmentModel model,
 }) async {
   final newOps = [...investment.operations]..[operationIndex] = editedOp;
-
-  final updated = Investment(
-    symbol: investment.symbol,
-    name: investment.name,
-    type: investment.type,
-    coingeckoId: investment.coingeckoId,
-    vsCurrency: investment.vsCurrency,
-    operations: newOps,
-  );
+  final updated = investment.copyWith(operations: newOps);
 
   await repo.addInvestment(updated);
   await model.load();
 
-  await chartProvider.forceRebuildAndReload(model.investments);
+  final histBox = await Hive.openBox<LocalHistory>('history');
+  final hist = histBox.get('${investment.symbol}_ALL');
+  final needsBackfill = hist != null && editedOp.date.isBefore(hist.from);
+
+  if (needsBackfill) {
+    await chartProvider.backfillHistory(
+      inv: updated,
+      earliestNeeded: editedOp.date,
+    );
+  } else {
+    chartProvider.recalcTodayOnly();
+  }
 }
 
 /// Eliminar operación
@@ -67,22 +79,34 @@ Future<void> deleteOperationAndSync({
   final updatedOps = [...investment.operations]..removeAt(operationIndex);
 
   if (updatedOps.isEmpty) {
-    // Si ya no quedan operaciones, eliminamos la inversión completa
     await repo.deleteInvestment(investment.symbol);
   } else {
-    final updated = Investment(
-      symbol: investment.symbol,
-      name: investment.name,
-      type: investment.type,
-      coingeckoId: investment.coingeckoId,
-      vsCurrency: investment.vsCurrency,
-      operations: updatedOps,
-    );
-    await repo.addInvestment(updated);
+    await repo.addInvestment(investment.copyWith(operations: updatedOps));
   }
 
   await model.load();
-  await chartProvider.forceRebuildAndReload(model.investments);
+
+  if (updatedOps.isNotEmpty) {
+    final earliest = updatedOps
+        .map((op) => op.date)
+        .reduce((a, b) => a.isBefore(b) ? a : b);
+
+    final histBox = await Hive.openBox<LocalHistory>('history');
+    final hist = histBox.get('${investment.symbol}_ALL');
+    final needsBackfill = hist != null && earliest.isBefore(hist.from);
+
+    if (needsBackfill) {
+      await chartProvider.backfillHistory(
+        inv: investment.copyWith(operations: updatedOps),
+        earliestNeeded: earliest,
+      );
+    } else {
+      chartProvider.recalcTodayOnly();
+    }
+  } else {
+    // Si no quedan operaciones, solo recalcula "hoy"
+    chartProvider.recalcTodayOnly();
+  }
 }
 
 /// Eliminar activo completo
@@ -94,10 +118,9 @@ Future<void> deleteInvestmentAndSync({
 }) async {
   await repo.deleteInvestment(symbol);
 
-  // Limpiamos también el histórico almacenado para liberar espacio
   final historyBox = await Hive.openBox<LocalHistory>('history');
   await historyBox.delete('${symbol}_ALL');
 
   await model.load();
-  await chartProvider.forceRebuildAndReload(model.investments);
+  chartProvider.recalcTodayOnly();
 }
