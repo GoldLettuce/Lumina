@@ -5,6 +5,7 @@ import '../providers/settings_provider.dart';
 import '../widgets/language_selector.dart';
 import '../widgets/currency_selector.dart';
 import '../../l10n/app_localizations.dart';
+import '../../services/export_controller.dart'; // ✅ nuevo import
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -23,10 +24,16 @@ class SettingsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(t.settings)),
       body: ListView(
-        children: const [
-          LanguageSelector(),
-          SizedBox(height: 24),
-          CurrencySelector(),
+        children: [
+          const LanguageSelector(),
+          const SizedBox(height: 24),
+          const CurrencySelector(),
+          const SizedBox(height: 32),
+          ListTile(
+            leading: const Icon(Icons.download),
+            title: const Text("Exportar operaciones a CSV"),
+            onTap: () => ExportController.handleCsvExport(context), // ✅ limpio y claro
+          ),
         ],
       ),
     );

@@ -16,6 +16,8 @@ import 'ui/providers/chart_value_provider.dart';
 import 'ui/providers/asset_list_provider.dart';
 import 'ui/providers/settings_provider.dart';
 import 'ui/providers/locale_provider.dart';
+import 'ui/providers/investment_provider.dart';
+
 
 import 'ui/screens/portfolio_screen.dart';
 import 'core/point.dart';
@@ -50,6 +52,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => CurrencyProvider()),
+        ChangeNotifierProvider(create: (_) => InvestmentProvider()..loadInvestments()),
       ],
       child: const PortfolioApp(),
     ),

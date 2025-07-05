@@ -125,7 +125,7 @@
 
 - [x] Crear pantalla de ajustes accesible desde la pantalla principal.
 - [x] Selector de idioma (`es`, `en`).
-- [ ] Selector de moneda base (USD, EUR, etc.).
+- [x] Selector de moneda base (USD, EUR, etc.).
 - [ ] Alternancia de modo oscuro/manual.
 - [ ] Exportación/Importación manual de datos (JSON o CSV).
 - [ ] Resetear todos los datos del portafolio (con confirmación).

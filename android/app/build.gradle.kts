@@ -20,12 +20,10 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.lumina"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        // ✅ Puedes subir el mínimo a 30 si solo apuntas a Android 11+
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
+        applicationId = "com.example.lumina"
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -37,6 +35,7 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
     ndkVersion = "27.0.12077973"
 }
 
