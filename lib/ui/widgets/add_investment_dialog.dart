@@ -11,7 +11,7 @@ import '../../l10n/app_localizations.dart';
 import 'asset_selector_modal.dart';
 import 'package:provider/provider.dart';
 import 'package:lumina/ui/providers/chart_value_provider.dart';
-import 'package:lumina/data/models/investment_model.dart';
+import 'package:lumina/ui/providers/investment_provider.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 import 'package:lumina/ui/providers/currency_provider.dart';
 
@@ -154,7 +154,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     }
 
     // Alta
-    final model         = context.read<InvestmentModel>();
+    final model         = context.read<InvestmentProvider>();
     final chartProvider = context.read<ChartValueProvider>();
     final repo          = InvestmentRepositoryImpl();
     await repo.init();
@@ -184,10 +184,10 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
 
     // Actualizar gráfico
     chartProvider.setVisibleSymbols(
-      context.read<InvestmentModel>().investments.map((e) => e.symbol).toSet(),    );
+      context.read<InvestmentProvider>().investments.map((e) => e.symbol).toSet(),    );
     if (mounted) {
       await chartProvider.forceRebuildAndReload(
-        context.read<InvestmentModel>().investments,
+        context.read<InvestmentProvider>().investments,
       );
       await chartProvider.updatePrices();
     }

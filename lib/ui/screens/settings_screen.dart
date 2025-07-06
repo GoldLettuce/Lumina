@@ -6,7 +6,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../providers/settings_provider.dart';
 import '../providers/investment_provider.dart';     // Import InvestmentProvider
-import '../../data/models/investment_model.dart';   // Import InvestmentModel
 import '../providers/chart_value_provider.dart';    // Import ChartValueProvider
 import '../widgets/language_selector.dart';
 import '../widgets/currency_selector.dart';
@@ -65,7 +64,7 @@ class SettingsScreen extends StatelessWidget {
 
               if (confirm) {
                 final invProv   = context.read<InvestmentProvider>();
-                final modelProv = context.read<InvestmentModel>();
+                final modelProv = context.read<InvestmentProvider>();
                 final chartProv = context.read<ChartValueProvider>();
 
                 // Llamada ajustada para pasar también chartProv al servicio

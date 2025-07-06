@@ -9,7 +9,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'domain/entities/investment.dart';
 import 'data/repositories_impl/investment_repository_impl.dart';
 
-import 'data/models/investment_model.dart';
 import 'ui/providers/chart_value_provider.dart';
 import 'ui/providers/asset_list_provider.dart';
 import 'ui/providers/settings_provider.dart';
@@ -47,12 +46,11 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AssetListProvider()),
-        ChangeNotifierProvider(create: (_) => InvestmentModel(investmentRepository)),
+        ChangeNotifierProvider(create: (_) => InvestmentProvider(investmentRepository)),
         ChangeNotifierProvider(create: (_) => ChartValueProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => CurrencyProvider()),
-        ChangeNotifierProvider(create: (_) => InvestmentProvider()),
       ],
       child: const PortfolioApp(),
     ),

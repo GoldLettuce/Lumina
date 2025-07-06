@@ -1,7 +1,7 @@
 // lib/services/portfolio_sync_service.dart
 
 import 'package:hive/hive.dart';
-import 'package:lumina/data/models/investment_model.dart';
+import 'package:lumina/ui/providers/investment_provider.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/data/models/local_history.dart';
@@ -13,7 +13,7 @@ Future<void> addOperationAndSync({
   required InvestmentOperation newOp,
   required InvestmentRepositoryImpl repo,
   required ChartValueProvider chartProvider,
-  required InvestmentModel model,
+  required InvestmentProvider model,
 }) async {
   // 1️⃣ Guardamos la operación
   final updated = investment.copyWith(
@@ -46,7 +46,7 @@ Future<void> editOperationAndSync({
   required InvestmentOperation editedOp,
   required InvestmentRepositoryImpl repo,
   required ChartValueProvider chartProvider,
-  required InvestmentModel model,
+  required InvestmentProvider model,
 }) async {
   final newOps = [...investment.operations]..[operationIndex] = editedOp;
   final updated = investment.copyWith(operations: newOps);
@@ -73,7 +73,7 @@ Future<void> deleteOperationAndSync({
   required Investment investment,
   required int operationIndex,
   required InvestmentRepositoryImpl repo,
-  required InvestmentModel model,
+  required InvestmentProvider model,
   required ChartValueProvider chartProvider,
 }) async {
   final updatedOps = [...investment.operations]..removeAt(operationIndex);
@@ -113,7 +113,7 @@ Future<void> deleteOperationAndSync({
 Future<void> deleteInvestmentAndSync({
   required String symbol,
   required InvestmentRepositoryImpl repo,
-  required InvestmentModel model,
+  required InvestmentProvider model,
   required ChartValueProvider chartProvider,
 }) async {
   await repo.deleteInvestment(symbol);

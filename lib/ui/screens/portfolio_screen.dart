@@ -3,14 +3,13 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/settings_provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../providers/chart_value_provider.dart';
 import '../providers/currency_provider.dart'; // Import CurrencyProvider
 import '../widgets/add_investment_dialog.dart';
-import '../../data/models/investment_model.dart';
+import '../providers/investment_provider.dart';
 import '../widgets/portfolio_summary_with_chart.dart';
 import 'asset_detail_screen.dart';
 import 'archived_assets_screen.dart';
@@ -140,13 +139,14 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      final inv = context.read<InvestmentModel>().investments;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final inv = context.read<InvestmentProvider>().investments;
       final provider = context.read<ChartValueProvider>();
       provider.loadHistory(inv);
       provider.setVisibleSymbols(inv.map((e) => e.symbol).toSet());
     });
   }
+
 
   Future<void> _openAddInvestmentDialog(BuildContext context) async {
     await showDialog(
@@ -159,7 +159,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final t = AppLocalizations.of(context)!;
-    final model = context.watch<InvestmentModel>();
+    final model = context.watch<InvestmentProvider>();
     final investments = model.investments.where((e) => e.totalQuantity > 0).toList();
     final chartProvider = context.watch<ChartValueProvider>();
     final fx = context.watch<CurrencyProvider>(); // Obtener provider de cambio
@@ -251,7 +251,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       );
                       // Recalculamos gráfico y precios al volver de edición
                       final allInvestments = context
-                          .read<InvestmentModel>()
+                          .read<InvestmentProvider>()
                           .investments;
                       chartProvider.loadHistory(allInvestments);
                       chartProvider.setVisibleSymbols(

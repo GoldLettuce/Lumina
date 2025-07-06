@@ -1,5 +1,3 @@
-// lib/data/models/chart_cache.dart
-
 import 'package:hive/hive.dart';
 import 'package:lumina/core/point.dart';
 

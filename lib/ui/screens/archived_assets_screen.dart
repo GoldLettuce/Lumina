@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:lumina/ui/providers/currency_provider.dart';  // por si se necesita conversión en el futuro
-import '../../data/models/investment_model.dart';
+import '../providers/investment_provider.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
 import 'asset_detail_screen.dart';
@@ -14,7 +14,7 @@ class ArchivedAssetsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = context.watch<InvestmentModel>();
+    final model = context.watch<InvestmentProvider>();
     final archived =
     model.investments.where((inv) => inv.totalQuantity == 0).toList();
     final theme = Theme.of(context);

@@ -121,6 +121,15 @@ class ChartValueProvider extends ChangeNotifier {
 
   Future<void> loadHistory(List<Investment> investments) async {
     _lastInvestments = investments;
+
+    // Si no hay inversiones, limpiamos todo en memoria y disco
+    if (investments.isEmpty) {
+      _resetState(); // limpia history, spots, selección en memoria
+      final box = await Hive.openBox<ChartCache>('chart_cache');
+      await box.delete('all'); // borra el cache en disco
+      return;
+    }
+
     final box = await Hive.openBox<ChartCache>('chart_cache');
     final cache = box.get('all');
 
@@ -132,14 +141,13 @@ class ChartValueProvider extends ChangeNotifier {
         ..addAll(cache.spotPrices);
       _recalcTodayPoint();
       notifyListeners();
-      unawaited(updatePrices()); // refresh rápido
       return;
     }
 
     await _downloadAndCacheHistory();
     notifyListeners();
-    unawaited(updatePrices());
   }
+
 
   /// Recalcula únicamente el punto de HOY (tras operaciones nuevas)
   void recalcTodayOnly() {
@@ -187,17 +195,23 @@ class ChartValueProvider extends ChangeNotifier {
     _isUpdatingPrices = true;
     try {
       final prices = await _priceRepo.getPrices(_visibleSymbols, currency: 'USD');
-      if (prices.isNotEmpty) {
+      if (prices.isNotEmpty && !_mapEquals(prices, _spotPrices)) {
         _spotPrices
           ..clear()
           ..addAll(prices);
-        await _saveCache();  // guarda precios para próximo arranque
+        await _saveCache();
+
+        if (_history.isNotEmpty) {
+          _recalcTodayPoint();
+        }
+
+        notifyListeners();
       }
+
 
       if (_history.isNotEmpty) {
         _recalcTodayPoint();
       }
-      notifyListeners();
     } catch (_) {/* silenciado */} finally {
       _isUpdatingPrices = false;
     }
@@ -272,4 +286,13 @@ class ChartValueProvider extends ChangeNotifier {
   void clear() {
     _resetState();
   }
+
+  bool _mapEquals(Map<String, double> a, Map<String, double> b) {
+    if (a.length != b.length) return false;
+    for (final key in a.keys) {
+      if (a[key] != b[key]) return false;
+    }
+    return true;
+  }
 }
+

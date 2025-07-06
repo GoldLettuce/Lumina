@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:lumina/domain/entities/investment.dart';
-import 'package:lumina/data/models/investment_model.dart';
+import 'package:lumina/ui/providers/investment_provider.dart';
 import 'package:lumina/ui/widgets/add_investment_dialog.dart';
 import 'package:lumina/ui/providers/currency_provider.dart'; // Import CurrencyProvider
 import '../../l10n/app_localizations.dart';
@@ -56,7 +56,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     );
 
     if (confirm == true) {
-      final model = context.read<InvestmentModel>();
+      final model = context.read<InvestmentProvider>();
       await model.removeOperations(asset.symbol, _selectedIds.toList());
       _clearSelection();
 
@@ -69,7 +69,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final model = context.watch<InvestmentModel>();
+    final model = context.watch<InvestmentProvider>();
     final fx = context.watch<CurrencyProvider>(); // Obtener provider
     final theme = Theme.of(context);
     final t = AppLocalizations.of(context)!;
