@@ -61,14 +61,7 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
       return op.id == updatedOp.id ? updatedOp : op;
     }).toList();
 
-    final updatedInvestment = Investment(
-      symbol: inv.symbol,
-      name: inv.name,
-      type: inv.type,
-      coingeckoId: inv.coingeckoId,   // ← aquí
-      vsCurrency: inv.vsCurrency,     // ← y aquí
-      operations: newOps,
-    );
+    final updatedInvestment = inv.copyWith(operations: newOps);
 
     await _box.put(investmentKey, updatedInvestment);
   }
@@ -85,15 +78,7 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
       return;
     }
 
-    final updatedInvestment = Investment(
-      symbol: inv.symbol,
-      name: inv.name,
-      type: inv.type,
-      coingeckoId: inv.coingeckoId,   // ← aquí
-      vsCurrency: inv.vsCurrency,     // ← y aquí
-      operations: newOps,
-    );
-
+    final updatedInvestment = inv.copyWith(operations: newOps);
 
     await _box.put(investmentKey, updatedInvestment);
   }
