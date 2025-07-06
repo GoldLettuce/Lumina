@@ -269,4 +269,7 @@ class ChartValueProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+  void clear() {
+    _resetState();
+  }
 }

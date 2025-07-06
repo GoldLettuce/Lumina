@@ -40,5 +40,7 @@
   "selectOperationType": "Select operation type",
   "dateLabel": "Date:",
   "spanish": "Spanish",
-  "english": "English"
+  "english": "English",
+  "confirmResetTitle": "Are you sure?",
+  "confirmResetMessage": "This action will delete all your investments."
 }

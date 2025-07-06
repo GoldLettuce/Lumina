@@ -130,4 +130,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get english => 'English';
+
+  @override
+  String get confirmResetTitle => 'Are you sure?';
+
+  @override
+  String get confirmResetMessage => 'This action will delete all your investments.';
 }

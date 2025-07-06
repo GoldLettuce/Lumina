@@ -1,5 +1,3 @@
-// lib/main.dart
-
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
@@ -17,21 +15,20 @@ import 'ui/providers/asset_list_provider.dart';
 import 'ui/providers/settings_provider.dart';
 import 'ui/providers/locale_provider.dart';
 import 'ui/providers/investment_provider.dart';
-
+import 'ui/providers/currency_provider.dart';
 
 import 'ui/screens/portfolio_screen.dart';
 import 'core/point.dart';
 import 'data/models/local_history.dart';
 import 'data/models/chart_cache.dart';
-import 'package:lumina/domain/entities/asset_type.dart';
-import 'package:lumina/ui/providers/currency_provider.dart';
+import 'domain/entities/asset_type.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Hive.initFlutter();
 
-  // Registro de adaptadores Hive
+  // Registro de adaptadores
   Hive.registerAdapter(InvestmentAdapter());
   Hive.registerAdapter(InvestmentOperationAdapter());
   Hive.registerAdapter(PointAdapter());
@@ -39,6 +36,9 @@ Future<void> main() async {
   Hive.registerAdapter(ChartCacheAdapter());
   Hive.registerAdapter(OperationTypeAdapter());
   Hive.registerAdapter(AssetTypeAdapter());
+
+  // ✅ Abre la caja una sola vez y la deja disponible para toda la app
+  await Hive.openBox<Investment>(InvestmentRepositoryImpl.boxName);
 
   final investmentRepository = InvestmentRepositoryImpl();
   await investmentRepository.init();
@@ -52,7 +52,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => CurrencyProvider()),
-        ChangeNotifierProvider(create: (_) => InvestmentProvider()..loadInvestments()),
+        ChangeNotifierProvider(create: (_) => InvestmentProvider()),
       ],
       child: const PortfolioApp(),
     ),
@@ -64,13 +64,13 @@ class PortfolioApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = context.watch<LocaleProvider>().locale; // 🌍 Escucha idioma
+    final locale = context.watch<LocaleProvider>().locale;
 
     return MaterialApp(
       title: 'Mi Portafolio',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      locale: locale, // ✅ Aplica idioma dinámico
+      locale: locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,

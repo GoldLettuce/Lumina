@@ -1,11 +1,19 @@
+// lib/ui/screens/settings_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import '../providers/settings_provider.dart';
+import '../providers/investment_provider.dart';     // Import InvestmentProvider
+import '../../data/models/investment_model.dart';   // Import InvestmentModel
+import '../providers/chart_value_provider.dart';    // Import ChartValueProvider
 import '../widgets/language_selector.dart';
 import '../widgets/currency_selector.dart';
 import '../../l10n/app_localizations.dart';
-import '../../services/export_controller.dart'; // ✅ nuevo import
+import '../../services/export_controller.dart';
+import '../../services/reset_portfolio_service.dart';
+import '../widgets/confirm_reset_dialog.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -29,10 +37,51 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 24),
           const CurrencySelector(),
           const SizedBox(height: 32),
+
+          // Export CSV
           ListTile(
             leading: const Icon(Icons.download),
             title: const Text("Exportar operaciones a CSV"),
-            onTap: () => ExportController.handleCsvExport(context), // ✅ limpio y claro
+            onTap: () => ExportController.handleCsvExport(context),
+          ),
+
+          const SizedBox(height: 32),
+
+          // Reset portfolio
+          ListTile(
+            leading: const Icon(Icons.delete_forever, color: Colors.red),
+            title: const Text(
+              "Eliminar todos los datos del portafolio",
+              style: TextStyle(color: Colors.red),
+            ),
+            onTap: () async {
+              final confirm = await ConfirmResetDialog.show(
+                context: context,
+                title: t.confirmResetTitle,
+                content: t.confirmResetMessage,
+                cancelText: t.cancel,
+                confirmText: t.delete,
+              );
+
+              if (confirm) {
+                final invProv   = context.read<InvestmentProvider>();
+                final modelProv = context.read<InvestmentModel>();
+                final chartProv = context.read<ChartValueProvider>();
+
+                // Llamada ajustada para pasar también chartProv al servicio
+                await ResetPortfolioService.resetAllData(
+                  invProv,
+                  modelProv,
+                  chartProv,
+                );
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('✅ Portafolio eliminado')),
+                  );
+                }
+              }
+            },
           ),
         ],
       ),

@@ -127,7 +127,7 @@
 - [x] Selector de idioma (`es`, `en`).
 - [x] Selector de moneda base (USD, EUR, etc.).
 - [ ] Alternancia de modo oscuro/manual.
-- [ ] Exportación/Importación manual de datos (JSON o CSV).
+- [x] Exportación/Importación manual de datos (JSON o CSV).
 - [ ] Resetear todos los datos del portafolio (con confirmación).
 - [ ] Información sobre la app (versión, créditos, enlace al repositorio).
 

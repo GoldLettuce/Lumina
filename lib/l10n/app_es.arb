@@ -39,5 +39,7 @@
   "selectOperationType": "Seleccione tipo de operación",
   "dateLabel": "Fecha:",
   "spanish": "Español",
-  "english": "Inglés"
+  "english": "Inglés",
+  "confirmResetTitle": "¿Estás seguro?",
+  "confirmResetMessage": "Esta acción eliminará todas tus inversiones."
 }

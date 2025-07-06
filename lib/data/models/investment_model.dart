@@ -84,4 +84,11 @@ class InvestmentModel extends ChangeNotifier {
 
   // ---------- REFRESH EXTERNO ----------
   Future<void> load() => loadInvestments();
+
+  // ---------- RESET ----------
+  /// Limpia todas las inversiones en memoria
+  void clearAll() {
+    _investments.clear();
+    notifyListeners();
+  }
 }

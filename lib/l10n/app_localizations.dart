@@ -340,6 +340,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'English'**
   String get english;
+
+  /// No description provided for @confirmResetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure?'**
+  String get confirmResetTitle;
+
+  /// No description provided for @confirmResetMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This action will delete all your investments.'**
+  String get confirmResetMessage;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
