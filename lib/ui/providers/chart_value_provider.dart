@@ -44,22 +44,47 @@ class ChartValueProvider extends ChangeNotifier {
   // ───────── Getters
   List<Point> get history => _history;
 
+  // ───────── HISTÓRICO QUE RECIBE EL GRÁFICO
+  /// Devuelve la serie de puntos que se pinta en el chart.
+  /// 1. Integra el punto de hoy (_todayPoint) si existe.
+  /// 2. Si solo hay 1 punto real, duplica un “fantasma” 24 h antes
+  ///    para evitar que fl_chart se quede sin rango.
   List<Point> get displayHistory {
-    if (_todayPoint == null) return _history;
+    // ➊ Base: _history + punto de hoy (como ya lo tenías)
+    final List<Point> base = () {
+      if (_todayPoint == null) return List<Point>.from(_history);
 
-    final last = _history.isNotEmpty ? _history.last : null;
-    final sameDay = last != null &&
-        last.time.year  == _todayPoint!.time.year  &&
-        last.time.month == _todayPoint!.time.month &&
-        last.time.day   == _todayPoint!.time.day;
+      final last = _history.isNotEmpty ? _history.last : null;
+      final sameDay = last != null &&
+          last.time.year  == _todayPoint!.time.year  &&
+          last.time.month == _todayPoint!.time.month &&
+          last.time.day   == _todayPoint!.time.day;
 
-    if (sameDay) {
-      final temp = List<Point>.from(_history);
-      temp[temp.length - 1] = _todayPoint!;
-      return temp;
+      if (sameDay) {
+        final temp = List<Point>.from(_history);
+        temp[temp.length - 1] = _todayPoint!;
+        return temp;
+      }
+      return [..._history, _todayPoint!];
+    }();
+
+    // ➋ Parche: si queda solo 1 punto, añadimos uno fantasma (ayer)
+    if (base.length == 1) {
+      final p = base.first;
+      // Usa copyWith si lo tienes; si no, crea un Point nuevo.
+      return [
+        Point(
+          time: p.time.subtract(const Duration(days: 1)),
+          value: p.value,
+        ),
+        p,
+      ];
+
     }
-    return [..._history, _todayPoint!];
+
+    return base;
   }
+
 
   int? get selectedIndex => _selectedIndex;
   double? get selectedValue => (_selectedIndex != null && displayHistory.isNotEmpty)
@@ -68,10 +93,15 @@ class ChartValueProvider extends ChangeNotifier {
   DateTime? get selectedDate => (_selectedIndex != null && displayHistory.isNotEmpty)
       ? displayHistory[_selectedIndex!].time
       : null;
-  double? get selectedPct => (_selectedIndex != null && displayHistory.length > 1)
-      ? (displayHistory[_selectedIndex!].value - displayHistory.first.value) /
-      displayHistory.first.value * 100
-      : null;
+  double? get selectedPct =>
+      (_selectedIndex != null &&
+          displayHistory.length > 1 &&
+          displayHistory.first.value != 0)
+          ? (displayHistory[_selectedIndex!].value -
+          displayHistory.first.value) /
+          displayHistory.first.value * 100
+          : null;
+
 
   // ───────── Constructor
   ChartValueProvider() {
