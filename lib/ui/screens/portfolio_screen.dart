@@ -253,7 +253,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       final allInvestments = context
                           .read<InvestmentProvider>()
                           .investments;
-                      chartProvider.loadHistory(allInvestments);
+                      await chartProvider.forceRebuildAndReload(allInvestments);
                       chartProvider.setVisibleSymbols(
                         allInvestments.map((e) => e.symbol).toSet(),
                       );
