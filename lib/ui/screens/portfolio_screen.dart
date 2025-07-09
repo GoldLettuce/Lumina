@@ -164,6 +164,13 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final chartProvider = context.watch<ChartValueProvider>();
     final fx = context.watch<CurrencyProvider>(); // Obtener provider de cambio
 
+    // Loader si aún no hay inversiones cargadas (y la app acaba de arrancar)
+    if (model.investments.isEmpty) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
