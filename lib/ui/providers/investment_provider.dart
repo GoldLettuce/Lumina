@@ -6,6 +6,8 @@ class InvestmentProvider extends ChangeNotifier {
   final InvestmentRepositoryImpl _repository;
 
   List<Investment> _investments = [];
+  bool _isLoading = true;
+  bool get isLoading => _isLoading;
   List<Investment> get investments => List.unmodifiable(_investments);
 
   InvestmentProvider(this._repository) {
@@ -14,7 +16,10 @@ class InvestmentProvider extends ChangeNotifier {
 
   // ---------- CARGA ----------
   Future<void> loadInvestments() async {
+    _isLoading = true;
+    notifyListeners();
     _investments = await _repository.getAllInvestments();
+    _isLoading = false;
     notifyListeners();
   }
 
