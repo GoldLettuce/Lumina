@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -249,16 +248,9 @@ class ChartValueProvider extends ChangeNotifier {
           ..addAll(prices);
         await _saveCache();
 
-        if (_history.isNotEmpty) {
-          _recalcTodayPoint();
-        }
+        _recalcTodayPoint();                      // siempre recalcula
 
         notifyListeners();
-      }
-
-
-      if (_history.isNotEmpty) {
-        _recalcTodayPoint();
       }
     } catch (_) {/* silenciado */} finally {
       _isUpdatingPrices = false;
@@ -266,7 +258,7 @@ class ChartValueProvider extends ChangeNotifier {
   }
 
   void _recalcTodayPoint() {
-    if (_spotPrices.isEmpty || _history.isEmpty) return;
+    if (_spotPrices.isEmpty) return;          // permite _history vacío
 
     double total = 0;
     for (final inv in _lastInvestments.where((e) => e.type == AssetType.crypto)) {
