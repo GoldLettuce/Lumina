@@ -15,6 +15,7 @@ import 'package:lumina/domain/entities/asset_type.dart';
 import 'package:lumina/domain/repositories/price_repository.dart';
 import 'package:lumina/domain/repositories/history_repository.dart';
 
+
 /// ChartValueProvider – estilo CryptoCompare pero usando CoinGecko.
 /// * Cachea histórico + precios al arrancar.
 /// * Pide precios spot cada 60 s (throttle para evitar 429).
@@ -163,7 +164,23 @@ class ChartValueProvider extends ChangeNotifier {
     final box = await Hive.openBox<ChartCache>('chart_cache');
     final cache = box.get('all');
 
-    if (cache != null && !_shouldUpdate()) {
+    // ─── Nuevo chequeo: ¿hay operaciones más antiguas que la historia en caché?
+    DateTime? earliestOp = investments
+        .where((e) => e.type == AssetType.crypto)
+        .expand((inv) => inv.operations)
+        .map((op) => op.date)
+        .fold<DateTime?>(
+      null,
+          (earliest, d) => earliest == null || d.isBefore(earliest) ? d : earliest,
+    );
+
+    bool cacheInvalid =
+        cache != null &&
+            _historyStart != null &&
+            earliestOp != null &&
+            earliestOp.isBefore(_historyStart!);
+
+    if (cache != null && !_shouldUpdate() && !cacheInvalid) {
       _history      = cache.history;
       _historyStart = _history.isNotEmpty ? _history.first.time : null;
       _spotPrices
@@ -177,6 +194,7 @@ class ChartValueProvider extends ChangeNotifier {
     await _downloadAndCacheHistory();
     notifyListeners();
   }
+
 
 
   /// Recalcula únicamente el punto de HOY (tras operaciones nuevas)

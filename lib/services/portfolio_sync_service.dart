@@ -54,18 +54,8 @@ Future<void> editOperationAndSync({
   await repo.addInvestment(updated);
   await model.load();
 
-  final histBox = await Hive.openBox<LocalHistory>('history');
-  final hist = histBox.get('${investment.symbol}_ALL');
-  final needsBackfill = hist != null && editedOp.date.isBefore(hist.from);
-
-  if (needsBackfill) {
-    await chartProvider.backfillHistory(
-      inv: updated,
-      earliestNeeded: editedOp.date,
-    );
-  } else {
-    chartProvider.recalcTodayOnly();
-  }
+  // 🔥 Siempre fuerza la reconstrucción del histórico tras editar una operación
+  await chartProvider.forceRebuildAndReload(model.investments);
 }
 
 /// Eliminar operación
