@@ -134,8 +134,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       return;
     }
 
-    final quantity   = double.parse(_quantityController.text.trim());
-    final priceLocal = double.parse(_priceController.text.trim());
+    final quantity   = double.tryParse(_quantityController.text.trim());
+    final priceLocal = double.tryParse(_priceController.text.trim());
+    if (quantity == null || priceLocal == null) return;
     final fx         = context.read<CurrencyProvider>();
     final priceUsd   = priceLocal / fx.exchangeRate;
 
@@ -373,8 +374,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                       const EdgeInsets.symmetric(vertical: 12)),
                   style: const TextStyle(color: Colors.black),
                   onChanged: (_) {
-                    if (!_quantityTouched)
+                    if (!_quantityTouched) {
                       setState(() => _quantityTouched = true);
+                    }
                   },
                 ),
 
