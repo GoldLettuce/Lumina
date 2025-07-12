@@ -260,9 +260,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                   ),
                 ),
               )
-                  : ListView.separated(
+                  : ListView.builder(
                 itemCount: investments.length,
-                separatorBuilder: (_, __) => Divider(color: AppColors.border),
+                itemExtent: 72.0, // altura fija del ListTile + padding
                 itemBuilder: (context, index) {
                   final asset = investments[index];
                   final priceUsd = chartProvider.getPriceFor(asset.symbol);
@@ -270,7 +270,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       ? asset.totalQuantity * priceUsd * fx.exchangeRate
                       : null;
 
-                  return ListTile(
+                  final tile = ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(
                       asset.symbol,
@@ -293,7 +293,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                             .copyWith(fontWeight: FontWeight.w600),
                       ),
                     ),
-
                     onTap: () async {
                       await Navigator.push(
                         context,
@@ -312,6 +311,17 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       chartProvider.clearSelection();
                     },
                   );
+
+                  if (index == 0) {
+                    return tile;
+                  } else {
+                    return Column(
+                      children: [
+                        Divider(color: AppColors.border, height: 0),
+                        tile,
+                      ],
+                    );
+                  }
                 },
               ),
             ),
