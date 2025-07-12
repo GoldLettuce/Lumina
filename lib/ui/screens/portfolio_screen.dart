@@ -1,5 +1,6 @@
 // lib/ui/screens/portfolio_screen.dart
 
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -66,20 +67,72 @@ class PortfolioSummaryMinimal extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(
-          height: 42,
-          width: double.infinity,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Text(valorText, style: valorStyle),
-              Positioned(
-                right: 24,
-                bottom: 4,
-                child: Text(percentText, style: percentStyle),
-              ),
-            ],
-          ),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            // -------- 1) Medimos los textos --------
+            final valuePainter = TextPainter(
+              text: TextSpan(text: valorText, style: valorStyle),
+              textDirection: ui.TextDirection.ltr,
+            )..layout(maxWidth: constraints.maxWidth);
+
+            final hasPct = percentText != null && percentText != '+0.00%';
+
+            final pctPainter = hasPct
+                ? (TextPainter(
+                    text: TextSpan(text: percentText, style: percentStyle),
+                    textDirection: ui.TextDirection.ltr,
+                  )..layout())
+                : null;
+
+            const gap = 12.0; // separación mínima entre valor y %
+            final comboWidth = hasPct
+                ? valuePainter.width + gap + pctPainter!.width
+                : valuePainter.width;
+
+            final fitsHorizontally = hasPct
+                ? comboWidth < constraints.maxWidth * 0.98   // un 2 % de margen
+                : true;
+
+            // -------- 2) Seleccionamos layout --------
+            if (fitsHorizontally) {
+              // ✅ DISPOSICIÓN HORIZONTAL (valor + % en una línea)
+              return Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,                    // ancho justo
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      valorText,
+                      style: valorStyle,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (hasPct) ...[
+                      const SizedBox(width: gap),
+                      Text(percentText!, style: percentStyle),
+                    ],
+                  ],
+                ),
+              );
+            } else {
+              // ✅ DISPOSICIÓN VERTICAL (valor arriba, % debajo)
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    valorText,
+                    style: valorStyle,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
+                  if (hasPct) ...[
+                    const SizedBox(height: 4),
+                    Text(percentText!, style: percentStyle),
+                  ],
+                ],
+              );
+            }
+          },
         ),
         const SizedBox(height: 4),
         Opacity(
