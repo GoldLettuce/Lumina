@@ -247,101 +247,95 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             const PortfolioSummaryMinimal(),
             const SizedBox(height: 12),
             PortfolioSummaryWithChart(investments: investments),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             Expanded(
               child: investments.isEmpty
                   ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: Text(
-                    t.emptyPortfolioMessage,
-                    style: theme.textTheme.bodyLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              )
-                  : ListView.builder(
-                itemCount: investments.length,
-                itemExtent: 72.0, // altura fija del ListTile + padding
-                itemBuilder: (context, index) {
-                  final asset = investments[index];
-                  final priceUsd = chartProvider.getPriceFor(asset.symbol);
-                  final valorActual = priceUsd != null
-                      ? asset.totalQuantity * priceUsd * fx.exchangeRate
-                      : null;
-
-                  final tile = ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      asset.symbol,
-                      style: theme.textTheme.bodyLarge!
-                          .copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      '${t.quantity}: ${asset.totalQuantity}',
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                    trailing: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: valorActual == null
-                          ? const SizedBox(width: 60)
-                          : Text(
-                        NumberFormat.simpleCurrency(name: fx.currency)
-                            .format(valorActual),
-                        key: ValueKey(valorActual),
-                        style: theme.textTheme.bodyLarge!
-                            .copyWith(fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => AssetDetailScreen(asset: asset),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 30),
+                        child: Text(
+                          t.emptyPortfolioMessage,
+                          style: theme.textTheme.bodyLarge,
+                          textAlign: TextAlign.center,
                         ),
-                      );
-                      // Recalculamos gráfico y precios al volver de edición
-                      final allInvestments = context
-                          .read<InvestmentProvider>()
-                          .investments;
-                      chartProvider.loadHistory(allInvestments);
-                      chartProvider.setVisibleSymbols(
-                        allInvestments.map((e) => e.symbol).toSet(),
-                      );
-                      chartProvider.clearSelection();
-                    },
-                  );
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: investments.length + 1, // +1 para el TextButton
+                      itemExtent: 72.0, // altura fija del ListTile + padding
+                      itemBuilder: (context, index) {
+                        // Si es el último ítem, mostrar el TextButton
+                        if (index == investments.length) {
+                          return TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const ArchivedAssetsScreen(),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              t.archivedAssetsTitle,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          );
+                        }
 
-                  if (index == 0) {
-                    return tile;
-                  } else {
-                    return Column(
-                      children: [
-                        Divider(color: AppColors.border, height: 0),
-                        tile,
-                      ],
-                    );
-                  }
-                },
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const ArchivedAssetsScreen(),
-                  ),
-                );
-              },
-              child: Text(
-                t.archivedAssetsTitle,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey,
-                ),
-              ),
+                        final asset = investments[index];
+                        final priceUsd = chartProvider.getPriceFor(asset.symbol);
+                        final valorActual = priceUsd != null
+                            ? asset.totalQuantity * priceUsd * fx.exchangeRate
+                            : null;
+
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(
+                            asset.symbol,
+                            style: theme.textTheme.bodyLarge!
+                                .copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            '${t.quantity}: ${asset.totalQuantity}',
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                          trailing: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: valorActual == null
+                                ? const SizedBox(width: 60)
+                                : Text(
+                              NumberFormat.simpleCurrency(name: fx.currency)
+                                  .format(valorActual),
+                              key: ValueKey(valorActual),
+                              style: theme.textTheme.bodyLarge!
+                                  .copyWith(fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => AssetDetailScreen(asset: asset),
+                              ),
+                            );
+                            // Recalculamos gráfico y precios al volver de edición
+                            final allInvestments = context
+                                .read<InvestmentProvider>()
+                                .investments;
+                            chartProvider.loadHistory(allInvestments);
+                            chartProvider.setVisibleSymbols(
+                              allInvestments.map((e) => e.symbol).toSet(),
+                            );
+                            chartProvider.clearSelection();
+                          },
+                        );
+                      },
+                    ),
             ),
           ],
         ),
