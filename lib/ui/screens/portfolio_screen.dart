@@ -15,6 +15,7 @@ import 'asset_detail_screen.dart';
 import 'archived_assets_screen.dart';
 import 'settings_screen.dart';
 import 'package:lumina/core/point.dart';
+import '../../domain/entities/investment.dart';
 
 class PortfolioSummaryMinimal extends StatelessWidget {
   const PortfolioSummaryMinimal({super.key});
@@ -191,6 +192,78 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     });
   }
 
+  // === Helper: lista de activos como Sliver ===================================
+  Widget _buildAssetsSliverList(
+    BuildContext context,
+    List<Investment> investments,
+    ChartValueProvider chartProvider,
+    CurrencyProvider fx,
+    AppLocalizations t,
+  ) {
+    final theme = Theme.of(context);
+
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final asset = investments[index];
+            final priceUsd = chartProvider.getPriceFor(asset.symbol);
+            final valorActual = priceUsd != null
+                ? asset.totalQuantity * priceUsd * fx.exchangeRate
+                : null;
+
+            return ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                asset.symbol,
+                style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                '${t.quantity}: ${asset.totalQuantity}',
+                style: theme.textTheme.bodyMedium,
+              ),
+              trailing: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: valorActual == null
+                    ? const SizedBox(width: 60)
+                    : Text(
+                        NumberFormat.simpleCurrency(name: fx.currency).format(valorActual),
+                        key: ValueKey(valorActual),
+                        style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
+                      ),
+              ),
+              onTap: () async {
+                // Guardar referencias antes del await
+                final allInvestments = context
+                    .read<InvestmentProvider>()
+                    .investments;
+                final chartProvider = context.read<ChartValueProvider>();
+                
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => AssetDetailScreen(asset: asset),
+                  ),
+                );
+                
+                // Verificar si el widget sigue montado
+                if (!mounted) return;
+                
+                // Recalculamos gráfico y precios al volver de edición
+                chartProvider.loadHistory(allInvestments);
+                chartProvider.setVisibleSymbols(
+                  allInvestments.map((e) => e.symbol).toSet(),
+                );
+                chartProvider.clearSelection();
+              },
+            );
+          },
+          childCount: investments.length,
+        ),
+      ),
+    );
+  }
 
   Future<void> _openAddInvestmentDialog(BuildContext context) async {
     await showDialog(
@@ -250,115 +323,54 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             PortfolioSummaryWithChart(investments: investments),
             const SizedBox(height: 12),
             Expanded(
-              child: investments.isEmpty
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 30),
-                        child: Text(
-                          t.emptyPortfolioMessage,
-                          style: theme.textTheme.bodyLarge,
-                          textAlign: TextAlign.center,
+              child: CustomScrollView(
+                slivers: [
+                  if (investments.isEmpty)
+                    // ------ Estado vacío ------
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 30),
+                          child: Text(
+                            t.emptyPortfolioMessage,
+                            style: theme.textTheme.bodyLarge,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
                     )
-                  : LayoutBuilder(
-                      builder: (context, constraints) {
-                        return ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: investments.length + 1, // +1 para el ConstrainedBox
-                          itemExtent: 72.0, // altura fija del ListTile + padding
-                          itemBuilder: (context, index) {
-                            // Si es el último ítem, mostrar el ConstrainedBox con el texto
-                            if (index == investments.length) {
-                              return ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  minHeight: constraints.maxHeight * 0.2,
-                                ),
-                                child: Align(
-                                  alignment: Alignment.bottomCenter,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 12),
-                                    child: TextButton(
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => const ArchivedAssetsScreen(),
-                                          ),
-                                        );
-                                      },
-                                      child: Text(
-                                        t.archivedAssetsTitle,
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }
+                  else
+                    // ------ Lista de activos ------
+                    _buildAssetsSliverList(context, investments, chartProvider, fx, t),
 
-                            final asset = investments[index];
-                            final priceUsd = chartProvider.getPriceFor(asset.symbol);
-                            final valorActual = priceUsd != null
-                                ? asset.totalQuantity * priceUsd * fx.exchangeRate
-                                : null;
-
-                            return ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              title: Text(
-                                asset.symbol,
-                                style: theme.textTheme.bodyLarge!
-                                    .copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Text(
-                                '${t.quantity}: ${asset.totalQuantity}',
-                                style: theme.textTheme.bodyMedium,
-                              ),
-                              trailing: AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 300),
-                                child: valorActual == null
-                                    ? const SizedBox(width: 60)
-                                    : Text(
-                                  NumberFormat.simpleCurrency(name: fx.currency)
-                                      .format(valorActual),
-                                  key: ValueKey(valorActual),
-                                  style: theme.textTheme.bodyLarge!
-                                      .copyWith(fontWeight: FontWeight.w600),
-                                ),
-                              ),
-                              onTap: () async {
-                                // Guardar referencias antes del await
-                                final allInvestments = context
-                                    .read<InvestmentProvider>()
-                                    .investments;
-                                final chartProvider = context.read<ChartValueProvider>();
-                                
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => AssetDetailScreen(asset: asset),
-                                  ),
-                                );
-                                
-                                // Verificar si el widget sigue montado
-                                if (!mounted) return;
-                                
-                                // Recalculamos gráfico y precios al volver de edición
-                                chartProvider.loadHistory(allInvestments);
-                                chartProvider.setVisibleSymbols(
-                                  allInvestments.map((e) => e.symbol).toSet(),
-                                );
-                                chartProvider.clearSelection();
-                              },
+                  // ------ Footer "Archived assets" anclado ------
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 0), // alto FAB + margen
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const ArchivedAssetsScreen()),
                             );
                           },
-                        );
-                      },
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Text(
+                              t.archivedAssetsTitle,
+                              style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
