@@ -17,7 +17,10 @@ Future<InvestmentRepositoryImpl> initHive() async {
   Hive.registerAdapter(LocalHistoryAdapter());
   Hive.registerAdapter(ChartCacheAdapter());
 
-  await Hive.openBox<Investment>(InvestmentRepositoryImpl.boxName);
+  // Abrir todas las cajas en paralelo usando openLazyBox para mejor rendimiento
+  await Future.wait([
+    Hive.openLazyBox<Investment>(InvestmentRepositoryImpl.boxName),
+  ]);
 
   final repository = InvestmentRepositoryImpl();
   await repository.init();

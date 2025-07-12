@@ -6,22 +6,21 @@ import '../../domain/repositories/investment_repository.dart';
 
 class InvestmentRepositoryImpl implements InvestmentRepository {
   static const String boxName = 'investments';
-  late Box<Investment> _box;
+
+  /// Getter para acceder a la caja lazy
+  LazyBox<Investment> get _box => Hive.lazyBox<Investment>(boxName);
 
   /// Inicializa la caja Hive para almacenar inversiones.
   /// Debe llamarse antes de usar los métodos de este repositorio.
   Future<void> init() async {
-    if (!Hive.isBoxOpen(boxName)) {
-      _box = await Hive.openBox<Investment>(boxName);
-    } else {
-      _box = Hive.box<Investment>(boxName);
-    }
+    // La caja ya está abierta como LazyBox en init_hive.dart
+    // No necesitamos abrirla nuevamente
   }
 
   @override
   Future<void> addInvestment(Investment investment) async {
     // Usamos el símbolo como clave única
-    final existing = _box.get(investment.symbol);
+    final existing = await _box.get(investment.symbol);
 
     if (existing != null) {
       // Agregar operación en vez de sobrescribir
@@ -35,7 +34,9 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
 
   @override
   Future<List<Investment>> getAllInvestments() async {
-    return _box.values.toList();
+    final keys = _box.keys.toList();
+    final items = await Future.wait(keys.map((key) => _box.get(key)));
+    return items.whereType<Investment>().toList();
   }
 
   @override
@@ -45,7 +46,7 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
 
   /// ✅ Añadir operación directamente a un activo ya existente
   Future<void> addOperation(String investmentKey, InvestmentOperation op) async {
-    final inv = _box.get(investmentKey);
+    final inv = await _box.get(investmentKey);
     if (inv == null) return;
 
     inv.operations.add(op);
@@ -54,7 +55,7 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
 
   /// ✅ Editar una operación existente por ID
   Future<void> editOperation(String investmentKey, InvestmentOperation updatedOp) async {
-    final inv = _box.get(investmentKey);
+    final inv = await _box.get(investmentKey);
     if (inv == null) return;
 
     final newOps = inv.operations.map((op) {
@@ -68,7 +69,7 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
 
   /// ✅ Eliminar múltiples operaciones por ID
   Future<void> removeOperations(String investmentKey, List<String> operationIds) async {
-    final inv = _box.get(investmentKey);
+    final inv = await _box.get(investmentKey);
     if (inv == null) return;
 
     final newOps = inv.operations.where((op) => !operationIds.contains(op.id)).toList();
