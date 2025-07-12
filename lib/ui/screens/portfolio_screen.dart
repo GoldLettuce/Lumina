@@ -105,10 +105,13 @@ class PortfolioSummaryMinimal extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                   ),
-                  Positioned(
-                    left: pctLeft,
-                    child: Text(percentText!, style: percentStyle),
-                  ),
+Positioned(
+  left: pctLeft,
+  top: (valuePainter.computeDistanceToActualBaseline(TextBaseline.alphabetic) ?? 0)
+       - (pctPainter?.computeDistanceToActualBaseline(TextBaseline.alphabetic) ?? 0),
+  child: Text(percentText!, style: percentStyle),
+),
+
                 ],
               );
             } else {
