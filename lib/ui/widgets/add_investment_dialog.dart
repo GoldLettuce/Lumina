@@ -150,6 +150,19 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
 
     // Edición
     if (widget.initialOperation != null) {
+      final model         = context.read<InvestmentProvider>();
+      final chartProvider = context.read<ChartValueProvider>();
+
+      // 1) Actualiza la operación editada en el provider
+      await model.editOperation(widget.initialSymbol!, operation); // o usa tu método actual si tiene otro nombre
+
+      // 2) Refresca gráfico con lista ya actualizada
+      final investments = model.investments;
+      await chartProvider.forceRebuildAndReload(investments);
+      await chartProvider.updatePrices();
+      chartProvider.updateTodayPoint();
+
+      // 3) Devuelve la operación editada
       Navigator.of(context).pop(operation);
       return;
     }
@@ -191,6 +204,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
         context.read<InvestmentProvider>().investments,
       );
       await chartProvider.updatePrices();
+      chartProvider.updateTodayPoint();      // recalcula con precios ya actualizados
     }
 
     Navigator.of(context).pop();

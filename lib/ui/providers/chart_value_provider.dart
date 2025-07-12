@@ -202,6 +202,12 @@ class ChartValueProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Actualiza el punto del día actual
+  void updateTodayPoint() {
+    _recalcTodayPoint();
+    notifyListeners();
+  }
+
   /// Descarga histórico SOLO de [inv] si earliestNeeded < hist.from
   Future<void> backfillHistory({
     required Investment inv,
@@ -228,12 +234,19 @@ class ChartValueProvider extends ChangeNotifier {
   }
 
   Future<void> forceRebuildAndReload(List<Investment> investments) async {
+    // 1. Guardamos la lista actualizada de inversiones
     _lastInvestments = investments;
-    final box = await Hive.openBox<ChartCache>('chart_cache');
-    await box.delete('all');
+
+    // 2. Limpiamos caché en memoria
+    _history.clear();
+    _spotPrices.clear();
+
+    // 3. Descargamos y recalculamos TODO el histórico
     await _downloadAndCacheHistory();
+
+    // 4. Recalculamos el punto de hoy y notificamos
+    _recalcTodayPoint();
     notifyListeners();
-    unawaited(updatePrices());
   }
 
   // ───────── Precios
