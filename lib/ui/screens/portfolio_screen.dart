@@ -69,7 +69,6 @@ class PortfolioSummaryMinimal extends StatelessWidget {
       children: [
         LayoutBuilder(
           builder: (context, constraints) {
-            // -------- 1) Medimos los textos --------
             final valuePainter = TextPainter(
               text: TextSpan(text: valorText, style: valorStyle),
               textDirection: ui.TextDirection.ltr,
@@ -84,38 +83,36 @@ class PortfolioSummaryMinimal extends StatelessWidget {
                   )..layout())
                 : null;
 
-            const gap = 12.0; // separación mínima entre valor y %
-            final comboWidth = hasPct
-                ? valuePainter.width + gap + pctPainter!.width
-                : valuePainter.width;
+            const gap = 12.0;
+            final valueW = valuePainter.width;
+            final pctW   = pctPainter?.width ?? 0.0;
 
-            final fitsHorizontally = hasPct
-                ? comboWidth < constraints.maxWidth * 0.98   // un 2 % de margen
-                : true;
+            // Calcular si el porcentaje cabe a la derecha del valor sin salirse
+            final centerX   = constraints.maxWidth / 2;
+            final pctLeft   = centerX + valueW / 2 + gap;
+            final fitsRight = hasPct && (pctLeft + pctW) <= constraints.maxWidth;
 
-            // -------- 2) Seleccionamos layout --------
-            if (fitsHorizontally) {
-              // ✅ DISPOSICIÓN HORIZONTAL (valor + % en una línea)
-              return Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,                    // ancho justo
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Text(
+            if (fitsRight) {
+              // ✅ Valor centrado, porcentaje flotando a la derecha
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  Center(
+                    child: Text(
                       valorText,
                       style: valorStyle,
                       overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
                     ),
-                    if (hasPct) ...[
-                      const SizedBox(width: gap),
-                      Text(percentText!, style: percentStyle),
-                    ],
-                  ],
-                ),
+                  ),
+                  Positioned(
+                    left: pctLeft,
+                    child: Text(percentText!, style: percentStyle),
+                  ),
+                ],
               );
             } else {
-              // ✅ DISPOSICIÓN VERTICAL (valor arriba, % debajo)
+              // ✅ Valor centrado, porcentaje debajo
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
