@@ -1,6 +1,5 @@
 // lib/ui/screens/portfolio_screen.dart
 
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -17,24 +16,6 @@ import 'settings_screen.dart';
 
 class PortfolioSummaryMinimal extends StatelessWidget {
   const PortfolioSummaryMinimal({super.key});
-
-  double _measureTextWidth(String text, TextStyle style) {
-    final tp = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: ui.TextDirection.ltr,
-      maxLines: 1,
-    )..layout();
-    return tp.size.width;
-  }
-
-  double _measureBaseline(String text, TextStyle style) {
-    final tp = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: ui.TextDirection.ltr,
-      maxLines: 1,
-    )..layout();
-    return tp.computeLineMetrics().first.baseline;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +62,6 @@ class PortfolioSummaryMinimal extends StatelessWidget {
       fontWeight: FontWeight.w600,
       color: rentabilidad >= 0 ? Colors.green : Colors.red,
     );
-    const spacing = 4.0;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -89,30 +69,16 @@ class PortfolioSummaryMinimal extends StatelessWidget {
         SizedBox(
           height: 42,
           width: double.infinity,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final valorWidth = _measureTextWidth(valorText, valorStyle);
-              final valorBaseline = _measureBaseline(valorText, valorStyle);
-              final percentBaseline = _measureBaseline(percentText, percentStyle);
-              final centerX = constraints.maxWidth / 2;
-              final valorLeft = centerX - valorWidth / 2;
-              final percentTop = valorBaseline - percentBaseline;
-
-              return Stack(
-                children: [
-                  Positioned(
-                    left: valorLeft,
-                    top: 0,
-                    child: Text(valorText, style: valorStyle),
-                  ),
-                  Positioned(
-                    left: valorLeft + valorWidth + spacing,
-                    top: percentTop,
-                    child: Text(percentText, style: percentStyle),
-                  ),
-                ],
-              );
-            },
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Text(valorText, style: valorStyle),
+              Positioned(
+                right: 24,
+                bottom: 4,
+                child: Text(percentText, style: percentStyle),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 4),
