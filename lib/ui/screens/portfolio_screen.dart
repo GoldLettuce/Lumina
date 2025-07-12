@@ -14,40 +14,65 @@ import '../widgets/portfolio_summary_with_chart.dart';
 import 'asset_detail_screen.dart';
 import 'archived_assets_screen.dart';
 import 'settings_screen.dart';
+import 'package:lumina/core/point.dart';
 
 class PortfolioSummaryMinimal extends StatelessWidget {
   const PortfolioSummaryMinimal({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final chartProvider = context.watch<ChartValueProvider>();
-    final fx = context.watch<CurrencyProvider>(); // Obtener provider de cambio
-    final history = chartProvider.displayHistory;
+    final history = context.select<ChartValueProvider, List<Point>>(
+      (p) => p.displayHistory,
+    );
 
-    final hasSelection = chartProvider.selectedIndex != null;
+    final selectedIndex = context.select<ChartValueProvider, int?>(
+      (p) => p.selectedIndex,
+    );
+
+    final selectedValue = context.select<ChartValueProvider, double?>(
+      (p) => p.selectedValue,
+    );
+
+    final selectedPct = context.select<ChartValueProvider, double?>(
+      (p) => p.selectedPct,
+    );
+
+    final selectedDate = context.select<ChartValueProvider, DateTime?>(
+      (p) => p.selectedDate,
+    );
+
+    final exchangeRate = context.select<CurrencyProvider, double>(
+      (p) => p.exchangeRate,
+    );
+
+    final currency = context.select<CurrencyProvider, String>(
+      (p) => p.currency,
+    );
+
+    final hasSelection = selectedIndex != null;
 
     final currentValueUsd = hasSelection
-        ? chartProvider.selectedValue!
+        ? selectedValue!
         : (history.isNotEmpty ? history.last.value : 0.0);
     final initialValueUsd = history.isNotEmpty ? history.first.value : 0.0;
 
     // Convertir a moneda seleccionada
-    final currentValue = currentValueUsd * fx.exchangeRate;
-    final initialValue = initialValueUsd * fx.exchangeRate;
+    final currentValue = currentValueUsd * exchangeRate;
+    final initialValue = initialValueUsd * exchangeRate;
 
     final rentabilidad = hasSelection
-        ? chartProvider.selectedPct!
+        ? selectedPct!
         : (initialValueUsd == 0.0
-        ? 0.0
-        : (currentValueUsd - initialValueUsd) / initialValueUsd * 100);
+            ? 0.0
+            : (currentValueUsd - initialValueUsd) / initialValueUsd * 100);
 
-    final dateText = hasSelection
+    final dateText = hasSelection && selectedDate != null
         ? DateFormat('d MMM yyyy', Localizations.localeOf(context).toString())
-        .format(chartProvider.selectedDate!)
+            .format(selectedDate)
         : '';
 
     // Formatear valor actual
-    final valorText = NumberFormat.simpleCurrency(name: fx.currency)
+    final valorText = NumberFormat.simpleCurrency(name: currency)
         .format(currentValue);
     final sign = rentabilidad >= 0 ? '+' : '-';
     final percentText = '$sign${rentabilidad.abs().toStringAsFixed(2)}%';
