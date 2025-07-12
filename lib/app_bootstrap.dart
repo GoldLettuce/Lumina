@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -25,7 +26,9 @@ class _AppBootstrapState extends State<AppBootstrap> {
   @override
   void initState() {
     super.initState();
-    _init();                                 // arranca tras el primer frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_init());
+    });
   }
 
   Future<void> _init() async {
