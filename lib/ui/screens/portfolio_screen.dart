@@ -235,7 +235,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       ),
 
       floatingActionButton: FloatingActionButton(
-        heroTag: 'portfolio_fab',
+        heroTag: null,
         onPressed: () => _openAddInvestmentDialog(context),
         backgroundColor: AppColors.primary,
         child: const Icon(Icons.add),
@@ -261,85 +261,100 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                         ),
                       ),
                     )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: investments.length + 1, // +1 para el TextButton
-                      itemExtent: 72.0, // altura fija del ListTile + padding
-                      itemBuilder: (context, index) {
-                        // Si es el último ítem, mostrar el TextButton
-                        if (index == investments.length) {
-                          return TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const ArchivedAssetsScreen(),
+                  : LayoutBuilder(
+                      builder: (context, constraints) {
+                        return ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: investments.length + 1, // +1 para el ConstrainedBox
+                          itemExtent: 72.0, // altura fija del ListTile + padding
+                          itemBuilder: (context, index) {
+                            // Si es el último ítem, mostrar el ConstrainedBox con el texto
+                            if (index == investments.length) {
+                              return ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight * 0.2,
+                                ),
+                                child: Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: TextButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => const ArchivedAssetsScreen(),
+                                          ),
+                                        );
+                                      },
+                                      child: Text(
+                                        t.archivedAssetsTitle,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               );
-                            },
-                            child: Text(
-                              t.archivedAssetsTitle,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          );
-                        }
+                            }
 
-                        final asset = investments[index];
-                        final priceUsd = chartProvider.getPriceFor(asset.symbol);
-                        final valorActual = priceUsd != null
-                            ? asset.totalQuantity * priceUsd * fx.exchangeRate
-                            : null;
+                            final asset = investments[index];
+                            final priceUsd = chartProvider.getPriceFor(asset.symbol);
+                            final valorActual = priceUsd != null
+                                ? asset.totalQuantity * priceUsd * fx.exchangeRate
+                                : null;
 
-                        return ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(
-                            asset.symbol,
-                            style: theme.textTheme.bodyLarge!
-                                .copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Text(
-                            '${t.quantity}: ${asset.totalQuantity}',
-                            style: theme.textTheme.bodyMedium,
-                          ),
-                          trailing: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 300),
-                            child: valorActual == null
-                                ? const SizedBox(width: 60)
-                                : Text(
-                              NumberFormat.simpleCurrency(name: fx.currency)
-                                  .format(valorActual),
-                              key: ValueKey(valorActual),
-                              style: theme.textTheme.bodyLarge!
-                                  .copyWith(fontWeight: FontWeight.w600),
-                            ),
-                          ),
-                          onTap: () async {
-                            // Guardar referencias antes del await
-                            final allInvestments = context
-                                .read<InvestmentProvider>()
-                                .investments;
-                            final chartProvider = context.read<ChartValueProvider>();
-                            
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => AssetDetailScreen(asset: asset),
+                            return ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(
+                                asset.symbol,
+                                style: theme.textTheme.bodyLarge!
+                                    .copyWith(fontWeight: FontWeight.bold),
                               ),
+                              subtitle: Text(
+                                '${t.quantity}: ${asset.totalQuantity}',
+                                style: theme.textTheme.bodyMedium,
+                              ),
+                              trailing: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 300),
+                                child: valorActual == null
+                                    ? const SizedBox(width: 60)
+                                    : Text(
+                                  NumberFormat.simpleCurrency(name: fx.currency)
+                                      .format(valorActual),
+                                  key: ValueKey(valorActual),
+                                  style: theme.textTheme.bodyLarge!
+                                      .copyWith(fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                              onTap: () async {
+                                // Guardar referencias antes del await
+                                final allInvestments = context
+                                    .read<InvestmentProvider>()
+                                    .investments;
+                                final chartProvider = context.read<ChartValueProvider>();
+                                
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => AssetDetailScreen(asset: asset),
+                                  ),
+                                );
+                                
+                                // Verificar si el widget sigue montado
+                                if (!mounted) return;
+                                
+                                // Recalculamos gráfico y precios al volver de edición
+                                chartProvider.loadHistory(allInvestments);
+                                chartProvider.setVisibleSymbols(
+                                  allInvestments.map((e) => e.symbol).toSet(),
+                                );
+                                chartProvider.clearSelection();
+                              },
                             );
-                            
-                            // Verificar si el widget sigue montado
-                            if (!mounted) return;
-                            
-                            // Recalculamos gráfico y precios al volver de edición
-                            chartProvider.loadHistory(allInvestments);
-                            chartProvider.setVisibleSymbols(
-                              allInvestments.map((e) => e.symbol).toSet(),
-                            );
-                            chartProvider.clearSelection();
                           },
                         );
                       },
