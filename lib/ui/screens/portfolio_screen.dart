@@ -235,6 +235,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       ),
 
       floatingActionButton: FloatingActionButton(
+        heroTag: 'portfolio_fab',
         onPressed: () => _openAddInvestmentDialog(context),
         backgroundColor: AppColors.primary,
         child: const Icon(Icons.add),
@@ -317,16 +318,23 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                             ),
                           ),
                           onTap: () async {
+                            // Guardar referencias antes del await
+                            final allInvestments = context
+                                .read<InvestmentProvider>()
+                                .investments;
+                            final chartProvider = context.read<ChartValueProvider>();
+                            
                             await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => AssetDetailScreen(asset: asset),
                               ),
                             );
+                            
+                            // Verificar si el widget sigue montado
+                            if (!mounted) return;
+                            
                             // Recalculamos gráfico y precios al volver de edición
-                            final allInvestments = context
-                                .read<InvestmentProvider>()
-                                .investments;
                             chartProvider.loadHistory(allInvestments);
                             chartProvider.setVisibleSymbols(
                               allInvestments.map((e) => e.symbol).toSet(),

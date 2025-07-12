@@ -137,7 +137,13 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     final quantity   = double.tryParse(_quantityController.text.trim());
     final priceLocal = double.tryParse(_priceController.text.trim());
     if (quantity == null || priceLocal == null) return;
-    final fx         = context.read<CurrencyProvider>();
+    
+    // Guardar referencias antes del await
+    final fx = context.read<CurrencyProvider>();
+    final model = context.read<InvestmentProvider>();
+    final chartProvider = context.read<ChartValueProvider>();
+    final currencyCode = fx.currencyCode.toLowerCase();
+    
     final priceUsd   = priceLocal / fx.exchangeRate;
 
     final operation = InvestmentOperation(
@@ -150,11 +156,11 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
 
     // Edición
     if (widget.initialOperation != null) {
-      final model         = context.read<InvestmentProvider>();
-      final chartProvider = context.read<ChartValueProvider>();
-
       // 1) Actualiza la operación editada en el provider
-      await model.editOperation(widget.initialSymbol!, operation); // o usa tu método actual si tiene otro nombre
+      await model.editOperation(widget.initialSymbol!, operation);
+
+      // Verificar si el widget sigue montado
+      if (!mounted) return;
 
       // 2) Refresca gráfico con lista ya actualizada
       final investments = model.investments;
@@ -168,16 +174,11 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     }
 
     // Alta
-    final model         = context.read<InvestmentProvider>();
-    final chartProvider = context.read<ChartValueProvider>();
-    final repo          = InvestmentRepositoryImpl();
+    final repo = InvestmentRepositoryImpl();
     await repo.init();
 
-    // Leer moneda de referencia (p.ej. "usd")
-    final currencyCode = context
-        .read<CurrencyProvider>()
-        .currencyCode
-        .toLowerCase();
+    // Verificar si el widget sigue montado
+    if (!mounted) return;
 
     // Crear Investment con símbolo, nombre, ID y vsCurrency
     final newInvestment = Investment(
@@ -196,16 +197,18 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       model:         model,
     );
 
+    // Verificar si el widget sigue montado
+    if (!mounted) return;
+
     // Actualizar gráfico
     chartProvider.setVisibleSymbols(
-      context.read<InvestmentProvider>().investments.map((e) => e.symbol).toSet(),    );
-    if (mounted) {
-      await chartProvider.forceRebuildAndReload(
-        context.read<InvestmentProvider>().investments,
-      );
-      await chartProvider.updatePrices();
-      chartProvider.updateTodayPoint();      // recalcula con precios ya actualizados
-    }
+      model.investments.map((e) => e.symbol).toSet(),
+    );
+    await chartProvider.forceRebuildAndReload(
+      model.investments,
+    );
+    await chartProvider.updatePrices();
+    chartProvider.updateTodayPoint();      // recalcula con precios ya actualizados
 
     Navigator.of(context).pop();
   }
