@@ -2,6 +2,7 @@
 
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
@@ -185,11 +186,20 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final inv = context.read<InvestmentProvider>().investments;
-      final provider = context.read<ChartValueProvider>();
-      provider.loadHistory(inv);
-      provider.setVisibleSymbols(inv.map((e) => e.symbol).toSet());
+      _maybeReloadHistory();
     });
+  }
+
+  /// Verifica si las inversiones han cambiado antes de recargar el historial
+  void _maybeReloadHistory() {
+    final inv = context.read<InvestmentProvider>().investments;
+    final chartProvider = context.read<ChartValueProvider>();
+    
+    // Solo recargar si la lista de inversiones ha cambiado
+    if (!listEquals(inv, chartProvider.lastInvestments)) {
+      chartProvider.loadHistory(inv);
+      chartProvider.setVisibleSymbols(inv.map((e) => e.symbol).toSet());
+    }
   }
 
   // === Helper: lista de activos como Sliver ===================================
@@ -250,11 +260,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 // Verificar si el widget sigue montado
                 if (!mounted) return;
                 
-                // Recalculamos gráfico y precios al volver de edición
-                chartProvider.loadHistory(allInvestments);
-                chartProvider.setVisibleSymbols(
-                  allInvestments.map((e) => e.symbol).toSet(),
-                );
+                // Recalculamos gráfico y precios al volver de edición (solo si cambió)
+                _maybeReloadHistory();
                 chartProvider.clearSelection();
               },
             );

@@ -48,6 +48,9 @@ class ChartValueProvider extends ChangeNotifier {
   // ───────── Getters
   List<Point> get history => _history;
 
+  /// Última lista de inversiones cargada (para comparaciones)
+  List<Investment> get lastInvestments => List.unmodifiable(_lastInvestments);
+
   // ───────── HISTÓRICO QUE RECIBE EL GRÁFICO
   /// Devuelve la serie de puntos que se pinta en el chart.
   /// 1. Integra el punto de hoy (_todayPoint) si existe.
