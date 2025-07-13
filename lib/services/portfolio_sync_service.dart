@@ -6,6 +6,7 @@ import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/data/models/local_history.dart';
 import 'package:lumina/ui/providers/chart_value_provider.dart';
+import 'package:lumina/core/hive_service.dart';
 
 /// Añadir operación y sincronizar histórico + gráfico
 Future<void> addOperationAndSync({
@@ -23,7 +24,7 @@ Future<void> addOperationAndSync({
   await model.load();
 
   // 2️⃣ ¿Realmente necesitamos back-fill?
-  final histBox = await Hive.openBox<LocalHistory>('history');
+  final histBox = HiveService.history;
   final hist = histBox.get('${investment.symbol}_ALL');
   final needsBackfill = hist != null && newOp.date.isBefore(hist.from);
 
@@ -81,7 +82,7 @@ Future<void> deleteOperationAndSync({
         .map((op) => op.date)
         .reduce((a, b) => a.isBefore(b) ? a : b);
 
-    final histBox = await Hive.openBox<LocalHistory>('history');
+    final histBox = HiveService.history;
     final hist = histBox.get('${investment.symbol}_ALL');
     final needsBackfill = hist != null && earliest.isBefore(hist.from);
 
@@ -108,7 +109,7 @@ Future<void> deleteInvestmentAndSync({
 }) async {
   await repo.deleteInvestment(symbol);
 
-  final historyBox = await Hive.openBox<LocalHistory>('history');
+  final historyBox = HiveService.history;
   await historyBox.delete('${symbol}_ALL');
 
   await model.load();

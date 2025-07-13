@@ -3,17 +3,18 @@
 import 'package:hive/hive.dart';
 import '../../domain/entities/investment.dart';
 import '../../domain/repositories/investment_repository.dart';
+import '../../core/hive_service.dart';
 
 class InvestmentRepositoryImpl implements InvestmentRepository {
   static const String boxName = 'investments';
 
-  /// Getter para acceder a la caja lazy
-  LazyBox<Investment> get _box => Hive.lazyBox<Investment>(boxName);
+  /// Getter para acceder a la caja lazy desde HiveService
+  LazyBox<Investment> get _box => HiveService.investments;
 
   /// Inicializa la caja Hive para almacenar inversiones.
   /// Debe llamarse antes de usar los métodos de este repositorio.
   Future<void> init() async {
-    // La caja ya está abierta como LazyBox en init_hive.dart
+    // La caja ya está abierta como LazyBox en HiveService
     // No necesitamos abrirla nuevamente
   }
 

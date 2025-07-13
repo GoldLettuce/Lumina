@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hive/hive.dart';
 
 import 'package:lumina/core/chart_range.dart';
@@ -13,6 +15,7 @@ import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/domain/entities/asset_type.dart';
 import 'package:lumina/domain/repositories/price_repository.dart';
 import 'package:lumina/domain/repositories/history_repository.dart';
+import 'package:lumina/core/hive_service.dart';
 
 
 /// ChartValueProvider – estilo CryptoCompare pero usando CoinGecko.
@@ -119,7 +122,7 @@ class ChartValueProvider extends ChangeNotifier {
 
   // ───────── Cache inicial
   Future<void> _restoreCache() async {
-    final box   = await Hive.openBox<ChartCache>('chart_cache');
+    final box   = HiveService.chartCache;
     final cache = box.get('all');
     if (cache == null) return;
 
@@ -158,12 +161,12 @@ class ChartValueProvider extends ChangeNotifier {
     // Si no hay inversiones, limpiamos todo en memoria y disco
     if (investments.isEmpty) {
       _resetState(); // limpia history, spots, selección en memoria
-      final box = await Hive.openBox<ChartCache>('chart_cache');
+      final box = HiveService.chartCache;
       await box.delete('all'); // borra el cache en disco
       return;
     }
 
-    final box = await Hive.openBox<ChartCache>('chart_cache');
+    final box = HiveService.chartCache;
     final cache = box.get('all');
 
     // ─── Nuevo chequeo: ¿hay operaciones más antiguas que la historia en caché?
@@ -308,7 +311,7 @@ class ChartValueProvider extends ChangeNotifier {
   }
 
   Future<void> _saveCache() async {
-    final box = await Hive.openBox<ChartCache>('chart_cache');
+    final box = HiveService.chartCache;
     await box.put('all', ChartCache(history: _history, spotPrices: _spotPrices));
   }
 

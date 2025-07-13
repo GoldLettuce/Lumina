@@ -1,11 +1,12 @@
 import 'dart:math';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:lumina/core/chart_range.dart';
 import 'package:lumina/core/point.dart';
 import 'package:lumina/data/models/local_history.dart';
 import 'package:lumina/data/datasources/coingecko/coingecko_history_service.dart';
 import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/domain/repositories/history_repository.dart';
+import 'package:lumina/core/hive_service.dart';
 
 class HistoryRepositoryImpl implements HistoryRepository {
   final CoinGeckoHistoryService _service = CoinGeckoHistoryService();
@@ -44,7 +45,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
     required List<Investment> investments,
     required Map<String, double> spotPrices,
   }) async {
-    final historyBox = await Hive.openBox<LocalHistory>('history');
+    final historyBox = HiveService.history;
     const rangeKey = 'ALL';
 
     final cut = _roundToDay(
@@ -110,7 +111,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
     required List<Investment> investments,
     DateTime? earliestOverride,
   }) async {
-    final historyBox = await Hive.openBox<LocalHistory>('history');
+    final historyBox = HiveService.history;
     const rangeKey = 'ALL';
     final today = DateTime.now();
 

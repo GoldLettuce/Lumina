@@ -1,25 +1,23 @@
 import 'dart:convert';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
+import '../../core/hive_service.dart';
 
 class FxCurrentRateService {
   static const _boxName = 'fxRatesBox';
   static const _base = 'USD';
 
-  Future<Box> _getBox() async {
-    return await Hive.openBox(_boxName);
-  }
+  Box get _box => HiveService.fxRates;
 
   Future<double> getTodayRate(String currency) async {
     if (currency == _base) return 1.0;
 
-    final box = await _getBox();
     final today = _format(DateTime.now());
     final rateKey = 'todayRate_$currency';
     final dateKey = 'todayRateDate_$currency';
 
-    final cachedDate = box.get(dateKey);
-    final cachedRate = box.get(rateKey);
+    final cachedDate = _box.get(dateKey);
+    final cachedRate = _box.get(rateKey);
 
     // Si ya tenemos la tasa de hoy, la usamos
     if (cachedDate == today && cachedRate != null) {
@@ -41,8 +39,8 @@ class FxCurrentRateService {
     final rate = (data['rates'][currency] as num).toDouble();
 
     // Guardamos en Hive
-    await box.put(rateKey, rate);
-    await box.put(dateKey, today);
+    await _box.put(rateKey, rate);
+    await _box.put(dateKey, today);
 
     return rate;
   }

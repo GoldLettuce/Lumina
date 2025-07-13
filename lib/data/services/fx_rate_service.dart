@@ -1,28 +1,25 @@
 import 'dart:convert';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
+import '../../core/hive_service.dart';
 
 class FxRateService {
   static const _boxName = 'fxRatesBox';
   static const _base = 'USD';
 
-  /// Obtiene o crea la caja donde se guardan los datos
-  Future<Box> _getBox() async {
-    return await Hive.openBox(_boxName);
-  }
+  /// Obtiene la caja donde se guardan los datos desde HiveService
+  Box get _box => HiveService.fxRates;
 
   /// Verifica si ya tenemos guardadas las tasas para ese año y moneda
   Future<bool> hasRatesForYear(String currency, int year) async {
-    final box = await _getBox();
-    return box.containsKey('${currency}_$year');
+    return _box.containsKey('${currency}_$year');
   }
 
   /// Descarga las tasas para ese año y moneda, y las guarda en Hive
   Future<void> downloadAndStoreYear(String currency, int year) async {
-    final box = await _getBox();
     final key = '${currency}_$year';
 
-    if (box.containsKey(key)) return;
+    if (_box.containsKey(key)) return;
 
     final start = DateTime(year, 1, 1);
     final end = DateTime(year, 12, 31);
@@ -47,31 +44,29 @@ class FxRateService {
       }
     }
 
-    await box.put(key, parsedRates);
+    await _box.put(key, parsedRates);
   }
 
   /// Devuelve la tasa para una fecha específica (si existe)
   Future<double?> getRate(String currency, DateTime date) async {
-    final box = await _getBox();
     final key = '${currency}_${date.year}';
 
-    if (!box.containsKey(key)) return null;
+    if (!_box.containsKey(key)) return null;
 
-    final rates = Map<String, dynamic>.from(box.get(key));
+    final rates = Map<String, dynamic>.from(_box.get(key));
     return (rates[_format(date)] as num?)?.toDouble();
   }
 
   /// Devuelve todas las tasas entre dos fechas para una moneda
   Future<Map<DateTime, double>> getRatesForRange(
       String currency, DateTime start, DateTime end) async {
-    final box = await _getBox();
     final result = <DateTime, double>{};
 
     for (int year = start.year; year <= end.year; year++) {
       final key = '${currency}_$year';
-      if (!box.containsKey(key)) continue;
+      if (!_box.containsKey(key)) continue;
 
-      final rates = Map<String, dynamic>.from(box.get(key));
+      final rates = Map<String, dynamic>.from(_box.get(key));
       rates.forEach((dateStr, value) {
         final date = DateTime.parse(dateStr);
         if (!date.isBefore(start) && !date.isAfter(end)) {

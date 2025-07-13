@@ -1,27 +1,11 @@
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:lumina/domain/entities/investment.dart';
-import 'package:lumina/domain/entities/asset_type.dart';
-import 'package:lumina/core/point.dart';
-import 'package:lumina/data/models/local_history.dart';
-import 'package:lumina/data/models/chart_cache.dart';
+import 'package:lumina/core/hive_service.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 
 Future<InvestmentRepositoryImpl> initHive() async {
-  await Hive.initFlutter();
+  // Inicializar todas las cajas de Hive usando el servicio centralizado
+  await HiveService.init();
 
-  Hive.registerAdapter(InvestmentAdapter());
-  Hive.registerAdapter(InvestmentOperationAdapter());
-  Hive.registerAdapter(OperationTypeAdapter());
-  Hive.registerAdapter(AssetTypeAdapter());
-  Hive.registerAdapter(PointAdapter());
-  Hive.registerAdapter(LocalHistoryAdapter());
-  Hive.registerAdapter(ChartCacheAdapter());
-
-  // Abrir todas las cajas en paralelo usando openLazyBox para mejor rendimiento
-  await Future.wait([
-    Hive.openLazyBox<Investment>(InvestmentRepositoryImpl.boxName),
-  ]);
-
+  // Crear y retornar el repositorio de inversiones
   final repository = InvestmentRepositoryImpl();
   await repository.init();
 
