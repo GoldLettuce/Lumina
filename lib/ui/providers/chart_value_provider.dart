@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
 import 'package:lumina/core/chart_range.dart';
@@ -30,6 +30,7 @@ class ChartValueProvider extends ChangeNotifier {
   Set<String> _visibleSymbols = {};
   final Map<String, double> _spotPrices = {};
   List<Investment> _lastInvestments = [];
+  bool _historyLoaded = false;
 
   List<Point> _history = [];
   Point? _todayPoint;
@@ -150,6 +151,8 @@ class ChartValueProvider extends ChangeNotifier {
   double? getPriceFor(String symbol) => _spotPrices[symbol];
 
   Future<void> loadHistory(List<Investment> investments) async {
+    if (_historyLoaded && listEquals(investments, _lastInvestments)) return;
+    _historyLoaded = true;
     _lastInvestments = investments;
 
     // Si no hay inversiones, limpiamos todo en memoria y disco
@@ -234,7 +237,9 @@ class ChartValueProvider extends ChangeNotifier {
   }
 
   Future<void> forceRebuildAndReload(List<Investment> investments) async {
-    // 1. Guardamos la lista actualizada de inversiones
+    // 1. Resetear flag de carga para forzar recarga
+    _historyLoaded = false;
+    // 2. Guardamos la lista actualizada de inversiones
     _lastInvestments = investments;
 
     // 2. Limpiamos caché en memoria
@@ -320,6 +325,7 @@ class ChartValueProvider extends ChangeNotifier {
     _todayPoint = null;
     _historyStart = null;
     _selectedIndex = null;
+    _historyLoaded = false;
     notifyListeners();
   }
 
