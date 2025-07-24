@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/services/fx_current_rate_service.dart';  // Servicio de tasas de cambio
 import '../../data/services/fx_currency_service.dart';      // para fetchSupportedCurrencies
-import '../../data/services/fx_current_rate_service.dart';  // para getTodayRate
+// para getTodayRate
 import '../../core/hive_service.dart';
 
 class CurrencyProvider extends ChangeNotifier {
-  static const _boxName = 'settingsBox';
   static const _key = 'baseCurrency';
 
   late Box _box;

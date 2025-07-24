@@ -57,12 +57,14 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     );
 
     if (confirm == true) {
+      // ignore: use_build_context_synchronously
       final model = context.read<InvestmentProvider>();
       await model.removeOperations(asset.symbol, _selectedIds.toList());
       _clearSelection();
 
       final stillExists = model.investments.any((e) => e.symbol == asset.symbol);
       if (!stillExists && mounted) {
+        // ignore: use_build_context_synchronously
         Navigator.of(context).pop();
       }
     }
@@ -168,6 +170,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                         );
                         if (edited != null) {
                           await model.editOperation(currentAsset.symbol, edited);
+                          // ignore: use_build_context_synchronously
                           final chart = context.read<ChartValueProvider>();
                           chart.recalcTodayOnly();          // recalcula total + gráfico YA
                         }

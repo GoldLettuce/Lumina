@@ -1,5 +1,3 @@
-import 'package:hive/hive.dart';
-import '../models/local_history.dart';
 import '../../core/hive_service.dart';
 
 class LocalHistoryRepositoryImpl {

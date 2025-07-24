@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:lumina/core/chart_range.dart';
 import 'package:lumina/core/point.dart';
 import 'package:lumina/data/models/local_history.dart';
@@ -7,6 +6,7 @@ import 'package:lumina/data/datasources/coingecko/coingecko_history_service.dart
 import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/domain/repositories/history_repository.dart';
 import 'package:lumina/core/hive_service.dart';
+import 'package:flutter/foundation.dart';
 
 class HistoryRepositoryImpl implements HistoryRepository {
   final CoinGeckoHistoryService _service = CoinGeckoHistoryService();
@@ -14,7 +14,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
   /*───────────────────────── logs ─────────────────────────*/
   void _log(String msg) {
     final ts = DateTime.now().toIso8601String().substring(11, 19);
-    print('[$ts] $msg');
+    debugPrint('[$ts] $msg');
   }
 
   /*──────────────────────── helpers ───────────────────────*/
@@ -125,7 +125,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
         List<Point> pts = [];
         try {
           pts = await _service.getMarketChart(
-            id: inv.coingeckoId ?? inv.symbol,
+            id: inv.coingeckoId,
             currency: 'usd',
             days: 365,
           );
@@ -173,7 +173,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
           List<Point> older = [];
           try {
             older = await _service.getMarketChart(
-              id: inv.coingeckoId ?? inv.symbol,
+              id: inv.coingeckoId,
               currency: 'usd',
               days: daysBack,
             );
@@ -207,7 +207,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
         List<Point> newPts = [];
         try {
           newPts = await _service.getMarketChart(
-            id: inv.coingeckoId ?? inv.symbol,
+            id: inv.coingeckoId,
             currency: 'usd',
             days: min(missingDays + 1, 365),
           );

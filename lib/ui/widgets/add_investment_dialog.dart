@@ -41,7 +41,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   final _priceController = TextEditingController();
 
   bool _formSubmitted = false;
-  bool _symbolTouched = false;
   bool _quantityTouched = false;
   bool _priceTouched = false;
 
@@ -58,7 +57,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       _selectedDate      = op.date;
       _displaySymbol     = widget.initialSymbol;
       _coingeckoId       = op.id;
-      _symbolTouched     = widget.initialSymbol != null;
     }
   }
 
@@ -108,7 +106,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       setState(() {
         _displaySymbol = result['symbol'];
         _coingeckoId   = result['id'];
-        _symbolTouched = true;
       });
     }
   }
@@ -305,7 +302,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 if (widget.initialOperation == null)
                   InkWell(
                     onTap: _isSaving ? null : () {
-                      setState(() => _symbolTouched = true);
                       _selectSymbol();
                     },
                     borderRadius: BorderRadius.circular(12),
@@ -491,18 +487,4 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       ),
     );
   }
-
-  InputDecoration _inputDecoration(String label) =>
-      InputDecoration(
-        labelText: label,
-        labelStyle:
-        const TextStyle(color: Colors.black54, fontWeight: FontWeight.w500),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none),
-        contentPadding:
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      );
 }

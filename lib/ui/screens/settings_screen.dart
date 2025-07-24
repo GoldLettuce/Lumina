@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 import '../providers/settings_provider.dart';
 import '../providers/investment_provider.dart';     // Import InvestmentProvider
@@ -62,25 +61,27 @@ class SettingsScreen extends StatelessWidget {
                 confirmText: t.delete,
               );
 
+              if (!context.mounted) return;
+
               if (confirm) {
                 final invProv   = context.read<InvestmentProvider>();
                 final modelProv = context.read<InvestmentProvider>();
                 final chartProv = context.read<ChartValueProvider>();
 
-                // Llamada ajustada para pasar también chartProv al servicio
                 await ResetPortfolioService.resetAllData(
                   invProv,
                   modelProv,
                   chartProv,
                 );
 
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('✅ Portafolio eliminado')),
-                  );
-                }
+                if (!context.mounted) return;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('✅ Portafolio eliminado')),
+                );
               }
             },
+
           ),
         ],
       ),

@@ -3,7 +3,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import 'package:lumina/ui/providers/currency_provider.dart';
 import 'package:lumina/core/point.dart';
 import '../providers/chart_value_provider.dart';
@@ -14,13 +13,13 @@ import 'package:lumina/domain/entities/investment.dart';
 /// Contenedor general: inicializa símbolos y fuerza la recarga.
 class PortfolioSummaryWithChart extends StatefulWidget {
   final List<Investment> investments;
-  const PortfolioSummaryWithChart({Key? key, required this.investments}) : super(key: key);
+  const PortfolioSummaryWithChart({super.key, required this.investments});
 
   @override
-  _PortfolioSummaryWithChartState createState() => _PortfolioSummaryWithChartState();
+  PortfolioSummaryWithChartState createState() => PortfolioSummaryWithChartState();
 }
 
-class _PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> {
+class PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> {
   @override
   void initState() {
     super.initState();
@@ -39,32 +38,6 @@ class _PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> {
   Widget build(BuildContext context) {
     // Solo el gráfico, el total se muestra en PortfolioSummaryMinimal
     return const _PortfolioChart();
-  }
-}
-
-/// Widget que muestra el total convertido del portafolio
-class _PortfolioTotal extends StatelessWidget {
-  final List<Investment> investments;
-  const _PortfolioTotal({Key? key, required this.investments}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final fx = context.watch<CurrencyProvider>();
-    final chartProvider = context.read<ChartValueProvider>();
-
-    final totalUsd = investments.fold<double>(0, (sum, inv) {
-      final price = chartProvider.getPriceFor(inv.symbol) ?? 0;
-      return sum + inv.totalQuantity * price;
-    });
-
-    final converted = totalUsd * fx.exchangeRate;
-    final formatted = NumberFormat.simpleCurrency(name: fx.currency).format(converted);
-
-    return Text(
-      formatted,
-      style: Theme.of(context).textTheme.headlineMedium,
-      textAlign: TextAlign.center,
-    );
   }
 }
 

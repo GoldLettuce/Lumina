@@ -60,7 +60,6 @@ class PortfolioSummaryMinimal extends StatelessWidget {
 
     // Convertir a moneda seleccionada
     final currentValue = currentValueUsd * exchangeRate;
-    final initialValue = initialValueUsd * exchangeRate;
 
     final rentabilidad = hasSelection
         ? selectedPct!
@@ -101,7 +100,7 @@ class PortfolioSummaryMinimal extends StatelessWidget {
               textDirection: ui.TextDirection.ltr,
             )..layout(maxWidth: constraints.maxWidth);
 
-            final hasPct = percentText != null && percentText != '+0.00%';
+            final hasPct = percentText != '+0.00%';
 
             final pctPainter = hasPct
                 ? (TextPainter(
@@ -134,9 +133,9 @@ class PortfolioSummaryMinimal extends StatelessWidget {
                   ),
 Positioned(
   left: pctLeft,
-  top: (valuePainter.computeDistanceToActualBaseline(TextBaseline.alphabetic) ?? 0)
+  top: (valuePainter.computeDistanceToActualBaseline(TextBaseline.alphabetic))
        - (pctPainter?.computeDistanceToActualBaseline(TextBaseline.alphabetic) ?? 0),
-  child: Text(percentText!, style: percentStyle),
+  child: Text(percentText, style: percentStyle),
 ),
 
                 ],
@@ -154,7 +153,7 @@ Positioned(
                   ),
                   if (hasPct) ...[
                     const SizedBox(height: 4),
-                    Text(percentText!, style: percentStyle),
+                    Text(percentText, style: percentStyle),
                   ],
                 ],
               );
@@ -245,9 +244,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               ),
               onTap: () async {
                 // Guardar referencias antes del await
-                final allInvestments = context
-                    .read<InvestmentProvider>()
-                    .investments;
                 final chartProvider = context.read<ChartValueProvider>();
                 
                 await Navigator.push(

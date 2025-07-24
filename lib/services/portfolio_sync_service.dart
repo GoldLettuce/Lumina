@@ -1,10 +1,8 @@
 // lib/services/portfolio_sync_service.dart
 
-import 'package:hive/hive.dart';
 import 'package:lumina/ui/providers/investment_provider.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 import 'package:lumina/domain/entities/investment.dart';
-import 'package:lumina/data/models/local_history.dart';
 import 'package:lumina/ui/providers/chart_value_provider.dart';
 import 'package:lumina/core/hive_service.dart';
 

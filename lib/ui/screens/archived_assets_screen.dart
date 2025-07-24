@@ -2,8 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
-import 'package:lumina/ui/providers/currency_provider.dart';  // por si se necesita conversión en el futuro
+// por si se necesita conversión en el futuro
 import '../providers/investment_provider.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';

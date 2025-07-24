@@ -2,10 +2,8 @@
 
 import 'package:hive/hive.dart';
 
-import '../domain/entities/investment.dart';
 import '../ui/providers/investment_provider.dart';
 import '../ui/providers/chart_value_provider.dart';
-import '../data/models/chart_cache.dart';
 import '../data/repositories_impl/investment_repository_impl.dart';
 import '../core/hive_service.dart';
 

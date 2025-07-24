@@ -37,8 +37,9 @@ class ExportController {
     }
 
     try {
+      // ignore: use_build_context_synchronously
       final investments = context.read<InvestmentProvider>().investments;
-      print('📤 Iniciando exportación de ${investments.length} inversiones...');
+      debugPrint('📤 Iniciando exportación de ${investments.length} inversiones...');
       final path = await CsvExportService().export(investments);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -48,7 +49,7 @@ class ExportController {
         );
       }
     } catch (e) {
-      print('❌ Error al exportar archivo CSV: $e');
+      debugPrint('❌ Error al exportar archivo CSV: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

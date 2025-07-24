@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import '../../core/hive_service.dart';
 
 class FxRateService {
-  static const _boxName = 'fxRatesBox';
   static const _base = 'USD';
 
   /// Obtiene la caja donde se guardan los datos desde HiveService
