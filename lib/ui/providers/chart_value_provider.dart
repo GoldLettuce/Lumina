@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 import 'package:lumina/core/chart_range.dart';
 import 'package:lumina/core/point.dart';
@@ -19,7 +20,7 @@ import 'package:lumina/core/hive_service.dart';
 /// * Cachea histórico + precios al arrancar.
 /// * Pide precios spot cada 60 s (throttle para evitar 429).
 /// * Nunca muestra valor 0 $.
-class ChartValueProvider extends ChangeNotifier {
+class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
   // Servicios
   final PriceRepository  _priceRepo = PriceRepositoryImpl();
   final HistoryRepository _histRepo = HistoryRepositoryImpl();
@@ -112,10 +113,22 @@ class ChartValueProvider extends ChangeNotifier {
     _restoreCache();          // pinta al instante
     _startAutoRefresh();      // timer de 60 s
     Future.microtask(updatePrices); // refresh inmediato tras hot-restart
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      _timer?.cancel();
+    } else if (state == AppLifecycleState.resumed) {
+      _startTimer();
+      updatePrices(); // ensures value is current on resume
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     super.dispose();
   }
@@ -138,7 +151,11 @@ class ChartValueProvider extends ChangeNotifier {
   // ───────── Timer
   void _startAutoRefresh() {
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 60), (_) => updatePrices());
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(minutes: 1), (_) => updatePrices());
   }
 
   // ───────── API pública
