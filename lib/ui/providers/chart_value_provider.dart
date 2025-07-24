@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 import 'package:lumina/core/chart_range.dart';
 import 'package:lumina/core/point.dart';
@@ -90,6 +91,8 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
     return base;
   }
 
+  List<FlSpot>? _cachedSpots;
+  double _fx = 1.0;
 
   int? get selectedIndex => _selectedIndex;
   double? get selectedValue => (_selectedIndex != null && displayHistory.isNotEmpty)
@@ -107,6 +110,7 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
           displayHistory.first.value * 100
           : null;
 
+  List<FlSpot> get spots => _cachedSpots ?? const [];
 
   // ───────── Constructor
   ChartValueProvider() {
@@ -145,6 +149,7 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
       ..addAll(cache.spotPrices);
     _historyStart = _history.isNotEmpty ? _history.first.time : null;
     _recalcTodayPoint();
+    _recalcSpots();
     notifyListeners();
   }
 
@@ -169,6 +174,14 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   double? getPriceFor(String symbol) => _spotPrices[symbol];
+
+  void setFx(double fx) {
+    if (_fx != fx) {
+      _fx = fx;
+      _recalcSpots();
+      notifyListeners();
+    }
+  }
 
   Future<void> loadHistory(List<Investment> investments) async {
     if (_historyLoaded && listEquals(investments, _lastInvestments)) return;
@@ -209,11 +222,13 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
         ..clear()
         ..addAll(cache.spotPrices);
       _recalcTodayPoint();
+      _recalcSpots();
       notifyListeners();
       return;
     }
 
     await _downloadAndCacheHistory();
+    _recalcSpots();
     notifyListeners();
   }
 
@@ -252,6 +267,7 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
     );
     _historyStart = _history.isNotEmpty ? _history.first.time : null;
     _recalcTodayPoint();
+    _recalcSpots();
     await _saveCache();
     notifyListeners();
   }
@@ -271,6 +287,7 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     // 4. Recalculamos el punto de hoy y notificamos
     _recalcTodayPoint();
+    _recalcSpots();
     notifyListeners();
   }
 
@@ -287,7 +304,7 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
         await _saveCache();
 
         _recalcTodayPoint();                      // siempre recalcula
-
+        _recalcSpots();
         notifyListeners();
       }
     } catch (_) {/* silenciado */} finally {
@@ -308,6 +325,14 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
       total += p * qty;
     }
     _todayPoint = Point(time: DateTime.now(), value: total);
+  }
+
+  void _recalcSpots() {
+    _cachedSpots = _history
+        .asMap()
+        .entries
+        .map((e) => FlSpot(e.key.toDouble(), e.value.value * _fx))
+        .toList();
   }
 
   // ───────── Histórico
@@ -346,6 +371,7 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
     _historyStart = null;
     _selectedIndex = null;
     _historyLoaded = false;
+    _cachedSpots = null;
     notifyListeners();
   }
 
