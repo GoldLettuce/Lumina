@@ -8,9 +8,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'ui/providers/locale_provider.dart';
 import 'ui/screens/portfolio_screen.dart';
+import 'core/hive_service.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await HiveService.initFlutterOnly();
   runApp(const AppBootstrap());                  // ⬅️  único widget de arranque
 }
 

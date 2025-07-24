@@ -28,18 +28,14 @@ class HiveService {
   static Box get settings => _settingsBox!;
   static Box get fxRates => _fxRatesBox!;
 
-  /// Inicializa Hive y abre todas las cajas necesarias
-  /// 
-  /// Este método debe llamarse una sola vez al inicio de la aplicación,
-  /// antes de usar cualquier funcionalidad que requiera acceso a Hive.
-  static Future<void> init() async {
-    // Inicializar Hive Flutter
+  /// Inicializa solo Hive Flutter y registra los adapters (debe llamarse en el main isolate)
+  static Future<void> initFlutterOnly() async {
     await Hive.initFlutter();
-
-    // Registrar todos los adapters necesarios
     _registerAdapters();
+  }
 
-    // Abrir todas las cajas en paralelo para mejor rendimiento
+  /// Abre todas las cajas necesarias (puede llamarse después de renderizar el primer frame)
+  static Future<void> openAllBoxes() async {
     await Future.wait([
       _openInvestmentsBox(),
       _openChartCacheBox(),
@@ -47,6 +43,15 @@ class HiveService {
       _openSettingsBox(),
       _openFxRatesBox(),
     ]);
+  }
+
+  /// Inicializa Hive y abre todas las cajas necesarias
+  /// 
+  /// Este método debe llamarse una sola vez al inicio de la aplicación,
+  /// antes de usar cualquier funcionalidad que requiera acceso a Hive.
+  static Future<void> init() async {
+    await initFlutterOnly();
+    await openAllBoxes();
   }
 
   /// Registra todos los adapters de Hive necesarios

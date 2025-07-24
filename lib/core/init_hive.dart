@@ -3,7 +3,7 @@ import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 
 Future<InvestmentRepositoryImpl> initHive() async {
   // Inicializar todas las cajas de Hive usando el servicio centralizado
-  await HiveService.init();
+  await HiveService.openAllBoxes();
 
   // Crear y retornar el repositorio de inversiones
   final repository = InvestmentRepositoryImpl();
