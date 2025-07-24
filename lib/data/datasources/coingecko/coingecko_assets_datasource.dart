@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 
 class CoinGeckoAsset {
   final String id;
@@ -38,12 +39,17 @@ class CoinGeckoAssetsDatasource {
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data
-          .map((json) => CoinGeckoAsset.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return compute(_parseAssets, response.body);
     } else {
-      throw Exception('Error al obtener activos de CoinGecko: ${response.statusCode}');
+      throw Exception('Error al obtener activos de CoinGecko:  [${response.statusCode}');
     }
   }
+}
+
+// Helper to parse assets in a background isolate
+List<CoinGeckoAsset> _parseAssets(String body) {
+  final List<dynamic> data = json.decode(body);
+  return data
+      .map((json) => CoinGeckoAsset.fromJson(json as Map<String, dynamic>))
+      .toList();
 }
