@@ -34,7 +34,6 @@ class PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     // Solo el gráfico, el total se muestra en PortfolioSummaryMinimal
     return const _PortfolioChart();
@@ -56,8 +55,6 @@ class _PortfolioChart extends StatelessWidget {
       e.key.toDouble(),
       e.value.value * fx.exchangeRate,
     )).toList();
-
-    debugPrint('📈 Puntos visibles en el gráfico: ${spots.length}');
 
     if (spots.isEmpty) {
       return SizedBox(

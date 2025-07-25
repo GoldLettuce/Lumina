@@ -101,7 +101,6 @@ class HistoryRepositoryImpl implements HistoryRepository {
     }
     if (totalToday > 0) out.add(Point(time: now, value: totalToday));
 
-    _log('📈 getHistory → devuelve ${out.length} puntos');
     return _dedupeByDay(out);
   }
 
