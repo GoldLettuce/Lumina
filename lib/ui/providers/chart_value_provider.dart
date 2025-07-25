@@ -91,7 +91,7 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
     return base;
   }
 
-  List<FlSpot>? _cachedSpots;
+  List<FlSpot> _cachedSpots = [];
   double _fx = 1.0;
 
   int? get selectedIndex => _selectedIndex;
@@ -110,7 +110,7 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
           displayHistory.first.value * 100
           : null;
 
-  List<FlSpot> get spots => _cachedSpots ?? const [];
+  List<FlSpot> get spots => _cachedSpots;
 
   // ───────── Constructor
   ChartValueProvider() {
@@ -178,8 +178,7 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
   void setFx(double fx) {
     if (_fx != fx) {
       _fx = fx;
-      _recalcSpots();
-      notifyListeners();
+      updateSpots(displayHistory, _fx);
     }
   }
 
@@ -231,13 +230,12 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
       } else {
         _todayPoint = null;
       }
-      _recalcSpots();
-      notifyListeners();
+      updateSpots(displayHistory, _fx);
       return;
     }
 
     await _downloadAndCacheHistory();
-    _recalcSpots();
+    updateSpots(displayHistory, _fx);
     notifyListeners();
   }
 
@@ -344,6 +342,14 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
         .toList();
   }
 
+  void updateSpots(List<Point> history, double exchangeRate) {
+    _cachedSpots = history.asMap().entries.map((e) => FlSpot(
+      e.key.toDouble(),
+      e.value.value * exchangeRate,
+    )).toList();
+    notifyListeners();
+  }
+
   // ───────── Histórico
   Future<void> _downloadAndCacheHistory() async {
     final cryptoInv = _lastInvestments.where((e) => e.type == AssetType.crypto).toList();
@@ -380,7 +386,7 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
     _historyStart = null;
     _selectedIndex = null;
     _historyLoaded = false;
-    _cachedSpots = null;
+    _cachedSpots = [];
     notifyListeners();
   }
 

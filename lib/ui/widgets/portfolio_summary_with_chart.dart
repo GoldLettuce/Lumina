@@ -53,15 +53,9 @@ class _PortfolioChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final history = context.select<ChartValueProvider, List<Point>>((p) => p.displayHistory);
-    final chartProvider = context.read<ChartValueProvider>();
-    final fx = context.watch<CurrencyProvider>();
+    final spots = context.select<ChartValueProvider, List<FlSpot>>((p) => p.spots);
+    final exchangeRate = context.select<CurrencyProvider, double>((p) => p.exchangeRate);
     final loc = AppLocalizations.of(context)!;
-
-    final spots = history.asMap().entries.map((e) => FlSpot(
-      e.key.toDouble(),
-      e.value.value * fx.exchangeRate,
-    )).toList();
 
     if (spots.isEmpty) {
       return SizedBox(
@@ -90,6 +84,7 @@ class _PortfolioChart extends StatelessWidget {
               handleBuiltInTouches: false,
               touchTooltipData: LineTouchTooltipData(getTooltipItems: (_) => []),
               touchCallback: (event, resp) {
+                final chartProvider = context.read<ChartValueProvider>();
                 final isEnd = event is FlTapUpEvent || event is FlTapCancelEvent || event is FlLongPressEnd || event is FlPanEndEvent;
                 if (!isEnd) {
                   final spot = resp?.lineBarSpots?.first;
