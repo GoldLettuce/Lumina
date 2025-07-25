@@ -11,7 +11,7 @@ class FxCurrencyService {
       throw Exception('No se pudo obtener la lista de monedas');
     }
 
-    final data = await compute(_parseFxJson, response.body) as Map<String, dynamic>;
+    final data = await compute(_parseFxJson, response.body);
     return data.map((code, name) => MapEntry(code, name.toString()));
   }
 }

@@ -20,9 +20,14 @@ class PortfolioSummaryWithChart extends StatefulWidget {
 }
 
 class PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> {
+  bool _ready = false;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() => _ready = true);
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final symbols = widget.investments.map((inv) => inv.symbol).where((s) => s.isNotEmpty).toSet();
       if (symbols.isNotEmpty) {
@@ -35,7 +40,9 @@ class PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> {
 
   @override
   Widget build(BuildContext context) {
-    // Solo el gráfico, el total se muestra en PortfolioSummaryMinimal
+    if (!_ready) {
+      return const SizedBox(height: 200);
+    }
     return const _PortfolioChart();
   }
 }
@@ -74,37 +81,39 @@ class _PortfolioChart extends StatelessWidget {
 
     return SizedBox(
       height: 200,
-      child: LineChart(
-        LineChartData(
-          clipData: FlClipData(top: false, bottom: false, left: false, right: false),
-          lineTouchData: LineTouchData(
-            enabled: true,
-            handleBuiltInTouches: false,
-            touchTooltipData: LineTouchTooltipData(getTooltipItems: (_) => []),
-            touchCallback: (event, resp) {
-              final isEnd = event is FlTapUpEvent || event is FlTapCancelEvent || event is FlLongPressEnd || event is FlPanEndEvent;
-              if (!isEnd) {
-                final spot = resp?.lineBarSpots?.first;
-                if (spot != null) chartProvider.selectSpot(spot.spotIndex);
-              } else {
-                chartProvider.clearSelection();
-              }
-            },
-            getTouchedSpotIndicator: (_, __) => [],
-          ),
-          gridData: FlGridData(show: false),
-          titlesData: FlTitlesData(show: false),
-          borderData: FlBorderData(show: false),
-          lineBarsData: [
-            LineChartBarData(
-              spots: spots,
-              isCurved: true,
-              color: lineColor,
-              barWidth: 2,
-              dotData: FlDotData(show: false),
-              belowBarData: BarAreaData(show: false),
+      child: RepaintBoundary(
+        child: LineChart(
+          LineChartData(
+            clipData: FlClipData(top: false, bottom: false, left: false, right: false),
+            lineTouchData: LineTouchData(
+              enabled: true,
+              handleBuiltInTouches: false,
+              touchTooltipData: LineTouchTooltipData(getTooltipItems: (_) => []),
+              touchCallback: (event, resp) {
+                final isEnd = event is FlTapUpEvent || event is FlTapCancelEvent || event is FlLongPressEnd || event is FlPanEndEvent;
+                if (!isEnd) {
+                  final spot = resp?.lineBarSpots?.first;
+                  if (spot != null) chartProvider.selectSpot(spot.spotIndex);
+                } else {
+                  chartProvider.clearSelection();
+                }
+              },
+              getTouchedSpotIndicator: (_, __) => [],
             ),
-          ],
+            gridData: FlGridData(show: false),
+            titlesData: FlTitlesData(show: false),
+            borderData: FlBorderData(show: false),
+            lineBarsData: [
+              LineChartBarData(
+                spots: spots,
+                isCurved: true,
+                color: lineColor,
+                barWidth: 2,
+                dotData: FlDotData(show: false),
+                belowBarData: BarAreaData(show: false),
+              ),
+            ],
+          ),
         ),
       ),
     );

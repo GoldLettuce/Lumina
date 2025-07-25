@@ -13,6 +13,8 @@ import 'core/hive_service.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await HiveService.initFlutterOnly();
+  debugPrintRebuildDirtyWidgets = true;
+  debugProfileBuildsEnabled = true;
   runApp(const AppBootstrap());                  // ⬅️  único widget de arranque
 }
 
