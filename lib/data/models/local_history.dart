@@ -25,4 +25,22 @@ class LocalHistory extends HiveObject {
     required this.points,
     this.needsRebuild = false,
   });
+
+  Map<String, dynamic> toJson() => {
+    'from': from.toIso8601String(),
+    'to': to.toIso8601String(),
+    'points': points.map((p) => p.toJson()).toList(),
+    'needsRebuild': needsRebuild,
+  };
+
+  static LocalHistory fromJson(Map<String, dynamic> json) {
+    return LocalHistory(
+      from: DateTime.parse(json['from']),
+      to: DateTime.parse(json['to']),
+      points: (json['points'] as List)
+          .map((e) => Point.fromJson(Map<String, dynamic>.from(e)))
+          .toList(),
+      needsRebuild: json['needsRebuild'] ?? false,
+    );
+  }
 }

@@ -81,6 +81,28 @@ class Investment extends HiveObject {
       operations.removeAt(index);
     }
   }
+
+  Map<String, dynamic> toJson() => {
+    'symbol': symbol,
+    'name': name,
+    'type': type.index,
+    'coingeckoId': coingeckoId,
+    'vsCurrency': vsCurrency,
+    'operations': operations.map((op) => op.toJson()).toList(),
+  };
+
+  static Investment fromJson(Map<String, dynamic> json) {
+    return Investment(
+      symbol: json['symbol'],
+      name: json['name'],
+      type: AssetType.values[json['type']],
+      coingeckoId: json['coingeckoId'],
+      vsCurrency: json['vsCurrency'] ?? 'usd',
+      operations: (json['operations'] as List)
+          .map((e) => InvestmentOperation.fromJson(Map<String, dynamic>.from(e)))
+          .toList(),
+    );
+  }
 }
 
 @HiveType(typeId: 1)
@@ -121,6 +143,24 @@ class InvestmentOperation {
       price: price ?? this.price,
       date: date ?? this.date,
       type: type ?? this.type,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'quantity': quantity,
+    'price': price,
+    'date': date.toIso8601String(),
+    'type': type.index,
+    'id': id,
+  };
+
+  static InvestmentOperation fromJson(Map<String, dynamic> json) {
+    return InvestmentOperation(
+      quantity: (json['quantity'] as num).toDouble(),
+      price: (json['price'] as num).toDouble(),
+      date: DateTime.parse(json['date']),
+      type: OperationType.values[json['type']],
+      id: json['id'],
     );
   }
 }

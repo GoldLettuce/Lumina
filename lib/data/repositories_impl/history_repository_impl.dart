@@ -7,6 +7,7 @@ import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/domain/repositories/history_repository.dart';
 import 'package:lumina/core/hive_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:lumina/data/history_isolate.dart';
 
 class HistoryRepositoryImpl implements HistoryRepository {
   final CoinGeckoHistoryService _service = CoinGeckoHistoryService();
@@ -65,43 +66,25 @@ class HistoryRepositoryImpl implements HistoryRepository {
     }
     if (allDays.isEmpty) return [];
 
-    final List<Point> out = [];
-    final sortedDays = allDays.toList()..sort();
+    final args = <String, dynamic>{
+      'investments': investments.map((inv) => inv.toJson()).toList(),
+      'histories': histories.map((k, v) => MapEntry(
+        k,
+        v.points.map((p) => p.toJson()).toList(),
+      )),
+    };
+    final List<Point> out = await compute(buildPortfolioHistory, args);
 
-    for (final day in sortedDays) {
-      double total = 0.0;
-      for (final inv in investments) {
-        final qty = inv.operations
-            .where((op) => !op.date.isAfter(day))
-            .fold<double>(0, (s, op) => s + op.quantity);
-        if (qty <= 0) continue;
-
-        final hist = histories[inv.symbol];
-        if (hist == null) continue;
-
-        final price = hist.points.firstWhere(
-              (p) => _roundToDay(p.time) == day,
-          orElse: () => Point(time: day, value: 0),
-        ).value;
-
-        total += price * qty;
+    // Añadir punto de hoy si hay spotPrices
+    if (spotPrices.isNotEmpty) {
+      final todayValue =
+          await calculateCurrentPortfolioValue(investments, spotPrices);
+      if (todayValue > 0) {
+        out.add(Point(time: DateTime.now(), value: todayValue));
       }
-      if (total > 0) out.add(Point(time: day, value: total));
     }
 
-    // punto “hoy”
-    final now = DateTime.now();
-    double totalToday = 0.0;
-    for (final inv in investments) {
-      final qty = inv.operations
-          .where((op) => !op.date.isAfter(now))
-          .fold<double>(0, (s, op) => s + op.quantity);
-      final price = spotPrices[inv.symbol];
-      if (qty > 0 && price != null) totalToday += price * qty;
-    }
-    if (totalToday > 0) out.add(Point(time: now, value: totalToday));
-
-    return _dedupeByDay(out);
+    return out;
   }
 
   @override
