@@ -216,12 +216,21 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
             earliestOp.isBefore(_historyStart!);
 
     if (cache != null && !_shouldUpdate() && !cacheInvalid) {
-      _history      = cache.history;
+      // Procesar en isolate
+      final result = await compute(processChartCache, cache);
+      _history = (result['history'] as List)
+          .map((p) => Point.fromJson(Map<String, dynamic>.from(p)))
+          .toList();
       _historyStart = _history.isNotEmpty ? _history.first.time : null;
       _spotPrices
         ..clear()
-        ..addAll(cache.spotPrices);
-      _recalcTodayPoint();
+        ..addAll(Map<String, double>.from(result['spotPrices']));
+      if (result['todayPoint'] != null) {
+        final tp = Map<String, dynamic>.from(result['todayPoint']);
+        _todayPoint = Point.fromJson(tp);
+      } else {
+        _todayPoint = null;
+      }
       _recalcSpots();
       notifyListeners();
       return;
@@ -399,5 +408,23 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
     return true;
   }
+}
+
+Future<Map<String, dynamic>> processChartCache(ChartCache cache) async {
+  // Procesa el histórico y spotPrices en un isolate
+  final List<Map<String, dynamic>> historyJson = cache.history.map((p) => p.toJson()).toList();
+  final Map<String, double> spotPrices = Map<String, double>.from(cache.spotPrices);
+
+  // Calcular todayPoint (último valor)
+  Map<String, dynamic>? todayPoint;
+  if (historyJson.isNotEmpty) {
+    todayPoint = historyJson.last;
+  }
+
+  return {
+    'history': historyJson,
+    'spotPrices': spotPrices,
+    'todayPoint': todayPoint,
+  };
 }
 
