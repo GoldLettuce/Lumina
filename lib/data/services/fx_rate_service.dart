@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
 import '../../core/hive_service.dart';
+import 'package:flutter/foundation.dart';
 
 class FxRateService {
   static const _base = 'USD';
@@ -31,7 +32,7 @@ class FxRateService {
       throw Exception('No se pudo descargar tasas para $currency en $year');
     }
 
-    final data = json.decode(response.body);
+    final data = await compute(_parseFxJson, response.body);
     final rates = data['rates'] as Map<String, dynamic>;
 
     final Map<String, double> parsedRates = {};
@@ -79,4 +80,8 @@ class FxRateService {
 
   String _format(DateTime d) =>
       '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+}
+
+Map<String, dynamic> _parseFxJson(String body) {
+  return jsonDecode(body) as Map<String, dynamic>;
 }

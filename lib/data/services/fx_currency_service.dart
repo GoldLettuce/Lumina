@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 
 class FxCurrencyService {
   Future<Map<String, String>> fetchSupportedCurrencies() async {
@@ -10,7 +11,11 @@ class FxCurrencyService {
       throw Exception('No se pudo obtener la lista de monedas');
     }
 
-    final data = json.decode(response.body) as Map<String, dynamic>;
+    final data = await compute(_parseFxJson, response.body) as Map<String, dynamic>;
     return data.map((code, name) => MapEntry(code, name.toString()));
   }
+}
+
+Map<String, dynamic> _parseFxJson(String body) {
+  return jsonDecode(body) as Map<String, dynamic>;
 }
