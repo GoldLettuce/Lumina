@@ -184,6 +184,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   @override
   void initState() {
     super.initState();
+    print('[ARRANQUE][${DateTime.now().toIso8601String()}] 🖥️ PortfolioScreen.initState()');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _maybeReloadHistory();
     });

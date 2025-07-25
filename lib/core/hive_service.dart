@@ -50,8 +50,10 @@ class HiveService {
   /// Este método debe llamarse una sola vez al inicio de la aplicación,
   /// antes de usar cualquier funcionalidad que requiera acceso a Hive.
   static Future<void> init() async {
+    print('[ARRANQUE][${DateTime.now().toIso8601String()}] 📦 HiveService.init() START');
     await initFlutterOnly();
     await openAllBoxes();
+    print('[ARRANQUE][${DateTime.now().toIso8601String()}] 📦 HiveService.init() END');
   }
 
   /// Registra todos los adapters de Hive necesarios

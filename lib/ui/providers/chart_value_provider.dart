@@ -183,22 +183,23 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> loadHistory(List<Investment> investments) async {
+    print('[ARRANQUE][${DateTime.now().toIso8601String()}] ▶️ loadHistory() START');
     if (_historyLoaded && listEquals(investments, _lastInvestments)) return;
     _historyLoaded = true;
     _lastInvestments = investments;
 
-    // Si no hay inversiones, limpiamos todo en memoria y disco
     if (investments.isEmpty) {
-      _resetState(); // limpia history, spots, selección en memoria
+      print('[ARRANQUE][${DateTime.now().toIso8601String()}] ⚠️ loadHistory(): inversiones vacías');
+      _resetState();
       final box = HiveService.chartCache;
-      await box.delete('all'); // borra el cache en disco
+      await box.delete('all');
+      print('[ARRANQUE][${DateTime.now().toIso8601String()}] ⚠️ loadHistory(): END (inversiones vacías)');
       return;
     }
 
     final box = HiveService.chartCache;
     final cache = box.get('all');
 
-    // ─── Nuevo chequeo: ¿hay operaciones más antiguas que la historia en caché?
     DateTime? earliestOp = investments
         .where((e) => e.type == AssetType.crypto)
         .expand((inv) => inv.operations)
@@ -215,7 +216,7 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
             earliestOp.isBefore(_historyStart!);
 
     if (cache != null && !_shouldUpdate() && !cacheInvalid) {
-      // Procesar en isolate
+      print('[ARRANQUE][${DateTime.now().toIso8601String()}] 💾 loadHistory(): usando caché');
       final result = await compute(processChartCache, cache);
       _history = (result['history'] as List)
           .map((p) => Point.fromJson(Map<String, dynamic>.from(p)))
@@ -227,15 +228,22 @@ class ChartValueProvider extends ChangeNotifier with WidgetsBindingObserver {
       if (result['todayPoint'] != null) {
         final tp = Map<String, dynamic>.from(result['todayPoint']);
         _todayPoint = Point.fromJson(tp);
+        print('[ARRANQUE][${DateTime.now().toIso8601String()}] 🔄 loadHistory(): todayPoint recalculado');
       } else {
         _todayPoint = null;
+        print('[ARRANQUE][${DateTime.now().toIso8601String()}] 🗑️ loadHistory(): todayPoint descartado');
       }
       updateSpots(displayHistory, _fx);
+      print('[ARRANQUE][${DateTime.now().toIso8601String()}] 💾 loadHistory(): END (caché) → notifyListeners()');
+      notifyListeners();
       return;
     }
 
+    print('[ARRANQUE][${DateTime.now().toIso8601String()}] ⬇️ loadHistory(): descargando histórico...');
     await _downloadAndCacheHistory();
+    print('[ARRANQUE][${DateTime.now().toIso8601String()}] ⬇️ loadHistory(): histórico descargado');
     updateSpots(displayHistory, _fx);
+    print('[ARRANQUE][${DateTime.now().toIso8601String()}] ✅ loadHistory() END → notifyListeners()');
     notifyListeners();
   }
 

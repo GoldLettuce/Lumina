@@ -11,8 +11,10 @@ import 'ui/screens/portfolio_screen.dart';
 import 'core/hive_service.dart';
 
 Future<void> main() async {
+  print('[ARRANQUE][${DateTime.now().toIso8601String()}] main() START');
   WidgetsFlutterBinding.ensureInitialized();
   await HiveService.initFlutterOnly();
+  print('[ARRANQUE][${DateTime.now().toIso8601String()}] Antes de runApp()');
   debugPrintRebuildDirtyWidgets = true;
   debugProfileBuildsEnabled = true;
   runApp(const AppBootstrap());                  // ⬅️  único widget de arranque
