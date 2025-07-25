@@ -3,7 +3,6 @@
 import 'package:lumina/ui/providers/investment_provider.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 import 'package:lumina/domain/entities/investment.dart';
-import 'package:lumina/ui/providers/chart_value_provider.dart';
 import 'package:lumina/core/hive_service.dart';
 
 /// Añadir operación y sincronizar histórico + gráfico
@@ -11,7 +10,6 @@ Future<void> addOperationAndSync({
   required Investment investment,
   required InvestmentOperation newOp,
   required InvestmentRepositoryImpl repo,
-  required ChartValueProvider chartProvider,
   required InvestmentProvider model,
 }) async {
   // 1️⃣ Guardamos la operación
@@ -28,13 +26,10 @@ Future<void> addOperationAndSync({
 
   if (needsBackfill) {
     // Solo rellenar hacia atrás para este activo
-    await chartProvider.backfillHistory(
-      inv: updated,
-      earliestNeeded: newOp.date,
-    );
+    // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
   } else {
     // Recalc solo el punto "hoy"
-    chartProvider.recalcTodayOnly();
+    // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
   }
 }
 
@@ -44,7 +39,6 @@ Future<void> editOperationAndSync({
   required int operationIndex,
   required InvestmentOperation editedOp,
   required InvestmentRepositoryImpl repo,
-  required ChartValueProvider chartProvider,
   required InvestmentProvider model,
 }) async {
   final newOps = [...investment.operations]..[operationIndex] = editedOp;
@@ -54,7 +48,7 @@ Future<void> editOperationAndSync({
   await model.load();
 
   // 🔥 Siempre fuerza la reconstrucción del histórico tras editar una operación
-  await chartProvider.forceRebuildAndReload(model.investments);
+  // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
 }
 
 /// Eliminar operación
@@ -63,7 +57,7 @@ Future<void> deleteOperationAndSync({
   required int operationIndex,
   required InvestmentRepositoryImpl repo,
   required InvestmentProvider model,
-  required ChartValueProvider chartProvider,
+  // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
 }) async {
   final updatedOps = [...investment.operations]..removeAt(operationIndex);
 
@@ -85,16 +79,13 @@ Future<void> deleteOperationAndSync({
     final needsBackfill = hist != null && earliest.isBefore(hist.from);
 
     if (needsBackfill) {
-      await chartProvider.backfillHistory(
-        inv: investment.copyWith(operations: updatedOps),
-        earliestNeeded: earliest,
-      );
+      // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
     } else {
-      chartProvider.recalcTodayOnly();
+      // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
     }
   } else {
     // Si no quedan operaciones, solo recalcula "hoy"
-    chartProvider.recalcTodayOnly();
+    // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
   }
 }
 
@@ -103,7 +94,7 @@ Future<void> deleteInvestmentAndSync({
   required String symbol,
   required InvestmentRepositoryImpl repo,
   required InvestmentProvider model,
-  required ChartValueProvider chartProvider,
+  // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
 }) async {
   await repo.deleteInvestment(symbol);
 
@@ -111,5 +102,5 @@ Future<void> deleteInvestmentAndSync({
   await historyBox.delete('${symbol}_ALL');
 
   await model.load();
-  chartProvider.recalcTodayOnly();
+  // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
 }

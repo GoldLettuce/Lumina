@@ -9,13 +9,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'ui/providers/locale_provider.dart';
 import 'ui/screens/portfolio_screen.dart';
 import 'core/hive_service.dart';
+import 'package:flutter/rendering.dart';
 
 Future<void> main() async {
+  debugPrintRebuildDirtyWidgets = true;
   print('[ARRANQUE][${DateTime.now().toIso8601String()}] main() START');
   WidgetsFlutterBinding.ensureInitialized();
   await HiveService.initFlutterOnly();
   print('[ARRANQUE][${DateTime.now().toIso8601String()}] Antes de runApp()');
-  debugPrintRebuildDirtyWidgets = true;
   debugProfileBuildsEnabled = true;
   runApp(const AppBootstrap());                  // ⬅️  único widget de arranque
 }

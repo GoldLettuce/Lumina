@@ -10,10 +10,16 @@ import '../../domain/entities/asset_type.dart';
 import '../../l10n/app_localizations.dart';
 import 'asset_selector_modal.dart';
 import 'package:provider/provider.dart';
-import 'package:lumina/ui/providers/chart_value_provider.dart';
+import 'package:lumina/ui/providers/fx_notifier.dart';
+import 'package:lumina/ui/providers/spot_price_provider.dart';
+import 'package:lumina/ui/providers/history_provider.dart';
 import 'package:lumina/ui/providers/investment_provider.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 import 'package:lumina/ui/providers/currency_provider.dart';
+import 'package:lumina/data/repositories_impl/history_repository_impl.dart';
+import 'package:lumina/data/repositories_impl/price_repository_impl.dart';
+import 'package:lumina/core/point.dart';
+import 'package:lumina/core/chart_range.dart';
 
 /// Diálogo para añadir o editar una operación **solo de criptomonedas**.
 class AddInvestmentDialog extends StatefulWidget {
@@ -137,9 +143,10 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     
     // Guardar referencias antes del await
     final fx = context.read<CurrencyProvider>();
+    final spotProv = context.read<SpotPriceProvider>();
+    final histProv = context.read<HistoryProvider>();
     final model = context.read<InvestmentProvider>();
-    final chartProvider = context.read<ChartValueProvider>();
-    final currencyCode = fx.currencyCode.toLowerCase();
+    final currencyCode = fx.currency.toLowerCase();
     
     final priceUsd   = priceLocal / fx.exchangeRate;
 
@@ -161,9 +168,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
 
       // 2) Refresca gráfico con lista ya actualizada
       final investments = model.investments;
-      await chartProvider.forceRebuildAndReload(investments);
-      await chartProvider.updatePrices();
-      chartProvider.updateTodayPoint();
+      _loadHistory(context, investments);
 
       // 3) Devuelve la operación editada
       Navigator.of(context).pop(operation);
@@ -190,24 +195,53 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       investment: newInvestment,
       newOp:      operation,
       repo:       repo,
-      chartProvider: chartProvider,
-      model:         model,
+      model:      model,
     );
 
     // Verificar si el widget sigue montado
     if (!mounted) return;
 
-    // Actualizar gráfico
-    chartProvider.setVisibleSymbols(
-      model.investments.map((e) => e.symbol).toSet(),
-    );
-    await chartProvider.forceRebuildAndReload(
-      model.investments,
-    );
-    await chartProvider.updatePrices();
-    chartProvider.updateTodayPoint();      // recalcula con precios ya actualizados
+    // Actualizar gráfico y precios usando la función loadHistory
+    _loadHistory(context, model.investments);
 
     Navigator.of(context).pop();
+  }
+
+  void _loadHistory(BuildContext context, List<Investment> investments) async {
+    final histRepo = HistoryRepositoryImpl();
+    final priceRepo = PriceRepositoryImpl();
+    final spotProv = context.read<SpotPriceProvider>();
+    final histProv = context.read<HistoryProvider>();
+    final fx = context.read<CurrencyProvider>().exchangeRate;
+
+    await histRepo.downloadAndStoreIfNeeded(
+      range: ChartRange.all,
+      investments: investments.where((e) => e.type == AssetType.crypto).toList(),
+    );
+
+    final prices = await priceRepo.getPrices(
+      investments.map((e) => e.symbol).toSet(),
+      currency: 'USD',
+    );
+    spotProv.updatePrices(prices);
+
+    final history = await histRepo.getHistory(
+      range: ChartRange.all,
+      investments: investments,
+      spotPrices: prices,
+    );
+
+    final today = DateTime.now();
+    double total = 0;
+    for (final inv in investments) {
+      final qty = inv.operations
+          .where((op) => !op.date.isAfter(today))
+          .fold<double>(0, (s, op) => s + op.quantity);
+      final price = prices[inv.symbol];
+      if (qty > 0 && price != null) total += price * qty;
+    }
+    histProv.updateHistory(history);
+    histProv.updateToday(Point(time: today, value: total));
   }
 
   // ────────────────────────────────────────────────────────────────────────

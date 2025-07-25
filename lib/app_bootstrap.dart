@@ -6,7 +6,9 @@ import 'core/init_hive.dart';
 import 'data/repositories_impl/investment_repository_impl.dart';
 import 'ui/providers/asset_list_provider.dart';
 import 'ui/providers/investment_provider.dart';
-import 'ui/providers/chart_value_provider.dart';
+import 'ui/providers/spot_price_provider.dart';
+import 'ui/providers/history_provider.dart';
+import 'ui/providers/fx_notifier.dart';
 import 'ui/providers/settings_provider.dart';
 import 'ui/providers/locale_provider.dart';
 import 'ui/providers/currency_provider.dart';
@@ -47,7 +49,9 @@ class _AppBootstrapState extends State<AppBootstrap> {
       providers: [
         ChangeNotifierProvider(create: (_) => AssetListProvider()),
         ChangeNotifierProvider(create: (_) => InvestmentProvider(_repo!)),
-        ChangeNotifierProvider(create: (_) => ChartValueProvider()),
+        ChangeNotifierProvider(create: (_) => SpotPriceProvider()),
+        ChangeNotifierProvider(create: (_) => HistoryProvider()),
+        ChangeNotifierProvider(create: (_) => FxNotifier(1.0)),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => CurrencyProvider()),

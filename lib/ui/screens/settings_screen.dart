@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 
 import '../providers/settings_provider.dart';
 import '../providers/investment_provider.dart';     // Import InvestmentProvider
-import '../providers/chart_value_provider.dart';    // Import ChartValueProvider
+import '../providers/spot_price_provider.dart';    // Import SpotPriceProvider
+import '../providers/history_provider.dart';    // Import HistoryProvider
+import '../providers/fx_notifier.dart';    // Import FxNotifier
 import '../widgets/language_selector.dart';
 import '../widgets/currency_selector.dart';
 import '../../l10n/app_localizations.dart';
@@ -66,12 +68,16 @@ class SettingsScreen extends StatelessWidget {
               if (confirm) {
                 final invProv   = context.read<InvestmentProvider>();
                 final modelProv = context.read<InvestmentProvider>();
-                final chartProv = context.read<ChartValueProvider>();
+                final spotProv = context.read<SpotPriceProvider>();
+                final histProv = context.read<HistoryProvider>();
+                final fxProv = context.read<FxNotifier>();
 
                 await ResetPortfolioService.resetAllData(
                   invProv,
                   modelProv,
-                  chartProv,
+                  spotProv,
+                  histProv,
+                  fxProv,
                 );
 
                 if (!context.mounted) return;

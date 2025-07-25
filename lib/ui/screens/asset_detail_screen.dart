@@ -6,7 +6,6 @@ import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/ui/providers/investment_provider.dart';
 import 'package:lumina/ui/widgets/add_investment_dialog.dart';
 import 'package:lumina/ui/providers/currency_provider.dart'; // Import CurrencyProvider
-import 'package:lumina/ui/providers/chart_value_provider.dart'; // Import ChartValueProvider
 import '../../l10n/app_localizations.dart';
 
 class AssetDetailScreen extends StatefulWidget {
@@ -171,8 +170,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                         if (edited != null) {
                           await model.editOperation(currentAsset.symbol, edited);
                           // ignore: use_build_context_synchronously
-                          final chart = context.read<ChartValueProvider>();
-                          chart.recalcTodayOnly();          // recalcula total + gráfico YA
+                          // Reemplazar context.read<ChartValueProvider>() por el provider adecuado (SpotPriceProvider, HistoryProvider o FxNotifier)
                         }
                       },
                     ),

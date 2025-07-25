@@ -7,8 +7,9 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
-import '../providers/chart_value_provider.dart';
-import '../providers/currency_provider.dart'; // Import CurrencyProvider
+import '../providers/fx_notifier.dart';
+import '../providers/spot_price_provider.dart';
+import '../providers/history_provider.dart';
 import '../widgets/add_investment_dialog.dart';
 import '../providers/investment_provider.dart';
 import '../widgets/portfolio_summary_with_chart.dart';
@@ -17,29 +18,34 @@ import 'archived_assets_screen.dart';
 import 'settings_screen.dart';
 import 'package:lumina/core/point.dart';
 import '../../domain/entities/investment.dart';
+import '../providers/currency_provider.dart';
+import 'package:lumina/data/repositories_impl/history_repository_impl.dart';
+import 'package:lumina/data/repositories_impl/price_repository_impl.dart';
+import 'package:lumina/core/chart_range.dart';
+import 'package:lumina/domain/entities/asset_type.dart';
 
 class PortfolioSummaryMinimal extends StatelessWidget {
   const PortfolioSummaryMinimal({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final history = context.select<ChartValueProvider, List<Point>>(
-      (p) => p.displayHistory,
+    final history = context.select<HistoryProvider, List<Point>>(
+      (p) => p.history,
     );
 
-    final selectedIndex = context.select<ChartValueProvider, int?>(
+    final selectedIndex = context.select<HistoryProvider, int?>(
       (p) => p.selectedIndex,
     );
 
-    final selectedValue = context.select<ChartValueProvider, double?>(
+    final selectedValue = context.select<HistoryProvider, double?>(
       (p) => p.selectedValue,
     );
 
-    final selectedPct = context.select<ChartValueProvider, double?>(
+    final selectedPct = context.select<HistoryProvider, double?>(
       (p) => p.selectedPct,
     );
 
-    final selectedDate = context.select<ChartValueProvider, DateTime?>(
+    final selectedDate = context.select<HistoryProvider, DateTime?>(
       (p) => p.selectedDate,
     );
 
@@ -193,20 +199,52 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   /// Verifica si las inversiones han cambiado antes de recargar el historial
   void _maybeReloadHistory() {
     final inv = context.read<InvestmentProvider>().investments;
-    final chartProvider = context.read<ChartValueProvider>();
-    
-    // Solo recargar si la lista de inversiones ha cambiado
-    if (!listEquals(inv, chartProvider.lastInvestments)) {
-      chartProvider.loadHistory(inv);
-      chartProvider.setVisibleSymbols(inv.map((e) => e.symbol).toSet());
+    // Llama a la función utilitaria de loadHistory migrada
+    loadHistory(context, inv);
+  }
+
+  void loadHistory(BuildContext context, List<Investment> investments) async {
+    final histRepo = HistoryRepositoryImpl();
+    final priceRepo = PriceRepositoryImpl();
+    final spotProv = context.read<SpotPriceProvider>();
+    final histProv = context.read<HistoryProvider>();
+    final fx = context.read<CurrencyProvider>().exchangeRate;
+
+    await histRepo.downloadAndStoreIfNeeded(
+      range: ChartRange.all,
+      investments: investments.where((e) => e.type == AssetType.crypto).toList(),
+    );
+
+    final prices = await priceRepo.getPrices(
+      investments.map((e) => e.symbol).toSet(),
+      currency: 'USD',
+    );
+    spotProv.updatePrices(prices);
+
+    final history = await histRepo.getHistory(
+      range: ChartRange.all,
+      investments: investments,
+      spotPrices: prices,
+    );
+
+    final today = DateTime.now();
+    double total = 0;
+    for (final inv in investments) {
+      final qty = inv.operations
+          .where((op) => !op.date.isAfter(today))
+          .fold<double>(0, (s, op) => s + op.quantity);
+      final price = prices[inv.symbol];
+      if (qty > 0 && price != null) total += price * qty;
     }
+    histProv.updateHistory(history);
+    histProv.updateToday(Point(time: today, value: total));
   }
 
   // === Helper: lista de activos como Sliver ===================================
   Widget _buildAssetsSliverList(
     BuildContext context,
     List<Investment> investments,
-    ChartValueProvider chartProvider,
+    HistoryProvider historyProvider,
     CurrencyProvider fx,
     AppLocalizations t,
   ) {
@@ -218,7 +256,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             final asset = investments[index];
-            final priceUsd = chartProvider.getPriceFor(asset.symbol);
+            final priceUsd = context.read<SpotPriceProvider>().spotPrices[asset.symbol];
             final valorActual = priceUsd != null
                 ? asset.totalQuantity * priceUsd * fx.exchangeRate
                 : null;
@@ -245,7 +283,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               ),
               onTap: () async {
                 // Guardar referencias antes del await
-                final chartProvider = context.read<ChartValueProvider>();
+                final historyProvider = context.read<HistoryProvider>();
                 
                 await Navigator.push(
                   context,
@@ -259,7 +297,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 
                 // Recalculamos gráfico y precios al volver de edición (solo si cambió)
                 _maybeReloadHistory();
-                chartProvider.clearSelection();
+                historyProvider.clearSelection();
               },
             );
           },
@@ -282,7 +320,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final t = AppLocalizations.of(context)!;
     final model = context.watch<InvestmentProvider>();
     final investments = model.investments.where((e) => e.totalQuantity > 0).toList();
-    final chartProvider = context.watch<ChartValueProvider>();
+    final historyProvider = context.watch<HistoryProvider>();
     final fx = context.watch<CurrencyProvider>(); // Obtener provider de cambio
 
     // Loader solo mientras se cargan las inversiones
@@ -346,7 +384,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     )
                   else
                     // ------ Lista de activos ------
-                    _buildAssetsSliverList(context, investments, chartProvider, fx, t),
+                    _buildAssetsSliverList(context, investments, historyProvider, fx, t),
 
                   // ------ Footer "Archived assets" anclado ------
                   SliverFillRemaining(
