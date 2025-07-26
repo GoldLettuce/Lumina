@@ -23,13 +23,19 @@ import 'package:flutter/rendering.dart';
 import 'package:lumina/ui/providers/app_initialization_provider.dart';
 
 Future<void> main() async {
-  debugPrintRebuildDirtyWidgets = true;
   print('[ARRANQUE][${DateTime.now().toIso8601String()}] main() START');
   WidgetsFlutterBinding.ensureInitialized();
-  await HiveService.initFlutterOnly(); // Ahora con await para asegurar inicialización completa
+  assert(() {
+    debugPrintRebuildDirtyWidgets = true;
+    debugProfileBuildsEnabled = true;
+    return true;
+  }());
+  await HiveService.initFlutterLight(); // Ahora con await para asegurar inicialización completa
   print('[ARRANQUE][${DateTime.now().toIso8601String()}] Antes de runApp()');
-  debugProfileBuildsEnabled = true;
   runApp(const PortfolioApp());
+  
+  // Abrir cajas grandes sin bloquear el primer frame
+  unawaited(HiveService.openAllBoxes());
 }
 
 class PortfolioApp extends StatelessWidget {

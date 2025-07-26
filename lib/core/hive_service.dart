@@ -31,19 +31,27 @@ class HiveService {
 
   static bool _adaptersRegistered = false;
 
-  /// Inicializa solo Hive Flutter y registra los adapters (debe llamarse en el main isolate)
-  static Future<void> initFlutterOnly() async {
+  // Guarda la Future de la apertura para reutilizarla
+  static Future<void>? _openFuture;
+  static bool _isInitialized = false;
+
+  /// Inicializa Hive Flutter y registra adaptadores (método ligero)
+  static Future<void> initFlutterLight() async {
     await Hive.initFlutter();
     if (!_adaptersRegistered) {
-      _registerAdapters();
+      registerAdapters();
       _adaptersRegistered = true;
     }
   }
 
-  /// Abre todas las cajas necesarias (ahora espera a que todas estén listas antes de completar)
-  /// Fase 1: Caja mínima necesaria para UI
-  /// Fase 2: Cajas grandes (espera a que terminen)
-  static Future<void> openAllBoxes() async {
+  /// Abre todas las cajas necesarias (método pesado)
+  static Future<void> openAllBoxes() {
+    _openFuture ??= _openAllBoxesInternal();
+    return _openFuture!;
+  }
+
+  /// Método interno que contiene la lógica de apertura de cajas
+  static Future<void> _openAllBoxesInternal() async {
     final startTime = DateTime.now();
     print(
       '[HIVE][${startTime.toIso8601String()}] 📦 Iniciando apertura de cajas',
@@ -51,7 +59,7 @@ class HiveService {
 
     // Fase 1: Abre solo la caja de configuración (mínima y rápida)
     final settingsStart = DateTime.now();
-    await _openSettingsBox();
+    _settingsBox = await Hive.openBox('settingsBox');
     final settingsEnd = DateTime.now();
     print(
       '[HIVE][${settingsEnd.toIso8601String()}] ⚙️ Settings abierta en ${settingsEnd.difference(settingsStart).inMilliseconds}ms',
@@ -61,27 +69,19 @@ class HiveService {
     print(
       '[HIVE][${DateTime.now().toIso8601String()}] 🔄 Abriendo cajas pesadas (esperando a que terminen)',
     );
-    await _openHeavyBoxes();
-  }
-
-  /// Abre las cajas pesadas en background
-  static Future<void> _openHeavyBoxes() async {
-    final startTime = DateTime.now();
-    print(
-      '[HIVE][${startTime.toIso8601String()}] 🔄 Iniciando apertura de cajas pesadas',
-    );
-
+    
+    final heavyStart = DateTime.now();
     await Future.wait([
       _openInvestmentsBox(),
       _openChartCacheBox(),
       _openHistoryBox(),
       _openFxRatesBox(),
     ]);
-
-    final endTime = DateTime.now();
+    final heavyEnd = DateTime.now();
     print(
-      '[HIVE][${endTime.toIso8601String()}] ✅ Cajas pesadas abiertas en ${endTime.difference(startTime).inMilliseconds}ms',
+      '[HIVE][${heavyEnd.toIso8601String()}] ✅ Cajas pesadas abiertas en ${heavyEnd.difference(heavyStart).inMilliseconds}ms',
     );
+    _isInitialized = true;
   }
 
   /// Inicializa Hive y abre todas las cajas necesarias
@@ -92,15 +92,16 @@ class HiveService {
     print(
       '[ARRANQUE][${DateTime.now().toIso8601String()}] 📦 HiveService.init() START',
     );
-    await initFlutterOnly();
+    await initFlutterLight();
     await openAllBoxes();
+    _isInitialized = true;
     print(
-      '[ARRANQUE][${DateTime.now().toIso8601String()}] 📦 HiveService.init() END',
+      '[ARRANQUE][${DateTime.now().toIso8601String()}] �� HiveService.init() END',
     );
   }
 
   /// Registra todos los adapters de Hive necesarios
-  static void _registerAdapters() {
+  static void registerAdapters() {
     Hive.registerAdapter(InvestmentAdapter());
     Hive.registerAdapter(InvestmentOperationAdapter());
     Hive.registerAdapter(OperationTypeAdapter());
@@ -127,10 +128,7 @@ class HiveService {
     _historyBox = await Hive.openBox<LocalHistory>('history');
   }
 
-  /// Abre la caja de configuración
-  static Future<void> _openSettingsBox() async {
-    _settingsBox = await Hive.openBox('settingsBox');
-  }
+
 
   /// Abre la caja de tasas de cambio
   static Future<void> _openFxRatesBox() async {
@@ -139,11 +137,7 @@ class HiveService {
 
   /// Verifica si todas las cajas están inicializadas
   static bool get isInitialized {
-    return _investmentsBox != null &&
-        _chartCacheBox != null &&
-        _historyBox != null &&
-        _settingsBox != null &&
-        _fxRatesBox != null;
+    return _isInitialized;
   }
 
   /// Cierra todas las cajas (útil para testing o cleanup)
@@ -161,6 +155,8 @@ class HiveService {
     _historyBox = null;
     _settingsBox = null;
     _fxRatesBox = null;
+    _openFuture = null;
+    _isInitialized = false;
   }
 
   /// Reabre la caja de inversiones (útil después de reset)

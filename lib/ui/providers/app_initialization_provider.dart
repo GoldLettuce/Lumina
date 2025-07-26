@@ -18,14 +18,10 @@ class AppInitializationProvider extends ChangeNotifier {
 
   Future<void> initialize() async {
     try {
-      // 1. Inicializar Hive y abrir cajas
-      await HiveService.initFlutterOnly();
+      // Espera a que Hive esté listo (reutiliza la misma Future si ya se está abriendo)
       await HiveService.openAllBoxes();
 
-      // 2. Inicializar repositorio en isolate
       repository = await compute(_initRepoInBackground, null);
-
-      // 3. Preload de datos de cada provider (sin notifyListeners)
       preloadedData = await _preloadAll();
 
       _isAppReady = true;
