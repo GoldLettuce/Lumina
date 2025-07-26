@@ -22,6 +22,8 @@ class AppInitializationProvider extends ChangeNotifier {
     if (_hasStartedInitialization) return;
     _hasStartedInitialization = true;
 
+    await HiveService.initFlutterLight();
+    
     debugPrint('[INIT] Iniciando Hive...');
     await HiveService.init();
 

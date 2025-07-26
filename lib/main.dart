@@ -24,7 +24,7 @@ Future<void> main() async {
     return true;
   }());
 
-  await HiveService.initFlutterLight();
+  // Eliminado: HiveService se inicializa en AppInitializationProvider
   print('[ARRANQUE][${DateTime.now().toIso8601String()}] Antes de runApp()');
 
   runApp(const PortfolioApp());
