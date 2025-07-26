@@ -179,6 +179,56 @@ Positioned(
   }
 }
 
+class AssetListTile extends StatelessWidget {
+  final Investment asset;
+  const AssetListTile({required this.asset, Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final priceUsd = context.select<SpotPriceProvider, double?>(
+      (p) => p.spotPrices[asset.symbol],
+    );
+    final fx = context.select<CurrencyProvider, double>((p) => p.exchangeRate);
+    final t = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final valorActual = priceUsd != null
+        ? asset.totalQuantity * priceUsd * fx
+        : null;
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(
+        asset.symbol,
+        style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
+      ),
+      subtitle: Text(
+        '${t.quantity}: ${asset.totalQuantity}',
+        style: theme.textTheme.bodyMedium,
+      ),
+      trailing: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        child: valorActual == null
+            ? const SizedBox(width: 60)
+            : Text(
+                NumberFormat.simpleCurrency(name: context.select<CurrencyProvider, String>((p) => p.currency)).format(valorActual),
+                key: ValueKey(valorActual),
+                style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
+              ),
+      ),
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AssetDetailScreen(asset: asset),
+          ),
+        );
+        if (!context.mounted) return;
+        final state = context.findAncestorStateOfType<_PortfolioScreenState>();
+        state?._maybeReloadHistory();
+      },
+    );
+  }
+}
+
 class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
 
@@ -248,58 +298,13 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     CurrencyProvider fx,
     AppLocalizations t,
   ) {
-    final theme = Theme.of(context);
-
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             final asset = investments[index];
-            final priceUsd = context.read<SpotPriceProvider>().spotPrices[asset.symbol];
-            final valorActual = priceUsd != null
-                ? asset.totalQuantity * priceUsd * fx.exchangeRate
-                : null;
-
-            return ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                asset.symbol,
-                style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(
-                '${t.quantity}: ${asset.totalQuantity}',
-                style: theme.textTheme.bodyMedium,
-              ),
-              trailing: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: valorActual == null
-                    ? const SizedBox(width: 60)
-                    : Text(
-                        NumberFormat.simpleCurrency(name: fx.currency).format(valorActual),
-                        key: ValueKey(valorActual),
-                        style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
-                      ),
-              ),
-              onTap: () async {
-                // Guardar referencias antes del await
-                final historyProvider = context.read<HistoryProvider>();
-                
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => AssetDetailScreen(asset: asset),
-                  ),
-                );
-                
-                // Verificar si el widget sigue montado
-                if (!mounted) return;
-                
-                // Recalculamos gráfico y precios al volver de edición (solo si cambió)
-                _maybeReloadHistory();
-                historyProvider.clearSelection();
-              },
-            );
+            return AssetListTile(asset: asset);
           },
           childCount: investments.length,
         ),

@@ -97,65 +97,71 @@ class _PortfolioChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fx = context.watch<FxNotifier>().value;
+    final fx = context.select<FxNotifier, double>((fx) => fx.value);
     final prices = context.watch<SpotPriceProvider>().spotPrices;
-    final history = context.watch<HistoryProvider>().history;
     final loc = AppLocalizations.of(context)!;
 
-    // Convierte history (List<Point>) a List<FlSpot>
-    final spots = history
-        .asMap()
-        .entries
-        .map((e) => FlSpot(e.key.toDouble(), e.value.value * fx))
-        .toList();
+    return Selector<HistoryProvider, List<Point>>(
+      selector: (_, provider) => provider.history,
+      builder: (context, history, __) {
+        final spots = history
+            .asMap()
+            .entries
+            .map((e) => FlSpot(e.key.toDouble(), e.value.value * fx))
+            .toList();
 
-    if (spots.isEmpty) {
-      return SizedBox(
-        height: 200,
-        child: Center(
-          child: Text(
-            loc.notEnoughChartData,
-            style: Theme.of(context).textTheme.bodyMedium,
-            textAlign: TextAlign.center,
-          ),
-        ),
-      );
-    }
-
-    final isPositive = spots.first.y <= spots.last.y;
-    final lineColor = isPositive ? AppColors.positive : AppColors.negative;
-
-    return SizedBox(
-      height: 200,
-      child: RepaintBoundary(
-        child: LineChart(
-          LineChartData(
-            clipData: FlClipData(top: false, bottom: false, left: false, right: false),
-            lineTouchData: LineTouchData(
-              enabled: true,
-              handleBuiltInTouches: false,
-              touchTooltipData: LineTouchTooltipData(getTooltipItems: (_) => []),
-              touchCallback: (event, resp) {
-                // Si necesitas selección, implementa en HistoryProvider
-              },
-              getTouchedSpotIndicator: (_, __) => [],
-            ),
-            gridData: FlGridData(show: false),
-            titlesData: FlTitlesData(show: false),
-            borderData: FlBorderData(show: false),
-            lineBarsData: [
-              LineChartBarData(
-                spots: spots,
-                isCurved: true,
-                color: lineColor,
-                barWidth: 2,
-                dotData: FlDotData(show: false),
-                belowBarData: BarAreaData(show: false),
+        if (spots.isEmpty) {
+          return SizedBox(
+            height: 200,
+            child: Center(
+              child: Text(
+                loc.notEnoughChartData,
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
               ),
-            ],
+            ),
+          );
+        }
+
+        final isPositive = spots.first.y <= spots.last.y;
+        final lineColor = isPositive ? AppColors.positive : AppColors.negative;
+
+        return SizedBox(
+          height: 200,
+          child: RepaintBoundary(
+            child: LineChart(
+              LineChartData(
+                clipData: FlClipData(top: false, bottom: false, left: false, right: false),
+                lineTouchData: LineTouchData(
+                  enabled: true,
+                  handleBuiltInTouches: false,
+                  touchTooltipData: LineTouchTooltipData(getTooltipItems: (_) => []),
+                  touchCallback: (event, resp) {
+                    if (resp != null && resp.lineBarSpots != null && resp.lineBarSpots!.isNotEmpty) {
+                      final index = resp.lineBarSpots!.first.x.toInt();
+                      context.read<HistoryProvider>().selectSpot(index);
+                    }
+                  },
+                  getTouchedSpotIndicator: (_, __) => [],
+                ),
+                gridData: FlGridData(show: false),
+                titlesData: FlTitlesData(show: false),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    color: lineColor,
+                    barWidth: 2,
+                    dotData: FlDotData(show: false),
+                    belowBarData: BarAreaData(show: false),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
