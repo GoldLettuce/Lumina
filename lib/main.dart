@@ -44,6 +44,20 @@ class PortfolioApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => CurrencyProvider()),
+        ChangeNotifierProvider(create: (_) => AssetListProvider()),
+        ChangeNotifierProvider(create: (_) => SpotPriceProvider()),
+        ChangeNotifierProvider(create: (_) => HistoryProvider()),
+        ChangeNotifierProvider(create: (_) => FxNotifier(1.0)),
+        // InvestmentProvider se inicializa después cuando AppInitializationProvider esté listo
+        ProxyProvider<AppInitializationProvider, InvestmentProvider>(
+          update: (context, appInit, previous) {
+            if (appInit.isAppReady && appInit.repository != null) {
+              return InvestmentProvider(appInit.repository);
+            }
+            // Retornar un provider temporal hasta que esté listo
+            return InvestmentProvider(InvestmentRepositoryImpl());
+          },
+        ),
       ],
       child: MaterialApp(
         title: 'Lumina',
@@ -77,19 +91,13 @@ class PortfolioGate extends StatelessWidget {
       });
       return SkeletonView(); // Usa tu widget shimmer/skeleton
     }
-    // Cuando todo está listo, inyecta los providers específicos del portafolio
+    
+    // Cuando todo está listo, actualizar FxNotifier con el valor correcto
     final data = appInit.preloadedData;
-    final repo = appInit.repository;
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AssetListProvider()),
-        ChangeNotifierProvider(create: (_) => InvestmentProvider(repo)),
-        ChangeNotifierProvider(create: (_) => SpotPriceProvider()),
-        ChangeNotifierProvider(create: (_) => HistoryProvider()),
-        ChangeNotifierProvider(create: (_) => FxNotifier(data['fx'] ?? 1.0)),
-      ],
-      child: const PortfolioScreen(),
-    );
+    final fxNotifier = context.read<FxNotifier>();
+    fxNotifier.setFx(data['fx'] ?? 1.0);
+    
+    return const PortfolioScreen();
   }
 }
 
