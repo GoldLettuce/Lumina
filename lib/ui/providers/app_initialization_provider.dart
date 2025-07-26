@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import '../../core/hive_service.dart';
 import '../../data/repositories_impl/investment_repository_impl.dart';
 import 'investment_provider.dart';
@@ -13,28 +12,30 @@ import 'currency_provider.dart';
 class AppInitializationProvider extends ChangeNotifier {
   bool _isAppReady = false;
   bool get isAppReady => _isAppReady;
+
   late InvestmentRepositoryImpl repository;
   late Map<String, dynamic> preloadedData;
 
+  bool _hasStartedInitialization = false;
+
   Future<void> initialize() async {
-    try {
-      // Espera a que Hive esté listo (reutiliza la misma Future si ya se está abriendo)
-      await HiveService.openAllBoxes();
+    if (_hasStartedInitialization) return;
+    _hasStartedInitialization = true;
 
-      repository = await compute(_initRepoInBackground, null);
-      preloadedData = await _preloadAll();
+    debugPrint('[INIT] Iniciando Hive...');
+    await HiveService.init();
 
-      _isAppReady = true;
-      notifyListeners();
-    } catch (e) {
-      rethrow;
-    }
-  }
+    debugPrint('[INIT] Iniciando repositorio...');
+    repository = InvestmentRepositoryImpl();
+    await repository.init();
 
-  static Future<InvestmentRepositoryImpl> _initRepoInBackground(void _) async {
-    final repo = InvestmentRepositoryImpl();
-    await repo.init();
-    return repo;
+    debugPrint('[INIT] Precargando datos...');
+    preloadedData = await _preloadAll();
+
+    _isAppReady = true;
+    notifyListeners();
+
+    debugPrint('[INIT] Aplicación lista.');
   }
 
   static Future<Map<String, dynamic>> _preloadAll() async {
@@ -45,6 +46,7 @@ class AppInitializationProvider extends ChangeNotifier {
     final fx = await FxNotifier.preload();
     final settings = await SettingsProvider.preload();
     final currency = await CurrencyProvider.preload();
+
     return {
       'investments': investments,
       'assets': assets,
