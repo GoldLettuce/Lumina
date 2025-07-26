@@ -53,6 +53,7 @@ class PortfolioApp extends StatelessWidget {
 }
 
 /// Widget que maneja la carga inicial y la creación de providers
+/// Retrasa la carga pesada hasta después del primer frame para evitar skipped frames
 class AppLoader extends StatefulWidget {
   const AppLoader({super.key});
 
@@ -61,25 +62,45 @@ class AppLoader extends StatefulWidget {
 }
 
 class _AppLoaderState extends State<AppLoader> {
+  bool _started = false;
   late Future<void> _initializationFuture;
+  late InvestmentRepositoryImpl _repository;
 
   @override
   void initState() {
     super.initState();
-    _initializationFuture = _initializeApp();
+    print('[ARRANQUE][${DateTime.now().toIso8601String()}] 🎬 AppLoader.initState() - Esperando primer frame');
+    
+    // Retrasar la carga pesada hasta después del primer frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print('[ARRANQUE][${DateTime.now().toIso8601String()}] 🎬 Primer frame pintado - Iniciando carga pesada');
+      setState(() {
+        _started = true;
+        _initializationFuture = _initializeApp();
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    // Mostrar skeleton inmediatamente mientras esperamos el primer frame
+    if (!_started) {
+      print('[ARRANQUE][${DateTime.now().toIso8601String()}] 🎬 Mostrando skeleton inicial');
+      return const PortfolioScreen(); // PortfolioScreen maneja el skeleton internamente
+    }
+
+    // Una vez que el primer frame está pintado, iniciar la carga pesada
     return FutureBuilder<void>(
       future: _initializationFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          // Show skeleton screen while loading
+          // Continuar mostrando skeleton mientras se carga
+          print('[ARRANQUE][${DateTime.now().toIso8601String()}] 🔄 Cargando datos...');
           return const PortfolioScreen();
         }
         
-        // All Hive boxes are now open, safe to create providers
+        // Todos los datos están listos, crear providers y mostrar app completa
+        print('[ARRANQUE][${DateTime.now().toIso8601String()}] ✅ Datos listos - Creando providers');
         return MultiProvider(
           providers: [
             ChangeNotifierProvider(create: (_) => AssetListProvider()),
@@ -110,7 +131,7 @@ class _AppLoaderState extends State<AppLoader> {
     
     // Fase 2: Inicializa el repositorio en un isolate para evitar bloques en UI
     final repoStart = DateTime.now();
-    await compute(_initRepoInBackground, null);
+    _repository = await compute(_initRepoInBackground, null);
     final repoEnd = DateTime.now();
     print('[ARRANQUE][${repoEnd.toIso8601String()}] 🔧 Repositorio inicializado en ${repoEnd.difference(repoStart).inMilliseconds}ms');
     
@@ -118,13 +139,13 @@ class _AppLoaderState extends State<AppLoader> {
     print('[ARRANQUE][${DateTime.now().toIso8601String()}] ✅ Carga completa en ${totalTime.inMilliseconds}ms');
   }
 
-  /// Crea un repositorio (ahora seguro porque las cajas ya están abiertas)
+  /// Crea un repositorio (reutiliza el ya inicializado en el isolate)
   InvestmentRepositoryImpl _createRepo() {
-    return InvestmentRepositoryImpl();
+    return _repository; // Reutiliza el repositorio ya inicializado
   }
 
   /// Inicializa el repositorio en un isolate separado
-  static Future<void> _initRepoInBackground(void _) async {
+  static Future<InvestmentRepositoryImpl> _initRepoInBackground(void _) async {
     final startTime = DateTime.now();
     print('[ISOLATE][${startTime.toIso8601String()}] 🔧 Iniciando repositorio en isolate');
     
@@ -133,5 +154,7 @@ class _AppLoaderState extends State<AppLoader> {
     
     final endTime = DateTime.now();
     print('[ISOLATE][${endTime.toIso8601String()}] ✅ Repositorio listo en ${endTime.difference(startTime).inMilliseconds}ms');
+    
+    return repository; // Retorna el repositorio inicializado
   }
 }
