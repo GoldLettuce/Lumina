@@ -7,6 +7,11 @@ import 'package:lumina/data/models/local_history.dart';
 import 'package:lumina/data/models/chart_cache.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 
+/// Función top-level para usar con compute()
+Future<void> openBoxes(_) async {
+  await HiveService._openAllBoxesInternal();
+}
+
 /// Servicio centralizado para gestionar todas las cajas de Hive
 ///
 /// Este servicio abre todas las cajas necesarias una sola vez al inicio
@@ -81,7 +86,6 @@ class HiveService {
     print(
       '[HIVE][${heavyEnd.toIso8601String()}] ✅ Cajas pesadas abiertas en ${heavyEnd.difference(heavyStart).inMilliseconds}ms',
     );
-    _isInitialized = true;
   }
 
   /// Inicializa Hive y abre todas las cajas necesarias
@@ -138,6 +142,11 @@ class HiveService {
   /// Verifica si todas las cajas están inicializadas
   static bool get isInitialized {
     return _isInitialized;
+  }
+
+  /// Marca el servicio como inicializado desde compute
+  static void markInitialized() {
+    _isInitialized = true;
   }
 
   /// Cierra todas las cajas (útil para testing o cleanup)

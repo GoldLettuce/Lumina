@@ -22,6 +22,23 @@ import '../../data/repositories_impl/price_repository_impl.dart';
 import '../../core/chart_range.dart';
 import '../../domain/entities/asset_type.dart';
 
+/// Función top-level para calcular el valor actual del portfolio usando compute()
+Map<String, double> calculateTodayValue(Map<String, dynamic> args) {
+  final List<dynamic> investments = args['investments'];
+  final Map<String, double> prices = Map<String, double>.from(args['prices']);
+
+  final Map<String, double> result = {};
+  for (final inv in investments) {
+    final String symbol = inv['symbol'];
+    final double amount = inv['amount'];
+    final double? price = prices[symbol];
+    if (price != null) {
+      result[symbol] = price * amount;
+    }
+  }
+  return result;
+}
+
 // ======================
 // PortfolioSummaryMinimal
 // ======================
@@ -259,14 +276,21 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     histProv.updateHistory(history);
 
     final today = DateTime.now();
-    double total = 0;
-    for (final inv in investments) {
-      final qty = inv.operations
-          .where((op) => !op.date.isAfter(today))
-          .fold<double>(0, (s, op) => s + op.quantity);
-      final price = prices[inv.symbol];
-      if (qty > 0 && price != null) total += price * qty;
-    }
+    
+    // Preparar datos para el cálculo en isolate
+    final args = {
+      'investments': investments.map((i) => {
+        'symbol': i.symbol,
+        'amount': i.operations
+            .where((op) => !op.date.isAfter(today))
+            .fold<double>(0, (s, op) => s + op.quantity),
+      }).toList(),
+      'prices': prices,
+    };
+    
+    final todayValues = await compute(calculateTodayValue, args);
+    final total = todayValues.values.fold<double>(0, (sum, value) => sum + value);
+    
     histProv.updateToday(Point(time: today, value: total));
   }
 
