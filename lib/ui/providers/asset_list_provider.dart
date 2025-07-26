@@ -47,4 +47,9 @@ class AssetListProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  static Future<List<dynamic>> preload() async {
+    // Implementa la carga real de assets aquí
+    return [];
+  }
 }

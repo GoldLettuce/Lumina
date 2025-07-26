@@ -86,4 +86,9 @@ class CurrencyProvider extends ChangeNotifier {
     _loadExchangeRate(); // Recarga la tasa al cambiar moneda
     notifyListeners();
   }
+
+  static Future<Map<String, dynamic>> preload() async {
+    // Implementa la carga real de currency aquí
+    return {};
+  }
 }

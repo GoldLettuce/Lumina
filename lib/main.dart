@@ -20,6 +20,7 @@ import 'ui/screens/portfolio_screen.dart';
 import 'core/hive_service.dart';
 import 'data/repositories_impl/investment_repository_impl.dart';
 import 'package:flutter/rendering.dart';
+import 'ui/providers/app_initialization_provider.dart';
 
 Future<void> main() async {
   debugPrintRebuildDirtyWidgets = true;
@@ -47,7 +48,44 @@ class PortfolioApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [Locale('en'), Locale('es')],
-      home: const AppLoader(),
+      home: ChangeNotifierProvider(
+        create: (_) => AppInitializationProvider()..initialize(),
+        child: const PortfolioGate(),
+      ),
+    );
+  }
+}
+
+class PortfolioGate extends StatelessWidget {
+  const PortfolioGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final appInit = context.watch<AppInitializationProvider>();
+    if (!appInit.isAppReady) {
+      // 🔄 Carga diferida tras primer frame
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!appInit.isAppReady) {
+          appInit.initialize();
+        }
+      });
+      return SkeletonView(); // Usa tu widget shimmer/skeleton
+    }
+    // Cuando todo está listo, inyecta los providers reales
+    final data = appInit.preloadedData;
+    final repo = appInit.repository;
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AssetListProvider(/* data['assets'] */)),
+        ChangeNotifierProvider(create: (_) => InvestmentProvider(repo)),
+        ChangeNotifierProvider(create: (_) => SpotPriceProvider(/* data['spotPrices'] */)),
+        ChangeNotifierProvider(create: (_) => HistoryProvider(/* data['history'] */)),
+        ChangeNotifierProvider(create: (_) => FxNotifier(data['fx'] ?? 1.0)),
+        ChangeNotifierProvider(create: (_) => SettingsProvider(/* data['settings'] */)),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
+        ChangeNotifierProvider(create: (_) => CurrencyProvider(/* data['currency'] */)),
+      ],
+      child: const PortfolioScreen(),
     );
   }
 }

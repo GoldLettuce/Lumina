@@ -96,4 +96,10 @@ class InvestmentProvider extends ChangeNotifier {
     _investments.clear();
     notifyListeners();
   }
+
+  static Future<List<Investment>> preload() async {
+    final repo = InvestmentRepositoryImpl();
+    await repo.init();
+    return await repo.getAllInvestments();
+  }
 }

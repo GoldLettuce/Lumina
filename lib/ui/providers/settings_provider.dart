@@ -13,4 +13,9 @@ class SettingsProvider extends ChangeNotifier {
     _initialized = true;
     notifyListeners();
   }
+
+  static Future<Map<String, dynamic>> preload() async {
+    // Implementa la carga real de settings aquí
+    return {};
+  }
 }

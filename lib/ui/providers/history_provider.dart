@@ -51,4 +51,9 @@ class HistoryProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  static Future<List<dynamic>> preload() async {
+    // Implementa la carga real de historial aquí
+    return [];
+  }
 } 

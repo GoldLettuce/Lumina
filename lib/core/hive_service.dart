@@ -29,10 +29,15 @@ class HiveService {
   static Box get settings => _settingsBox!;
   static Box get fxRates => _fxRatesBox!;
 
+  static bool _adaptersRegistered = false;
+
   /// Inicializa solo Hive Flutter y registra los adapters (debe llamarse en el main isolate)
   static Future<void> initFlutterOnly() async {
     await Hive.initFlutter();
-    _registerAdapters();
+    if (!_adaptersRegistered) {
+      _registerAdapters();
+      _adaptersRegistered = true;
+    }
   }
 
   /// Abre todas las cajas necesarias (ahora espera a que todas estén listas antes de completar)

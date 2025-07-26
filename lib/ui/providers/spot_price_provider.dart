@@ -33,4 +33,9 @@ class SpotPriceProvider extends ChangeNotifier {
     // Si necesitas filtrar precios, implementa aquí
     notifyListeners();
   }
+
+  static Future<Map<String, double>> preload() async {
+    // Implementa la carga real de spot prices aquí
+    return {};
+  }
 } 
