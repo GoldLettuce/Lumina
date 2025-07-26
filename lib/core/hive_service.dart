@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/domain/entities/asset_type.dart';
@@ -34,15 +35,38 @@ class HiveService {
     _registerAdapters();
   }
 
-  /// Abre todas las cajas necesarias (puede llamarse después de renderizar el primer frame)
+  /// Abre todas las cajas necesarias (ahora espera a que todas estén listas antes de completar)
+  /// Fase 1: Caja mínima necesaria para UI
+  /// Fase 2: Cajas grandes (espera a que terminen)
   static Future<void> openAllBoxes() async {
+    final startTime = DateTime.now();
+    print('[HIVE][${startTime.toIso8601String()}] 📦 Iniciando apertura de cajas');
+    
+    // Fase 1: Abre solo la caja de configuración (mínima y rápida)
+    final settingsStart = DateTime.now();
+    await _openSettingsBox();
+    final settingsEnd = DateTime.now();
+    print('[HIVE][${settingsEnd.toIso8601String()}] ⚙️ Settings abierta en ${settingsEnd.difference(settingsStart).inMilliseconds}ms');
+    
+    // Fase 2: Abre el resto de cajas y espera a que terminen
+    print('[HIVE][${DateTime.now().toIso8601String()}] 🔄 Abriendo cajas pesadas (esperando a que terminen)');
+    await _openHeavyBoxes();
+  }
+
+  /// Abre las cajas pesadas en background
+  static Future<void> _openHeavyBoxes() async {
+    final startTime = DateTime.now();
+    print('[HIVE][${startTime.toIso8601String()}] 🔄 Iniciando apertura de cajas pesadas');
+    
     await Future.wait([
       _openInvestmentsBox(),
       _openChartCacheBox(),
       _openHistoryBox(),
-      _openSettingsBox(),
       _openFxRatesBox(),
     ]);
+    
+    final endTime = DateTime.now();
+    print('[HIVE][${endTime.toIso8601String()}] ✅ Cajas pesadas abiertas en ${endTime.difference(startTime).inMilliseconds}ms');
   }
 
   /// Inicializa Hive y abre todas las cajas necesarias

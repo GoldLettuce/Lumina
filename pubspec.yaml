@@ -30,6 +30,9 @@ dependencies:
   # Gestión de estado
   provider: ^6.1.1
 
+  # Skeleton screens y animaciones de carga
+  shimmer: ^3.0.0
+
   # Gráficos para evolución del portafolio
   fl_chart: ^0.70.0
 

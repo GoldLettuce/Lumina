@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../providers/fx_notifier.dart';
@@ -237,20 +238,25 @@ class PortfolioScreen extends StatefulWidget {
 }
 
 class _PortfolioScreenState extends State<PortfolioScreen> {
+  bool _hasLoadedHistory = false;
+
   @override
   void initState() {
     super.initState();
     print('[ARRANQUE][${DateTime.now().toIso8601String()}] 🖥️ PortfolioScreen.initState()');
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _maybeReloadHistory();
-    });
+    // Don't call _maybeReloadHistory here - it will be called when providers are available
   }
 
   /// Verifica si las inversiones han cambiado antes de recargar el historial
   void _maybeReloadHistory() {
-    final inv = context.read<InvestmentProvider>().investments;
-    // Llama a la función utilitaria de loadHistory migrada
-    loadHistory(context, inv);
+    try {
+      final inv = context.read<InvestmentProvider>().investments;
+      // Llama a la función utilitaria de loadHistory migrada
+      loadHistory(context, inv);
+    } catch (e) {
+      // Providers not available yet, skip for now
+      print('[ARRANQUE][${DateTime.now().toIso8601String()}] ⏳ Providers not ready yet, skipping history reload');
+    }
   }
 
   void loadHistory(BuildContext context, List<Investment> investments) async {
@@ -319,33 +325,12 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final t = AppLocalizations.of(context)!;
-    final model = context.watch<InvestmentProvider>();
-    final investments = model.investments.where((e) => e.totalQuantity > 0).toList();
-    final historyProvider = context.watch<HistoryProvider>();
-    final fx = context.watch<CurrencyProvider>(); // Obtener provider de cambio
-
-    // Loader solo mientras se cargan las inversiones
-    if (model.isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    // Si ya cargó, muestra la pantalla principal normalmente (aunque no haya inversiones)
+  Widget _buildSkeleton() {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.settings),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SettingsScreen()),
-            );
-          },
+          onPressed: null, // Disabled during loading
         ),
         title: const SizedBox.shrink(),
         backgroundColor: AppColors.background,
@@ -353,11 +338,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         elevation: 0,
         centerTitle: true,
       ),
-
       floatingActionButton: FloatingActionButton(
         heroTag: null,
-        onPressed: () => _openAddInvestmentDialog(context),
-        backgroundColor: AppColors.primary,
+        onPressed: null, // Disabled during loading
+        backgroundColor: AppColors.primary.withOpacity(0.5),
         child: const Icon(Icons.add),
       ),
       body: Padding(
@@ -365,63 +349,235 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const PortfolioSummaryMinimal(),
-            const SizedBox(height: 12),
-            PortfolioSummaryWithChart(investments: investments),
-            const SizedBox(height: 12),
-            Expanded(
-              child: CustomScrollView(
-                slivers: [
-                  if (investments.isEmpty)
-                    // ------ Estado vacío ------
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 30),
-                          child: Text(
-                            t.emptyPortfolioMessage,
-                            style: theme.textTheme.bodyLarge,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    // ------ Lista de activos ------
-                    _buildAssetsSliverList(context, investments, historyProvider, fx, t),
-
-                  // ------ Footer "Archived assets" anclado ------
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 0), // alto FAB + margen
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const ArchivedAssetsScreen()),
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Text(
-                              t.archivedAssetsTitle,
-                              style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
-                            ),
-                          ),
-                        ),
-                      ),
+            // Skeleton para PortfolioSummaryMinimal
+            Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Column(
+                children: [
+                  Container(
+                    height: 40,
+                    width: 200,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    height: 24,
+                    width: 120,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4),
                     ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            
+            // Skeleton para PortfolioSummaryWithChart
+            Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            
+            // Skeleton para lista de activos
+            Expanded(
+              child: ListView.builder(
+                itemCount: 6,
+                itemBuilder: (context, index) {
+                  return Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[400],
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  height: 16,
+                                  width: 100,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[400],
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  height: 12,
+                                  width: 80,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[400],
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            height: 20,
+                            width: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[400],
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final t = AppLocalizations.of(context)!;
+    
+    // Safely try to access providers - they might not be available during loading
+    try {
+      final model = context.watch<InvestmentProvider>();
+      final investments = model.investments.where((e) => e.totalQuantity > 0).toList();
+      final historyProvider = context.watch<HistoryProvider>();
+      final fx = context.watch<CurrencyProvider>(); // Obtener provider de cambio
+
+      // Load history once when providers become available
+      if (!_hasLoadedHistory && !model.isLoading) {
+        _hasLoadedHistory = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _maybeReloadHistory();
+        });
+      }
+
+      // Loader solo mientras se cargan las inversiones
+      if (model.isLoading) {
+        return _buildSkeleton();
+      }
+
+      // Si ya cargó, muestra la pantalla principal normalmente (aunque no haya inversiones)
+      return Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+          ),
+          title: const SizedBox.shrink(),
+          backgroundColor: AppColors.background,
+          foregroundColor: AppColors.textPrimary,
+          elevation: 0,
+          centerTitle: true,
+        ),
+
+        floatingActionButton: FloatingActionButton(
+          heroTag: null,
+          onPressed: () => _openAddInvestmentDialog(context),
+          backgroundColor: AppColors.primary,
+          child: const Icon(Icons.add),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const PortfolioSummaryMinimal(),
+              const SizedBox(height: 12),
+              PortfolioSummaryWithChart(investments: investments),
+              const SizedBox(height: 12),
+              Expanded(
+                child: CustomScrollView(
+                  slivers: [
+                    if (investments.isEmpty)
+                      // ------ Estado vacío ------
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 30),
+                            child: Text(
+                              t.emptyPortfolioMessage,
+                              style: theme.textTheme.bodyLarge,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      // ------ Lista de activos ------
+                      _buildAssetsSliverList(context, investments, historyProvider, fx, t),
+
+                    // ------ Footer "Archived assets" anclado ------
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 0), // alto FAB + margen
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const ArchivedAssetsScreen()),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Text(
+                                t.archivedAssetsTitle,
+                                style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } catch (e) {
+      // Providers are not available yet, show skeleton
+      return _buildSkeleton();
+    }
   }
 }
