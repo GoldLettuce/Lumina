@@ -7,11 +7,7 @@ class CoinGeckoAsset {
   final String symbol;
   final String name;
 
-  CoinGeckoAsset({
-    required this.id,
-    required this.symbol,
-    required this.name,
-  });
+  CoinGeckoAsset({required this.id, required this.symbol, required this.name});
 
   factory CoinGeckoAsset.fromJson(Map<String, dynamic> json) {
     return CoinGeckoAsset(
@@ -26,7 +22,8 @@ class CoinGeckoAssetsDatasource {
   static const _baseUrl = 'https://api.coingecko.com/api/v3';
 
   /// Nuevo endpoint: top 100 por capitalización en USD
-  static const _top100Endpoint = '$_baseUrl/coins/markets'
+  static const _top100Endpoint =
+      '$_baseUrl/coins/markets'
       '?vs_currency=usd'
       '&order=market_cap_desc'
       '&per_page=100'
@@ -41,7 +38,9 @@ class CoinGeckoAssetsDatasource {
     if (response.statusCode == 200) {
       return compute(_parseAssets, response.body);
     } else {
-      throw Exception('Error al obtener activos de CoinGecko:  [${response.statusCode}');
+      throw Exception(
+        'Error al obtener activos de CoinGecko:  [${response.statusCode}',
+      );
     }
   }
 }

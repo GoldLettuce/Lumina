@@ -59,7 +59,10 @@ class FxRateService {
 
   /// Devuelve todas las tasas entre dos fechas para una moneda
   Future<Map<DateTime, double>> getRatesForRange(
-      String currency, DateTime start, DateTime end) async {
+    String currency,
+    DateTime start,
+    DateTime end,
+  ) async {
     final result = <DateTime, double>{};
 
     for (int year = start.year; year <= end.year; year++) {

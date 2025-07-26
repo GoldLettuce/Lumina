@@ -15,4 +15,4 @@ class FxNotifier extends ValueNotifier<double> {
     // Implementa la carga real de fx aquí
     return 1.0;
   }
-} 
+}

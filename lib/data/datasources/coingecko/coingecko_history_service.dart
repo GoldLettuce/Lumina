@@ -8,9 +8,9 @@ class CoinGeckoHistoryService {
   static const _base = 'https://api.coingecko.com/api/v3/coins';
 
   Future<List<Point>> getMarketChart({
-    required String id,           // p.ej. “bitcoin”
+    required String id, // p.ej. “bitcoin”
     String currency = 'usd',
-    int days = 365,               // límite gratuito
+    int days = 365, // límite gratuito
   }) async {
     final url = Uri.parse(
       '$_base/$id/market_chart?vs_currency=$currency&days=$days',
@@ -21,7 +21,7 @@ class CoinGeckoHistoryService {
 
     final rawPrices = await compute(_rawPrices, res.body);
     return rawPrices.map<Point>((p) {
-      final ts    = DateTime.fromMillisecondsSinceEpoch(p[0]);
+      final ts = DateTime.fromMillisecondsSinceEpoch(p[0]);
       final price = (p[1] as num).toDouble();
       return Point(time: ts, value: price);
     }).toList();

@@ -37,25 +37,25 @@ class InvestmentProvider extends ChangeNotifier {
 
   // ---------- OPERACIONES ----------
   Future<void> addOperationToInvestment(
-      String investmentKey,
-      InvestmentOperation op,
-      ) async {
+    String investmentKey,
+    InvestmentOperation op,
+  ) async {
     await _repository.addOperation(investmentKey, op);
     await loadInvestments();
   }
 
   Future<void> editOperation(
-      String investmentKey,
-      InvestmentOperation updatedOp,
-      ) async {
+    String investmentKey,
+    InvestmentOperation updatedOp,
+  ) async {
     await _repository.editOperation(investmentKey, updatedOp);
     await loadInvestments();
   }
 
   Future<void> removeOperations(
-      String investmentKey,
-      List<String> operationIds,
-      ) async {
+    String investmentKey,
+    List<String> operationIds,
+  ) async {
     await _repository.removeOperations(investmentKey, operationIds);
     await loadInvestments();
   }

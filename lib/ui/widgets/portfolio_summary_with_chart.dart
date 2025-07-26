@@ -22,7 +22,8 @@ class PortfolioSummaryWithChart extends StatefulWidget {
   const PortfolioSummaryWithChart({super.key, required this.investments});
 
   @override
-  PortfolioSummaryWithChartState createState() => PortfolioSummaryWithChartState();
+  PortfolioSummaryWithChartState createState() =>
+      PortfolioSummaryWithChartState();
 }
 
 class PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> {
@@ -35,7 +36,11 @@ class PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> {
       setState(() => _ready = true);
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final symbols = widget.investments.map((inv) => inv.symbol).where((s) => s.isNotEmpty).toSet();
+      final symbols =
+          widget.investments
+              .map((inv) => inv.symbol)
+              .where((s) => s.isNotEmpty)
+              .toSet();
       if (symbols.isNotEmpty) {
         // Actualiza los providers desacoplados
         // 1. Actualiza símbolos visibles (si lo necesitas en SpotPriceProvider)
@@ -54,7 +59,8 @@ class PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> {
 
     await histRepo.downloadAndStoreIfNeeded(
       range: ChartRange.all,
-      investments: investments.where((e) => e.type == AssetType.crypto).toList(),
+      investments:
+          investments.where((e) => e.type == AssetType.crypto).toList(),
     );
 
     final prices = await priceRepo.getPrices(
@@ -104,11 +110,12 @@ class _PortfolioChart extends StatelessWidget {
     return Selector<HistoryProvider, List<Point>>(
       selector: (_, provider) => provider.history,
       builder: (context, history, __) {
-        final spots = history
-            .asMap()
-            .entries
-            .map((e) => FlSpot(e.key.toDouble(), e.value.value * fx))
-            .toList();
+        final spots =
+            history
+                .asMap()
+                .entries
+                .map((e) => FlSpot(e.key.toDouble(), e.value.value * fx))
+                .toList();
 
         if (spots.isEmpty) {
           return SizedBox(
@@ -131,13 +138,22 @@ class _PortfolioChart extends StatelessWidget {
           child: RepaintBoundary(
             child: LineChart(
               LineChartData(
-                clipData: FlClipData(top: false, bottom: false, left: false, right: false),
+                clipData: FlClipData(
+                  top: false,
+                  bottom: false,
+                  left: false,
+                  right: false,
+                ),
                 lineTouchData: LineTouchData(
                   enabled: true,
                   handleBuiltInTouches: false,
-                  touchTooltipData: LineTouchTooltipData(getTooltipItems: (_) => []),
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipItems: (_) => [],
+                  ),
                   touchCallback: (event, resp) {
-                    if (resp != null && resp.lineBarSpots != null && resp.lineBarSpots!.isNotEmpty) {
+                    if (resp != null &&
+                        resp.lineBarSpots != null &&
+                        resp.lineBarSpots!.isNotEmpty) {
                       final index = resp.lineBarSpots!.first.x.toInt();
                       context.read<HistoryProvider>().selectSpot(index);
                     }

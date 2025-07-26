@@ -8,7 +8,7 @@ import 'package:lumina/data/models/chart_cache.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 
 /// Servicio centralizado para gestionar todas las cajas de Hive
-/// 
+///
 /// Este servicio abre todas las cajas necesarias una sola vez al inicio
 /// de la aplicación, evitando múltiples aperturas que pueden causar
 /// bloqueos de UI y mejorar el rendimiento general.
@@ -17,7 +17,7 @@ class HiveService {
   static LazyBox<Investment>? _investmentsBox;
   static Box<ChartCache>? _chartCacheBox;
   static Box<LocalHistory>? _historyBox;
-  
+
   // Cajas de configuración y servicios
   static Box? _settingsBox;
   static Box? _fxRatesBox;
@@ -45,44 +45,58 @@ class HiveService {
   /// Fase 2: Cajas grandes (espera a que terminen)
   static Future<void> openAllBoxes() async {
     final startTime = DateTime.now();
-    print('[HIVE][${startTime.toIso8601String()}] 📦 Iniciando apertura de cajas');
-    
+    print(
+      '[HIVE][${startTime.toIso8601String()}] 📦 Iniciando apertura de cajas',
+    );
+
     // Fase 1: Abre solo la caja de configuración (mínima y rápida)
     final settingsStart = DateTime.now();
     await _openSettingsBox();
     final settingsEnd = DateTime.now();
-    print('[HIVE][${settingsEnd.toIso8601String()}] ⚙️ Settings abierta en ${settingsEnd.difference(settingsStart).inMilliseconds}ms');
-    
+    print(
+      '[HIVE][${settingsEnd.toIso8601String()}] ⚙️ Settings abierta en ${settingsEnd.difference(settingsStart).inMilliseconds}ms',
+    );
+
     // Fase 2: Abre el resto de cajas y espera a que terminen
-    print('[HIVE][${DateTime.now().toIso8601String()}] 🔄 Abriendo cajas pesadas (esperando a que terminen)');
+    print(
+      '[HIVE][${DateTime.now().toIso8601String()}] 🔄 Abriendo cajas pesadas (esperando a que terminen)',
+    );
     await _openHeavyBoxes();
   }
 
   /// Abre las cajas pesadas en background
   static Future<void> _openHeavyBoxes() async {
     final startTime = DateTime.now();
-    print('[HIVE][${startTime.toIso8601String()}] 🔄 Iniciando apertura de cajas pesadas');
-    
+    print(
+      '[HIVE][${startTime.toIso8601String()}] 🔄 Iniciando apertura de cajas pesadas',
+    );
+
     await Future.wait([
       _openInvestmentsBox(),
       _openChartCacheBox(),
       _openHistoryBox(),
       _openFxRatesBox(),
     ]);
-    
+
     final endTime = DateTime.now();
-    print('[HIVE][${endTime.toIso8601String()}] ✅ Cajas pesadas abiertas en ${endTime.difference(startTime).inMilliseconds}ms');
+    print(
+      '[HIVE][${endTime.toIso8601String()}] ✅ Cajas pesadas abiertas en ${endTime.difference(startTime).inMilliseconds}ms',
+    );
   }
 
   /// Inicializa Hive y abre todas las cajas necesarias
-  /// 
+  ///
   /// Este método debe llamarse una sola vez al inicio de la aplicación,
   /// antes de usar cualquier funcionalidad que requiera acceso a Hive.
   static Future<void> init() async {
-    print('[ARRANQUE][${DateTime.now().toIso8601String()}] 📦 HiveService.init() START');
+    print(
+      '[ARRANQUE][${DateTime.now().toIso8601String()}] 📦 HiveService.init() START',
+    );
     await initFlutterOnly();
     await openAllBoxes();
-    print('[ARRANQUE][${DateTime.now().toIso8601String()}] 📦 HiveService.init() END');
+    print(
+      '[ARRANQUE][${DateTime.now().toIso8601String()}] 📦 HiveService.init() END',
+    );
   }
 
   /// Registra todos los adapters de Hive necesarios
@@ -98,7 +112,9 @@ class HiveService {
 
   /// Abre la caja de inversiones como LazyBox
   static Future<void> _openInvestmentsBox() async {
-    _investmentsBox = await Hive.openLazyBox<Investment>(InvestmentRepositoryImpl.boxName);
+    _investmentsBox = await Hive.openLazyBox<Investment>(
+      InvestmentRepositoryImpl.boxName,
+    );
   }
 
   /// Abre la caja de caché de gráficos
@@ -124,10 +140,10 @@ class HiveService {
   /// Verifica si todas las cajas están inicializadas
   static bool get isInitialized {
     return _investmentsBox != null &&
-           _chartCacheBox != null &&
-           _historyBox != null &&
-           _settingsBox != null &&
-           _fxRatesBox != null;
+        _chartCacheBox != null &&
+        _historyBox != null &&
+        _settingsBox != null &&
+        _fxRatesBox != null;
   }
 
   /// Cierra todas las cajas (útil para testing o cleanup)
@@ -149,11 +165,13 @@ class HiveService {
 
   /// Reabre la caja de inversiones (útil después de reset)
   static Future<void> reopenInvestmentsBox() async {
-    _investmentsBox = await Hive.openLazyBox<Investment>(InvestmentRepositoryImpl.boxName);
+    _investmentsBox = await Hive.openLazyBox<Investment>(
+      InvestmentRepositoryImpl.boxName,
+    );
   }
 
   /// Reabre la caja de caché de gráficos (útil después de reset)
   static Future<void> reopenChartCacheBox() async {
     _chartCacheBox = await Hive.openBox<ChartCache>('chart_cache');
   }
-} 
+}

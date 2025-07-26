@@ -7,18 +7,18 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
-import '../providers/fx_notifier.dart';
-import '../providers/spot_price_provider.dart';
-import '../providers/history_provider.dart';
+import 'package:lumina/ui/providers/fx_notifier.dart';
+import 'package:lumina/ui/providers/spot_price_provider.dart';
+import 'package:lumina/ui/providers/history_provider.dart';
 import '../widgets/add_investment_dialog.dart';
-import '../providers/investment_provider.dart';
+import 'package:lumina/ui/providers/investment_provider.dart';
 import '../widgets/portfolio_summary_with_chart.dart';
 import 'asset_detail_screen.dart';
 import 'archived_assets_screen.dart';
 import 'settings_screen.dart';
 import 'package:lumina/core/point.dart';
 import '../../domain/entities/investment.dart';
-import '../providers/currency_provider.dart';
+import 'package:lumina/ui/providers/currency_provider.dart';
 import 'package:lumina/data/repositories_impl/history_repository_impl.dart';
 import 'package:lumina/data/repositories_impl/price_repository_impl.dart';
 import 'package:lumina/core/chart_range.dart';
@@ -59,28 +59,34 @@ class PortfolioSummaryMinimal extends StatelessWidget {
 
     final hasSelection = selectedIndex != null;
 
-    final currentValueUsd = hasSelection
-        ? selectedValue!
-        : (history.isNotEmpty ? history.last.value : 0.0);
+    final currentValueUsd =
+        hasSelection
+            ? selectedValue!
+            : (history.isNotEmpty ? history.last.value : 0.0);
     final initialValueUsd = history.isNotEmpty ? history.first.value : 0.0;
 
     // Convertir a moneda seleccionada
     final currentValue = currentValueUsd * exchangeRate;
 
-    final rentabilidad = hasSelection
-        ? selectedPct!
-        : (initialValueUsd == 0.0
-            ? 0.0
-            : (currentValueUsd - initialValueUsd) / initialValueUsd * 100);
+    final rentabilidad =
+        hasSelection
+            ? selectedPct!
+            : (initialValueUsd == 0.0
+                ? 0.0
+                : (currentValueUsd - initialValueUsd) / initialValueUsd * 100);
 
-    final dateText = hasSelection && selectedDate != null
-        ? DateFormat('d MMM yyyy', Localizations.localeOf(context).toString())
-            .format(selectedDate)
-        : '';
+    final dateText =
+        hasSelection && selectedDate != null
+            ? DateFormat(
+              'd MMM yyyy',
+              Localizations.localeOf(context).toString(),
+            ).format(selectedDate)
+            : '';
 
     // Formatear valor actual
-    final valorText = NumberFormat.simpleCurrency(name: currency)
-        .format(currentValue);
+    final valorText = NumberFormat.simpleCurrency(
+      name: currency,
+    ).format(currentValue);
     final sign = rentabilidad >= 0 ? '+' : '-';
     final percentText = '$sign${rentabilidad.abs().toStringAsFixed(2)}%';
 
@@ -108,21 +114,23 @@ class PortfolioSummaryMinimal extends StatelessWidget {
 
             final hasPct = percentText != '+0.00%';
 
-            final pctPainter = hasPct
-                ? (TextPainter(
-                    text: TextSpan(text: percentText, style: percentStyle),
-                    textDirection: ui.TextDirection.ltr,
-                  )..layout())
-                : null;
+            final pctPainter =
+                hasPct
+                    ? (TextPainter(
+                      text: TextSpan(text: percentText, style: percentStyle),
+                      textDirection: ui.TextDirection.ltr,
+                    )..layout())
+                    : null;
 
             const gap = 12.0;
             final valueW = valuePainter.width;
-            final pctW   = pctPainter?.width ?? 0.0;
+            final pctW = pctPainter?.width ?? 0.0;
 
             // Calcular si el porcentaje cabe a la derecha del valor sin salirse
-            final centerX   = constraints.maxWidth / 2;
-            final pctLeft   = centerX + valueW / 2 + gap;
-            final fitsRight = hasPct && (pctLeft + pctW) <= constraints.maxWidth;
+            final centerX = constraints.maxWidth / 2;
+            final pctLeft = centerX + valueW / 2 + gap;
+            final fitsRight =
+                hasPct && (pctLeft + pctW) <= constraints.maxWidth;
 
             if (fitsRight) {
               // ✅ Valor centrado, porcentaje flotando a la derecha
@@ -137,13 +145,18 @@ class PortfolioSummaryMinimal extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                   ),
-Positioned(
-  left: pctLeft,
-  top: (valuePainter.computeDistanceToActualBaseline(TextBaseline.alphabetic))
-       - (pctPainter?.computeDistanceToActualBaseline(TextBaseline.alphabetic) ?? 0),
-  child: Text(percentText, style: percentStyle),
-),
-
+                  Positioned(
+                    left: pctLeft,
+                    top:
+                        (valuePainter.computeDistanceToActualBaseline(
+                          TextBaseline.alphabetic,
+                        )) -
+                        (pctPainter?.computeDistanceToActualBaseline(
+                              TextBaseline.alphabetic,
+                            ) ??
+                            0),
+                    child: Text(percentText, style: percentStyle),
+                  ),
                 ],
               );
             } else {
@@ -171,7 +184,9 @@ Positioned(
           opacity: hasSelection ? 1.0 : 0.0,
           child: Text(
             dateText,
-            style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.grey),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall!.copyWith(color: Colors.grey),
           ),
         ),
       ],
@@ -191,9 +206,8 @@ class AssetListTile extends StatelessWidget {
     final fx = context.select<CurrencyProvider, double>((p) => p.exchangeRate);
     final t = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final valorActual = priceUsd != null
-        ? asset.totalQuantity * priceUsd * fx
-        : null;
+    final valorActual =
+        priceUsd != null ? asset.totalQuantity * priceUsd * fx : null;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(
@@ -206,20 +220,25 @@ class AssetListTile extends StatelessWidget {
       ),
       trailing: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
-        child: valorActual == null
-            ? const SizedBox(width: 60)
-            : Text(
-                NumberFormat.simpleCurrency(name: context.select<CurrencyProvider, String>((p) => p.currency)).format(valorActual),
-                key: ValueKey(valorActual),
-                style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
-              ),
+        child:
+            valorActual == null
+                ? const SizedBox(width: 60)
+                : Text(
+                  NumberFormat.simpleCurrency(
+                    name: context.select<CurrencyProvider, String>(
+                      (p) => p.currency,
+                    ),
+                  ).format(valorActual),
+                  key: ValueKey(valorActual),
+                  style: theme.textTheme.bodyLarge!.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
       ),
       onTap: () async {
         await Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => AssetDetailScreen(asset: asset),
-          ),
+          MaterialPageRoute(builder: (_) => AssetDetailScreen(asset: asset)),
         );
         if (!context.mounted) return;
         final state = context.findAncestorStateOfType<_PortfolioScreenState>();
@@ -242,7 +261,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   @override
   void initState() {
     super.initState();
-    print('[ARRANQUE][${DateTime.now().toIso8601String()}] 🖥️ PortfolioScreen.initState()');
+    print(
+      '[ARRANQUE][${DateTime.now().toIso8601String()}] 🖥️ PortfolioScreen.initState()',
+    );
     // Don't call _maybeReloadHistory here - it will be called when providers are available
   }
 
@@ -254,7 +275,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       loadHistory(context, inv);
     } catch (e) {
       // Providers not available yet, skip for now
-      print('[ARRANQUE][${DateTime.now().toIso8601String()}] ⏳ Providers not ready yet, skipping history reload');
+      print(
+        '[ARRANQUE][${DateTime.now().toIso8601String()}] ⏳ Providers not ready yet, skipping history reload',
+      );
     }
   }
 
@@ -267,7 +290,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
 
     await histRepo.downloadAndStoreIfNeeded(
       range: ChartRange.all,
-      investments: investments.where((e) => e.type == AssetType.crypto).toList(),
+      investments:
+          investments.where((e) => e.type == AssetType.crypto).toList(),
     );
 
     final prices = await priceRepo.getPrices(
@@ -306,13 +330,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final asset = investments[index];
-            return AssetListTile(asset: asset);
-          },
-          childCount: investments.length,
-        ),
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final asset = investments[index];
+          return AssetListTile(asset: asset);
+        }, childCount: investments.length),
       ),
     );
   }
@@ -328,13 +349,15 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final t = AppLocalizations.of(context)!;
-    
+
     // Safely try to access providers - they might not be available during loading
     try {
       final model = context.watch<InvestmentProvider>();
-      final investments = model.investments.where((e) => e.totalQuantity > 0).toList();
+      final investments =
+          model.investments.where((e) => e.totalQuantity > 0).toList();
       final historyProvider = context.watch<HistoryProvider>();
-      final fx = context.watch<CurrencyProvider>(); // Obtener provider de cambio
+      final fx =
+          context.watch<CurrencyProvider>(); // Obtener provider de cambio
 
       // Load history once when providers become available
       if (!_hasLoadedHistory && !model.isLoading) {
@@ -352,14 +375,19 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       // Si ya cargó, muestra la pantalla principal normalmente (aunque no haya inversiones)
       return Scaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
-              );
-            },
+          leading: Builder(
+            builder:
+                (context) => IconButton(
+                  icon: const Icon(Icons.settings),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SettingsScreen(),
+                      ),
+                    );
+                  },
+                ),
           ),
           title: const SizedBox.shrink(),
           backgroundColor: AppColors.background,
@@ -403,27 +431,39 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       )
                     else
                       // ------ Lista de activos ------
-                      _buildAssetsSliverList(context, investments, historyProvider, fx, t),
+                      _buildAssetsSliverList(
+                        context,
+                        investments,
+                        historyProvider,
+                        fx,
+                        t,
+                      ),
 
                     // ------ Footer "Archived assets" anclado ------
                     SliverFillRemaining(
                       hasScrollBody: false,
                       child: Padding(
-                        padding: const EdgeInsets.only(bottom: 0), // alto FAB + margen
+                        padding: const EdgeInsets.only(
+                          bottom: 0,
+                        ), // alto FAB + margen
                         child: Align(
                           alignment: Alignment.bottomCenter,
                           child: GestureDetector(
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => const ArchivedAssetsScreen()),
+                                MaterialPageRoute(
+                                  builder: (_) => const ArchivedAssetsScreen(),
+                                ),
                               );
                             },
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 12),
                               child: Text(
                                 t.archivedAssetsTitle,
-                                style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: Colors.grey,
+                                ),
                               ),
                             ),
                           ),

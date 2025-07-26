@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
-import '../providers/asset_list_provider.dart';
+import 'package:lumina/ui/providers/asset_list_provider.dart';
 import '../../domain/entities/asset_type.dart';
 
 class AssetSelectorModal extends StatefulWidget {
@@ -58,7 +58,10 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                 child: Center(
                   child: Text(
                     loc.selectSymbol,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -70,7 +73,8 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                   hintText: 'Ej. BTC, Ethereum…',
                   border: OutlineInputBorder(),
                 ),
-                onChanged: (value) => context.read<AssetListProvider>().filter(value),
+                onChanged:
+                    (value) => context.read<AssetListProvider>().filter(value),
               ),
               const SizedBox(height: 12),
               Expanded(
@@ -87,7 +91,8 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                     }
                     return ListView.separated(
                       itemCount: prov.filteredSymbols.length,
-                      separatorBuilder: (_, __) => Divider(color: Colors.grey.shade300),
+                      separatorBuilder:
+                          (_, __) => Divider(color: Colors.grey.shade300),
                       itemBuilder: (context, index) {
                         final coin = prov.filteredSymbols[index];
                         return ListTile(

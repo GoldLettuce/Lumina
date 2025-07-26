@@ -40,10 +40,11 @@ class AssetListProvider extends ChangeNotifier {
       _filteredAssets = List.of(_allAssets);
     } else {
       final q = query.toLowerCase();
-      _filteredAssets = _allAssets.where((c) {
-        return c.symbol.toLowerCase().contains(q) ||
-            c.name.toLowerCase().contains(q);
-      }).toList();
+      _filteredAssets =
+          _allAssets.where((c) {
+            return c.symbol.toLowerCase().contains(q) ||
+                c.name.toLowerCase().contains(q);
+          }).toList();
     }
     notifyListeners();
   }

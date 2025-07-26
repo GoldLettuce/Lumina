@@ -8,7 +8,7 @@ abstract class PriceRepository {
 
   /// Devuelve un mapa `<símbolo, precio>`. Por ejemplo {"BTC": 45000.0, "ETH": 3200.0}.
   Future<Map<String, double>> getPrices(
-      Set<String> symbols, {
-        String currency = 'USD',
-      });
+    Set<String> symbols, {
+    String currency = 'USD',
+  });
 }

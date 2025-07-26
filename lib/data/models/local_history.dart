@@ -37,9 +37,10 @@ class LocalHistory extends HiveObject {
     return LocalHistory(
       from: DateTime.parse(json['from']),
       to: DateTime.parse(json['to']),
-      points: (json['points'] as List)
-          .map((e) => Point.fromJson(Map<String, dynamic>.from(e)))
-          .toList(),
+      points:
+          (json['points'] as List)
+              .map((e) => Point.fromJson(Map<String, dynamic>.from(e)))
+              .toList(),
       needsRebuild: json['needsRebuild'] ?? false,
     );
   }

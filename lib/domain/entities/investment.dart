@@ -3,10 +3,7 @@ import 'asset_type.dart';
 
 part 'investment.g.dart';
 
-enum OperationType {
-  buy,
-  sell,
-}
+enum OperationType { buy, sell }
 
 @HiveType(typeId: 0)
 class Investment extends HiveObject {
@@ -23,10 +20,10 @@ class Investment extends HiveObject {
   final AssetType type;
 
   @HiveField(4)
-  final String coingeckoId;    // p.ej. "bitcoin"
+  final String coingeckoId; // p.ej. "bitcoin"
 
   @HiveField(5)
-  final String vsCurrency;     // p.ej. "usd"
+  final String vsCurrency; // p.ej. "usd"
 
   Investment({
     required this.symbol,
@@ -56,12 +53,9 @@ class Investment extends HiveObject {
     );
   }
 
-  double get totalQuantity =>
-      operations.fold(0.0, (sum, op) {
-        return op.type == OperationType.buy
-            ? sum + op.quantity
-            : sum - op.quantity;
-      });
+  double get totalQuantity => operations.fold(0.0, (sum, op) {
+    return op.type == OperationType.buy ? sum + op.quantity : sum - op.quantity;
+  });
 
   double get totalInvested =>
       operations.fold(0.0, (sum, op) => sum + (op.quantity * op.price));
@@ -98,9 +92,13 @@ class Investment extends HiveObject {
       type: AssetType.values[json['type']],
       coingeckoId: json['coingeckoId'],
       vsCurrency: json['vsCurrency'] ?? 'usd',
-      operations: (json['operations'] as List)
-          .map((e) => InvestmentOperation.fromJson(Map<String, dynamic>.from(e)))
-          .toList(),
+      operations:
+          (json['operations'] as List)
+              .map(
+                (e) =>
+                    InvestmentOperation.fromJson(Map<String, dynamic>.from(e)),
+              )
+              .toList(),
     );
   }
 }

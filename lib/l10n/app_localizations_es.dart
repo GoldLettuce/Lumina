@@ -27,7 +27,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noInvestments => 'No hay inversiones';
 
   @override
-  String get emptyPortfolioMessage => 'No tienes inversiones aún.\n¡Comienza añ,adiendo la primera!';
+  String get emptyPortfolioMessage =>
+      'No tienes inversiones aún.\n¡Comienza añ,adiendo la primera!';
 
   @override
   String get newOperation => 'Nueva operación';
@@ -84,7 +85,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get searchAsset => 'Buscar activo';
 
   @override
-  String get notEnoughChartData => 'No hay suficientes datos para mostrar el gráfico';
+  String get notEnoughChartData =>
+      'No hay suficientes datos para mostrar el gráfico';
 
   @override
   String get archivedAssetsTitle => 'Activos sin posiciones';
@@ -108,7 +110,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get deleteOperations => 'Eliminar operaciones';
 
   @override
-  String get deleteOperationsMessage => '¿Estás seguro de que quieres eliminar las operaciones seleccionadas? Esta acción no se puede deshacer.';
+  String get deleteOperationsMessage =>
+      '¿Estás seguro de que quieres eliminar las operaciones seleccionadas? Esta acción no se puede deshacer.';
 
   @override
   String get delete => 'Eliminar';
@@ -135,5 +138,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get confirmResetTitle => '¿Estás seguro?';
 
   @override
-  String get confirmResetMessage => 'Esta acción eliminará todas tus inversiones.';
+  String get confirmResetMessage =>
+      'Esta acción eliminará todas tus inversiones.';
 }

@@ -17,18 +17,22 @@ class AppInitializationProvider extends ChangeNotifier {
   late Map<String, dynamic> preloadedData;
 
   Future<void> initialize() async {
-    // 1. Inicializar Hive y abrir cajas
-    await HiveService.initFlutterOnly();
-    await HiveService.openAllBoxes();
+    try {
+      // 1. Inicializar Hive y abrir cajas
+      await HiveService.initFlutterOnly();
+      await HiveService.openAllBoxes();
 
-    // 2. Inicializar repositorio en isolate
-    repository = await compute(_initRepoInBackground, null);
+      // 2. Inicializar repositorio en isolate
+      repository = await compute(_initRepoInBackground, null);
 
-    // 3. Preload de datos de cada provider (sin notifyListeners)
-    preloadedData = await _preloadAll();
+      // 3. Preload de datos de cada provider (sin notifyListeners)
+      preloadedData = await _preloadAll();
 
-    _isAppReady = true;
-    notifyListeners();
+      _isAppReady = true;
+      notifyListeners();
+    } catch (e) {
+      rethrow;
+    }
   }
 
   static Future<InvestmentRepositoryImpl> _initRepoInBackground(void _) async {
@@ -55,4 +59,4 @@ class AppInitializationProvider extends ChangeNotifier {
       'currency': currency,
     };
   }
-} 
+}

@@ -3,16 +3,17 @@ import 'package:lumina/data/models/local_history.dart';
 import 'package:lumina/core/point.dart';
 
 List<Point> buildPortfolioHistory(Map<String, dynamic> args) {
-  final investments = (args['investments'] as List)
-      .map((e) => Investment.fromJson(Map<String, dynamic>.from(e)))
-      .toList();
+  final investments =
+      (args['investments'] as List)
+          .map((e) => Investment.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
 
   final raw = Map<String, List>.from(args['histories']);
   final histories = <String, LocalHistory>{};
   for (final entry in raw.entries) {
     histories[entry.key] = LocalHistory.fromJson({
-      'from'  : entry.value.first['time'],
-      'to'    : entry.value.last['time'],
+      'from': entry.value.first['time'],
+      'to': entry.value.last['time'],
       'points': entry.value,
     });
   }
@@ -41,10 +42,13 @@ List<Point> buildPortfolioHistory(Map<String, dynamic> args) {
       final hist = histories[inv.symbol];
       if (hist == null) continue;
 
-      final price = hist.points.firstWhere(
-        (p) => round(p.time) == day,
-        orElse: () => Point(time: day, value: 0),
-      ).value;
+      final price =
+          hist.points
+              .firstWhere(
+                (p) => round(p.time) == day,
+                orElse: () => Point(time: day, value: 0),
+              )
+              .value;
 
       total += price * qty;
     }
@@ -52,4 +56,4 @@ List<Point> buildPortfolioHistory(Map<String, dynamic> args) {
   }
 
   return out;
-} 
+}

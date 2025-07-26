@@ -3,11 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/settings_provider.dart';
-import '../providers/investment_provider.dart';     // Import InvestmentProvider
-import '../providers/spot_price_provider.dart';    // Import SpotPriceProvider
-import '../providers/history_provider.dart';    // Import HistoryProvider
-import '../providers/fx_notifier.dart';    // Import FxNotifier
+import 'package:lumina/ui/providers/settings_provider.dart';
+import 'package:lumina/ui/providers/investment_provider.dart'; // Import InvestmentProvider
+import 'package:lumina/ui/providers/spot_price_provider.dart'; // Import SpotPriceProvider
+import 'package:lumina/ui/providers/history_provider.dart'; // Import HistoryProvider
+import 'package:lumina/ui/providers/fx_notifier.dart'; // Import FxNotifier
 import '../widgets/language_selector.dart';
 import '../widgets/currency_selector.dart';
 import '../../l10n/app_localizations.dart';
@@ -24,9 +24,7 @@ class SettingsScreen extends StatelessWidget {
     final t = AppLocalizations.of(context)!;
 
     if (!settings.isInitialized) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -66,7 +64,7 @@ class SettingsScreen extends StatelessWidget {
               if (!context.mounted) return;
 
               if (confirm) {
-                final invProv   = context.read<InvestmentProvider>();
+                final invProv = context.read<InvestmentProvider>();
                 final modelProv = context.read<InvestmentProvider>();
                 final spotProv = context.read<SpotPriceProvider>();
                 final histProv = context.read<HistoryProvider>();
@@ -87,7 +85,6 @@ class SettingsScreen extends StatelessWidget {
                 );
               }
             },
-
           ),
         ],
       ),

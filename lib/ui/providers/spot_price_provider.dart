@@ -4,7 +4,8 @@ import 'dart:collection';
 class SpotPriceProvider extends ChangeNotifier {
   final Map<String, double> _spotPrices = {};
 
-  UnmodifiableMapView<String, double> get spotPrices => UnmodifiableMapView(_spotPrices);
+  UnmodifiableMapView<String, double> get spotPrices =>
+      UnmodifiableMapView(_spotPrices);
 
   void updatePrices(Map<String, double> newPrices) {
     if (!_equals(newPrices)) {
@@ -38,4 +39,4 @@ class SpotPriceProvider extends ChangeNotifier {
     // Implementa la carga real de spot prices aquí
     return {};
   }
-} 
+}

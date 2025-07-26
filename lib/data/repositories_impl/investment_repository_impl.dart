@@ -39,11 +39,11 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
     // Esto es significativamente más rápido que lecturas secuenciales
     final keys = _box.keys.toList();
     if (keys.isEmpty) return [];
-    
+
     // Cargar todas las inversiones en paralelo - mucho más eficiente
     final futures = keys.map((key) => _box.get(key));
     final results = await Future.wait(futures);
-    
+
     // Filtrar valores nulos y convertir a lista
     return results.whereType<Investment>().toList();
   }
@@ -54,7 +54,10 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
   }
 
   /// ✅ Añadir operación directamente a un activo ya existente
-  Future<void> addOperation(String investmentKey, InvestmentOperation op) async {
+  Future<void> addOperation(
+    String investmentKey,
+    InvestmentOperation op,
+  ) async {
     final inv = await _box.get(investmentKey);
     if (inv == null) return;
 
@@ -63,13 +66,17 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
   }
 
   /// ✅ Editar una operación existente por ID
-  Future<void> editOperation(String investmentKey, InvestmentOperation updatedOp) async {
+  Future<void> editOperation(
+    String investmentKey,
+    InvestmentOperation updatedOp,
+  ) async {
     final inv = await _box.get(investmentKey);
     if (inv == null) return;
 
-    final newOps = inv.operations.map((op) {
-      return op.id == updatedOp.id ? updatedOp : op;
-    }).toList();
+    final newOps =
+        inv.operations.map((op) {
+          return op.id == updatedOp.id ? updatedOp : op;
+        }).toList();
 
     final updatedInvestment = inv.copyWith(operations: newOps);
 
@@ -77,11 +84,15 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
   }
 
   /// ✅ Eliminar múltiples operaciones por ID
-  Future<void> removeOperations(String investmentKey, List<String> operationIds) async {
+  Future<void> removeOperations(
+    String investmentKey,
+    List<String> operationIds,
+  ) async {
     final inv = await _box.get(investmentKey);
     if (inv == null) return;
 
-    final newOps = inv.operations.where((op) => !operationIds.contains(op.id)).toList();
+    final newOps =
+        inv.operations.where((op) => !operationIds.contains(op.id)).toList();
 
     if (newOps.isEmpty) {
       await _box.delete(investmentKey);

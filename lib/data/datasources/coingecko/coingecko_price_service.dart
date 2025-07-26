@@ -8,12 +8,12 @@ import 'package:http/http.dart' as http;
 ///   (por defecto “usd”).
 class CoinGeckoPriceService {
   static const _baseUrl = 'https://api.coingecko.com/api/v3/simple/price';
-  static const _maxIds  = 250;
+  static const _maxIds = 250;
 
   Future<Map<String, double>> getPrices(
-      List<String> ids, {
-        String currency = 'usd',
-      }) async {
+    List<String> ids, {
+    String currency = 'usd',
+  }) async {
     if (ids.isEmpty) return {};
 
     final Map<String, double> aggregated = {};
@@ -21,7 +21,7 @@ class CoinGeckoPriceService {
     // Trocear la lista si supera el límite de 250 IDs.
     for (var i = 0; i < ids.length; i += _maxIds) {
       final slice = ids.sublist(i, (i + _maxIds).clamp(0, ids.length));
-      final url   = Uri.parse(
+      final url = Uri.parse(
         '$_baseUrl?ids=${slice.join(',')}&vs_currencies=$currency',
       );
 

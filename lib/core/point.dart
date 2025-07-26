@@ -20,9 +20,6 @@ class Point {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'time': time.toIso8601String(),
-      'value': value,
-    };
+    return {'time': time.toIso8601String(), 'value': value};
   }
 }

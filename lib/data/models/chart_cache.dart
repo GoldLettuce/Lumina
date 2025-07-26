@@ -11,8 +11,5 @@ class ChartCache {
   @HiveField(1)
   final Map<String, double> spotPrices;
 
-  ChartCache({
-    required this.history,
-    required this.spotPrices,
-  });
+  ChartCache({required this.history, required this.spotPrices});
 }
