@@ -333,7 +333,15 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               currency: fx.currency,
             ),
             const SizedBox(height: 12),
-            PortfolioSummaryWithChart(investments: investments),
+            Selector<InvestmentProvider, List<Investment>>(
+              selector: (_, p) => p.investments
+                  .where((e) => e.totalQuantity > 0)
+                  .toList(growable: false),
+              shouldRebuild: (previous, next) => !listEquals(previous, next),
+              builder: (_, investments, __) {
+                return PortfolioSummaryWithChart(investments: investments);
+              },
+            ),
             const SizedBox(height: 12),
             Expanded(
               child: CustomScrollView(

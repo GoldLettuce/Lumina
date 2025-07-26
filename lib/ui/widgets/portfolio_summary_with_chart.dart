@@ -104,7 +104,6 @@ class _PortfolioChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fx = context.select<FxNotifier, double>((fx) => fx.value);
-    final prices = context.watch<SpotPriceProvider>().spotPrices;
     final loc = AppLocalizations.of(context)!;
 
     return Selector<HistoryProvider, List<Point>>(
