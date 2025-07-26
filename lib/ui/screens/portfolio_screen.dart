@@ -288,7 +288,16 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       });
     }
 
-    if (model.isLoading) return const SkeletonView();
+    final fxRate = fx.exchangeRate;
+    final currency = fx.currency;
+    final history = historyProvider.history;
+
+    final isFXReady = fxRate > 0 && currency.isNotEmpty;
+    final hasHistory = history.isNotEmpty;
+
+    final isLoading = model.isLoading || !isFXReady || !hasHistory;
+
+    if (isLoading) return const SkeletonView();
 
     return Scaffold(
       appBar: AppBar(
