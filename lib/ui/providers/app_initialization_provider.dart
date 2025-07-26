@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import '../../core/hive_service.dart';
 import '../../data/repositories_impl/investment_repository_impl.dart';
 import 'investment_provider.dart';
@@ -24,9 +23,7 @@ class AppInitializationProvider extends ChangeNotifier {
     _hasStartedInitialization = true;
 
     debugPrint('[INIT] Iniciando Hive...');
-    await HiveService.initFlutterLight();
-    await compute(openBoxes, null);
-    HiveService.markInitialized();
+    await HiveService.init();
 
     debugPrint('[INIT] Iniciando repositorio...');
     repository = InvestmentRepositoryImpl();
