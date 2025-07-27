@@ -60,6 +60,7 @@ class HiveService {
     // Fase 1: Abre solo la caja de configuración (mínima y rápida)
     final settingsStart = DateTime.now();
     _settingsBox = await Hive.openBox('settingsBox');
+    await Future.delayed(Duration.zero);
     final settingsEnd = DateTime.now();
     print(
       '[HIVE][${settingsEnd.toIso8601String()}] ⚙️ Settings abierta en ${settingsEnd.difference(settingsStart).inMilliseconds}ms',
@@ -71,12 +72,10 @@ class HiveService {
     );
     
     final heavyStart = DateTime.now();
-    await Future.wait([
-      _openInvestmentsBox(),
-      _openChartCacheBox(),
-      _openHistoryBox(),
-      _openFxRatesBox(),
-    ]);
+    await _openInvestmentsBox();
+    await _openChartCacheBox();
+    await _openHistoryBox();
+    await _openFxRatesBox();
     final heavyEnd = DateTime.now();
     print(
       '[HIVE][${heavyEnd.toIso8601String()}] ✅ Cajas pesadas abiertas en ${heavyEnd.difference(heavyStart).inMilliseconds}ms',
@@ -116,16 +115,19 @@ class HiveService {
     _investmentsBox = await Hive.openLazyBox<Investment>(
       InvestmentRepositoryImpl.boxName,
     );
+    await Future.delayed(Duration.zero);
   }
 
   /// Abre la caja de caché de gráficos
   static Future<void> _openChartCacheBox() async {
     _chartCacheBox = await Hive.openBox<ChartCache>('chart_cache');
+    await Future.delayed(Duration.zero);
   }
 
   /// Abre la caja de historial local
   static Future<void> _openHistoryBox() async {
     _historyBox = await Hive.openBox<LocalHistory>('history');
+    await Future.delayed(Duration.zero);
   }
 
 
@@ -133,6 +135,7 @@ class HiveService {
   /// Abre la caja de tasas de cambio
   static Future<void> _openFxRatesBox() async {
     _fxRatesBox = await Hive.openBox('fxRatesBox');
+    await Future.delayed(Duration.zero);
   }
 
   /// Verifica si todas las cajas están inicializadas
@@ -164,10 +167,12 @@ class HiveService {
     _investmentsBox = await Hive.openLazyBox<Investment>(
       InvestmentRepositoryImpl.boxName,
     );
+    await Future.delayed(Duration.zero);
   }
 
   /// Reabre la caja de caché de gráficos (útil después de reset)
   static Future<void> reopenChartCacheBox() async {
     _chartCacheBox = await Hive.openBox<ChartCache>('chart_cache');
+    await Future.delayed(Duration.zero);
   }
 }
