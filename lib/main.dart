@@ -13,6 +13,7 @@ import 'core/hive_service.dart';
 import 'ui/providers/app_initialization_provider.dart';
 import 'ui/providers/fx_notifier.dart';
 import 'package:lumina/provider_setup.dart';
+import 'ui/providers/locale_provider.dart'; // asegúrate de importar esto
 
 Future<void> main() async {
   print('[ARRANQUE][${DateTime.now().toIso8601String()}] main() START');
@@ -37,18 +38,25 @@ class PortfolioApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: buildAppProviders(),
-      child: MaterialApp(
-        title: 'Lumina',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [Locale('en'), Locale('es')],
-        home: const PortfolioGate(),
+      child: Builder(
+        builder: (context) {
+          final locale = context.watch<LocaleProvider>().locale;
+
+          return MaterialApp(
+            title: 'Lumina',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            locale: locale,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('en'), Locale('es')],
+            home: const PortfolioGate(),
+          );
+        },
       ),
     );
   }
