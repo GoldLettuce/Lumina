@@ -295,7 +295,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final isFXReady = fxRate > 0 && currency.isNotEmpty;
     final hasHistory = history.isNotEmpty;
 
-    final isLoading = model.isLoading || !isFXReady || !hasHistory;
+    final isLoading = model.isLoading || !isFXReady;
 
     if (isLoading) return const SkeletonView();
 
