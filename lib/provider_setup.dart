@@ -22,12 +22,10 @@ List<SingleChildWidget> buildAppProviders() {
     ChangeNotifierProvider(create: (_) => SpotPriceProvider()),
     ChangeNotifierProvider(create: (_) => HistoryProvider()),
     ChangeNotifierProvider(create: (_) => FxNotifier(1.0)),
-    ProxyProvider<AppInitializationProvider, InvestmentProvider>(
-      update: (context, appInit, _) {
-        if (appInit.isAppReady && appInit.repository != null) {
-          return InvestmentProvider(appInit.repository);
-        }
-        return InvestmentProvider(InvestmentRepositoryImpl());
+    ChangeNotifierProxyProvider<AppInitializationProvider, InvestmentProvider>(
+      create: (_) => InvestmentProvider(InvestmentRepositoryImpl()),
+      update: (context, appInit, previous) {
+        return InvestmentProvider(appInit.repository ?? InvestmentRepositoryImpl());
       },
     ),
   ];

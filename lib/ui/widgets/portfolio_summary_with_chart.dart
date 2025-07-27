@@ -150,11 +150,18 @@ class _PortfolioChart extends StatelessWidget {
                     getTooltipItems: (_) => [],
                   ),
                   touchCallback: (event, resp) {
-                    if (resp != null &&
-                        resp.lineBarSpots != null &&
-                        resp.lineBarSpots!.isNotEmpty) {
-                      final index = resp.lineBarSpots!.first.x.toInt();
-                      context.read<HistoryProvider>().selectSpot(index);
+                    final isEnd = event is FlTapUpEvent ||
+                                  event is FlTapCancelEvent ||
+                                  event is FlLongPressEnd ||
+                                  event is FlPanEndEvent;
+
+                    if (!isEnd) {
+                      final spot = resp?.lineBarSpots?.first;
+                      if (spot != null) {
+                        context.read<HistoryProvider>().selectSpot(spot.spotIndex);
+                      }
+                    } else {
+                      context.read<HistoryProvider>().clearSelection();
                     }
                   },
                   getTouchedSpotIndicator: (_, __) => [],
