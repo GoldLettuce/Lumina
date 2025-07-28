@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:lumina/core/point.dart';
 import 'package:flutter/foundation.dart';
+import '../../../core/request_manager.dart';
 
 /// Devuelve precios diarios hasta 365 días (free-tier CoinGecko)
 class CoinGeckoHistoryService {
@@ -16,7 +16,7 @@ class CoinGeckoHistoryService {
       '$_base/$id/market_chart?vs_currency=$currency&days=$days',
     );
 
-    final res = await http.get(url);
+    final res = await RequestManager().get(url);
     if (res.statusCode != 200) return [];
 
     final rawPrices = await compute(_rawPrices, res.body);

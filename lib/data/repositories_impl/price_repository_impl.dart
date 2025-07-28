@@ -32,6 +32,8 @@ class PriceRepositoryImpl implements PriceRepository {
     Set<String> symbols, {
     String currency = 'USD',
   }) async {
+    print('[TRACE][getPrices()] Iniciado → ${DateTime.now().toIso8601String()}');
+    print('[TRACE][getPrices()] Solicita precios para: ${symbols.join(', ')}');
     if (symbols.isEmpty) return {};
 
     await _ensureMap();
@@ -51,6 +53,13 @@ class PriceRepositoryImpl implements PriceRepository {
         final id = _symbolToId[key] ?? key.toLowerCase(); // fallback
         toFetch[key] = id;
       }
+    }
+
+    // Log de símbolos que faltan en cache
+    if (toFetch.isNotEmpty) {
+      print('[TRACE][getPrices()] Faltan en cache: ${toFetch.keys.join(', ')}');
+    } else {
+      print('[TRACE][getPrices()] Todos los símbolos están en cache');
     }
 
     // Una sola llamada bulk para los símbolos caducados/faltantes

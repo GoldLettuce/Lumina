@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import '../../../core/request_manager.dart';
 
 /// Servicio que descarga precios actuales de CoinGecko **en una sola petición**.
 ///
@@ -25,7 +25,7 @@ class CoinGeckoPriceService {
         '$_baseUrl?ids=${slice.join(',')}&vs_currencies=$currency',
       );
 
-      final res = await http.get(url);
+      final res = await RequestManager().get(url);
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map<String, dynamic>;
         for (final entry in body.entries) {

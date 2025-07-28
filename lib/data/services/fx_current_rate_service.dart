@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:http/http.dart' as http;
 import '../../core/hive_service.dart';
 import 'package:flutter/foundation.dart';
+import '../../core/request_manager.dart';
 
 class FxCurrentRateService {
   static const _base = 'USD';
@@ -27,7 +27,7 @@ class FxCurrentRateService {
     // 👉 CAMBIO: usamos la URL de Frankfurter
     final url = 'https://api.frankfurter.app/latest?from=$_base&to=$currency';
 
-    final response = await http.get(Uri.parse(url));
+    final response = await RequestManager().get(Uri.parse(url));
     if (response.statusCode != 200) {
       if (cachedRate != null) return (cachedRate as num).toDouble(); // fallback
       throw Exception('No se pudo obtener la tasa actual para $currency');

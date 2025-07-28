@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:http/http.dart' as http;
 import '../../core/hive_service.dart';
 import 'package:flutter/foundation.dart';
+import '../../core/request_manager.dart';
 
 class FxRateService {
   static const _base = 'USD';
@@ -27,7 +27,7 @@ class FxRateService {
     final url =
         'https://api.frankfurter.app/${_format(start)}..${_format(end)}?from=$_base&to=$currency';
 
-    final response = await http.get(Uri.parse(url));
+    final response = await RequestManager().get(Uri.parse(url));
     if (response.statusCode != 200) {
       throw Exception('No se pudo descargar tasas para $currency en $year');
     }

@@ -245,6 +245,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final spotProv = context.read<SpotPriceProvider>();
     final histProv = context.read<HistoryProvider>();
 
+    print('[TRACE][PortfolioScreen] Llamando a getPrices()');
     final prices = await priceRepo.getPrices(
       investments.map((e) => e.symbol).toSet(),
       currency: 'USD',

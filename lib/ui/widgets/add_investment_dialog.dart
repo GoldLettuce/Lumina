@@ -220,6 +220,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
           investments.where((e) => e.type == AssetType.crypto).toList(),
     );
 
+    print('[TRACE][AddInvestmentDialog] Llamando a getPrices()');
     final prices = await priceRepo.getPrices(
       investments.map((e) => e.symbol).toSet(),
       currency: 'USD',

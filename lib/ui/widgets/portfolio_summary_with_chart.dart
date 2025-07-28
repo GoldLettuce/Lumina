@@ -22,35 +22,50 @@ class PortfolioSummaryWithChart extends StatefulWidget {
   const PortfolioSummaryWithChart({super.key, required this.investments});
 
   @override
-  PortfolioSummaryWithChartState createState() =>
-      PortfolioSummaryWithChartState();
+  PortfolioSummaryWithChartState createState() => PortfolioSummaryWithChartState();
 }
 
-class PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> {
+class PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> with WidgetsBindingObserver {
   bool _ready = false;
+  DateTime _lastFetch = DateTime.fromMillisecondsSinceEpoch(0);
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() => _ready = true);
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final symbols =
-          widget.investments
-              .map((inv) => inv.symbol)
-              .where((s) => s.isNotEmpty)
-              .toSet();
-      if (symbols.isNotEmpty) {
-        // Actualiza los providers desacoplados
-        // 1. Actualiza símbolos visibles (si lo necesitas en SpotPriceProvider)
-        // 2. Carga histórico y precios
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+        final spotProv = context.read<SpotPriceProvider>();
+        if (spotProv.spotPrices.isEmpty) {
+          debugPrint('[TEST] initState → spotPrices.isEmpty = ${spotProv.spotPrices.isEmpty}');
+          loadHistory(context, widget.investments);
+          _lastFetch = DateTime.now();
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final elapsed = DateTime.now().difference(_lastFetch);
+      debugPrint('[TEST] AppLifecycleState.resumed → elapsed = $elapsed');
+      if (elapsed > const Duration(seconds: 60)) {
         loadHistory(context, widget.investments);
+        _lastFetch = DateTime.now();
       }
-    });
+    }
   }
 
   void loadHistory(BuildContext context, List<Investment> investments) async {
+    debugPrint('[TEST] Ejecutando loadHistory()');
     final histRepo = HistoryRepositoryImpl();
     final priceRepo = PriceRepositoryImpl();
     final spotProv = context.read<SpotPriceProvider>();
@@ -59,10 +74,10 @@ class PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> {
 
     await histRepo.downloadAndStoreIfNeeded(
       range: ChartRange.all,
-      investments:
-          investments.where((e) => e.type == AssetType.crypto).toList(),
+      investments: investments.where((e) => e.type == AssetType.crypto).toList(),
     );
 
+    print('[TRACE][PortfolioSummaryWithChart] Llamando a getPrices()');
     final prices = await priceRepo.getPrices(
       investments.map((e) => e.symbol).toSet(),
       currency: 'USD',
@@ -109,12 +124,11 @@ class _PortfolioChart extends StatelessWidget {
     return Selector<HistoryProvider, List<Point>>(
       selector: (_, provider) => provider.history,
       builder: (context, history, __) {
-        final spots =
-            history
-                .asMap()
-                .entries
-                .map((e) => FlSpot(e.key.toDouble(), e.value.value * fx))
-                .toList();
+        final spots = history
+            .asMap()
+            .entries
+            .map((e) => FlSpot(e.key.toDouble(), e.value.value * fx))
+            .toList();
 
         if (spots.isEmpty) {
           return SizedBox(
@@ -151,9 +165,9 @@ class _PortfolioChart extends StatelessWidget {
                   ),
                   touchCallback: (event, resp) {
                     final isEnd = event is FlTapUpEvent ||
-                                  event is FlTapCancelEvent ||
-                                  event is FlLongPressEnd ||
-                                  event is FlPanEndEvent;
+                        event is FlTapCancelEvent ||
+                        event is FlLongPressEnd ||
+                        event is FlPanEndEvent;
 
                     if (!isEnd) {
                       final spot = resp?.lineBarSpots?.first;

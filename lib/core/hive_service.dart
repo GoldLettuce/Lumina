@@ -21,6 +21,7 @@ class HiveService {
   // Cajas de configuración y servicios
   static Box? _settingsBox;
   static Box? _fxRatesBox;
+  static Box? _metaBox;
 
   // Getters públicos para acceder a las cajas
   static LazyBox<Investment> get investments => _investmentsBox!;
@@ -28,6 +29,7 @@ class HiveService {
   static Box<LocalHistory> get history => _historyBox!;
   static Box get settings => _settingsBox!;
   static Box get fxRates => _fxRatesBox!;
+  static Box get metaBox => _metaBox!;
 
   static bool _adaptersRegistered = false;
 
@@ -76,6 +78,7 @@ class HiveService {
     await _openChartCacheBox();
     await _openHistoryBox();
     await _openFxRatesBox();
+    await _openMetaBox();
     final heavyEnd = DateTime.now();
     print(
       '[HIVE][${heavyEnd.toIso8601String()}] ✅ Cajas pesadas abiertas en ${heavyEnd.difference(heavyStart).inMilliseconds}ms',
@@ -138,6 +141,12 @@ class HiveService {
     await Future.delayed(Duration.zero);
   }
 
+  /// Abre la caja de metadatos
+  static Future<void> _openMetaBox() async {
+    _metaBox = await Hive.openBox('metaBox');
+    await Future.delayed(Duration.zero);
+  }
+
   /// Verifica si todas las cajas están inicializadas
   static bool get isInitialized {
     return _isInitialized;
@@ -151,6 +160,7 @@ class HiveService {
       _historyBox?.close() ?? Future.value(),
       _settingsBox?.close() ?? Future.value(),
       _fxRatesBox?.close() ?? Future.value(),
+      _metaBox?.close() ?? Future.value(),
     ]);
 
     _investmentsBox = null;
@@ -158,6 +168,7 @@ class HiveService {
     _historyBox = null;
     _settingsBox = null;
     _fxRatesBox = null;
+    _metaBox = null;
     _openFuture = null;
     _isInitialized = false;
   }
