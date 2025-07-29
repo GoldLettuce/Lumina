@@ -1,13 +1,18 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'dart:collection';
 import 'dart:async';
 import '../../data/repositories_impl/price_repository_impl.dart';
 
-class SpotPriceProvider extends ChangeNotifier {
+class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
   final Map<String, double> _spotPrices = {};
   Set<String> _symbols = {};
   Timer? _refreshTimer;
   bool _isLoading = false;
+
+  SpotPriceProvider() {
+    WidgetsBinding.instance.addObserver(this);
+  }
 
   UnmodifiableMapView<String, double> get spotPrices =>
       UnmodifiableMapView(_spotPrices);
@@ -100,7 +105,21 @@ class SpotPriceProvider extends ChangeNotifier {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _refreshTimer?.cancel(); // 🛑 Detener el timer si pasa a background
+    }
+
+    if (state == AppLifecycleState.resumed && _symbols.isNotEmpty) {
+      // ✅ Al volver, lanzar una carga manual y reiniciar el timer
+      loadPrices();
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _refreshTimer?.cancel();
     super.dispose();
   }

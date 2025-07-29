@@ -227,8 +227,29 @@ class PortfolioScreen extends StatefulWidget {
   State<PortfolioScreen> createState() => _PortfolioScreenState();
 }
 
-class _PortfolioScreenState extends State<PortfolioScreen> {
+class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingObserver {
   bool _hasLoadedHistory = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Volver al foreground → forzar recarga de precios
+      final spotProv = context.read<SpotPriceProvider>();
+      spotProv.loadPrices(); // Esto reinicia el timer internamente
+    }
+  }
 
   void _maybeReloadHistory() {
     try {
