@@ -59,15 +59,13 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     if (confirm == true) {
       // ignore: use_build_context_synchronously
       final model = context.read<InvestmentProvider>();
-      await model.removeOperations(asset.symbol, _selectedIds.toList());
+      final idsToRemove = _selectedIds.toList();
+      await model.removeOperations(asset.symbol, idsToRemove);
       _clearSelection();
 
-      final stillExists = model.investments.any(
-        (e) => e.symbol == asset.symbol,
-      );
-      if (!stillExists && mounted) {
+      if (idsToRemove.isNotEmpty && mounted) {
         // ignore: use_build_context_synchronously
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(true);
       }
     }
   }

@@ -210,11 +210,11 @@ class AssetListTile extends StatelessWidget {
         child: trailing,
       ),
       onTap: () async {
-        await Navigator.push(
+        final result = await Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => AssetDetailScreen(asset: asset)),
         );
-        if (!context.mounted) return;
+        if (!context.mounted || result == null) return;
         context.findAncestorStateOfType<_PortfolioScreenState>()?._maybeReloadHistory();
       },
     );
@@ -241,16 +241,14 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
 
   Future<void> _loadHistory(List<Investment> investments) async {
     final histRepo = HistoryRepositoryImpl();
-    final priceRepo = PriceRepositoryImpl();
     final spotProv = context.read<SpotPriceProvider>();
     final histProv = context.read<HistoryProvider>();
 
-    print('[TRACE][PortfolioScreen] Llamando a getPrices()');
-    final prices = await priceRepo.getPrices(
-      investments.map((e) => e.symbol).toSet(),
-      currency: 'USD',
-    );
-    spotProv.updatePrices(prices);
+    // Configurar símbolos y cargar precios centralizados
+    final symbols = investments.map((e) => e.symbol).toSet();
+    spotProv.setSymbols(symbols);
+
+    final prices = spotProv.spotPrices;
 
     final history = await histRepo.getHistory(
       range: ChartRange.all,
@@ -333,6 +331,16 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // 👇 Selector para sincronizar automáticamente cuando cambien los precios
+            Selector<SpotPriceProvider, Map<String, double>>(
+              selector: (_, p) => p.spotPrices,
+              builder: (_, __, ___) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) _maybeReloadHistory();
+                });
+                return const SizedBox.shrink();
+              },
+            ),
             PortfolioSummaryMinimal(
               history: historyProvider.history,
               selectedIndex: historyProvider.selectedIndex,

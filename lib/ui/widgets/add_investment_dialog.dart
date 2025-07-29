@@ -209,7 +209,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
 
   void _loadHistory(BuildContext context, List<Investment> investments) async {
     final histRepo = HistoryRepositoryImpl();
-    final priceRepo = PriceRepositoryImpl();
     final spotProv = context.read<SpotPriceProvider>();
     final histProv = context.read<HistoryProvider>();
     final fx = context.read<CurrencyProvider>().exchangeRate;
@@ -220,12 +219,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
           investments.where((e) => e.type == AssetType.crypto).toList(),
     );
 
-    print('[TRACE][AddInvestmentDialog] Llamando a getPrices()');
-    final prices = await priceRepo.getPrices(
-      investments.map((e) => e.symbol).toSet(),
-      currency: 'USD',
-    );
-    spotProv.updatePrices(prices);
+    // Usar directamente los datos del provider centralizado
+    final prices = spotProv.spotPrices;
 
     final history = await histRepo.getHistory(
       range: ChartRange.all,

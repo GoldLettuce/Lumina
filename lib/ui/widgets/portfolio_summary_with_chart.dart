@@ -11,10 +11,6 @@ import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/ui/providers/fx_notifier.dart';
 import 'package:lumina/ui/providers/spot_price_provider.dart';
 import 'package:lumina/ui/providers/history_provider.dart';
-import 'package:lumina/data/repositories_impl/history_repository_impl.dart';
-import 'package:lumina/data/repositories_impl/price_repository_impl.dart';
-import 'package:lumina/core/chart_range.dart';
-import 'package:lumina/domain/entities/asset_type.dart';
 
 /// Contenedor general: inicializa símbolos y fuerza la recarga.
 class PortfolioSummaryWithChart extends StatefulWidget {
@@ -25,82 +21,15 @@ class PortfolioSummaryWithChart extends StatefulWidget {
   PortfolioSummaryWithChartState createState() => PortfolioSummaryWithChartState();
 }
 
-class PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> with WidgetsBindingObserver {
+class PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> {
   bool _ready = false;
-  DateTime _lastFetch = DateTime.fromMillisecondsSinceEpoch(0);
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() => _ready = true);
     });
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-        final spotProv = context.read<SpotPriceProvider>();
-        if (spotProv.spotPrices.isEmpty) {
-          debugPrint('[TEST] initState → spotPrices.isEmpty = ${spotProv.spotPrices.isEmpty}');
-          loadHistory(context, widget.investments);
-          _lastFetch = DateTime.now();
-        }
-      });
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      final elapsed = DateTime.now().difference(_lastFetch);
-      debugPrint('[TEST] AppLifecycleState.resumed → elapsed = $elapsed');
-      if (elapsed > const Duration(seconds: 60)) {
-        loadHistory(context, widget.investments);
-        _lastFetch = DateTime.now();
-      }
-    }
-  }
-
-  void loadHistory(BuildContext context, List<Investment> investments) async {
-    debugPrint('[TEST] Ejecutando loadHistory()');
-    final histRepo = HistoryRepositoryImpl();
-    final priceRepo = PriceRepositoryImpl();
-    final spotProv = context.read<SpotPriceProvider>();
-    final histProv = context.read<HistoryProvider>();
-    final fx = context.read<FxNotifier>().value;
-
-    await histRepo.downloadAndStoreIfNeeded(
-      range: ChartRange.all,
-      investments: investments.where((e) => e.type == AssetType.crypto).toList(),
-    );
-
-    print('[TRACE][PortfolioSummaryWithChart] Llamando a getPrices()');
-    final prices = await priceRepo.getPrices(
-      investments.map((e) => e.symbol).toSet(),
-      currency: 'USD',
-    );
-    spotProv.updatePrices(prices);
-
-    final history = await histRepo.getHistory(
-      range: ChartRange.all,
-      investments: investments,
-      spotPrices: prices,
-    );
-
-    final today = DateTime.now();
-    double total = 0;
-    for (final inv in investments) {
-      final qty = inv.operations
-          .where((op) => !op.date.isAfter(today))
-          .fold<double>(0, (s, op) => s + op.quantity);
-      final price = prices[inv.symbol];
-      if (qty > 0 && price != null) total += price * qty;
-    }
-    histProv.updateHistory(history);
-    histProv.updateToday(Point(time: today, value: total));
   }
 
   @override
