@@ -296,8 +296,16 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
     final t = AppLocalizations.of(context)!;
 
     final model = context.watch<InvestmentProvider>();
-    final investments =
-    model.investments.where((e) => e.totalQuantity > 0).toList();
+    final spotPrices = context.watch<SpotPriceProvider>().spotPrices;
+
+    final investments = model.investments
+        .where((e) => e.totalQuantity > 0)
+        .toList()
+      ..sort((a, b) {
+        final aValue = a.totalQuantity * (spotPrices[a.symbol] ?? 0);
+        final bValue = b.totalQuantity * (spotPrices[b.symbol] ?? 0);
+        return bValue.compareTo(aValue); // Mayor a menor
+      });
     final historyProvider = context.watch<HistoryProvider>();
     final fx = context.watch<CurrencyProvider>();
 
