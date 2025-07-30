@@ -4,9 +4,11 @@ import 'package:provider/provider.dart';
 
 import 'csv_export_service.dart';
 import 'package:lumina/ui/providers/investment_provider.dart';
+import '../l10n/app_localizations.dart';
 
 class ExportController {
   static Future<void> handleCsvExport(BuildContext context) async {
+    final t = AppLocalizations.of(context)!;
     final status = await Permission.manageExternalStorage.status;
 
     if (status.isDenied) {
@@ -14,10 +16,8 @@ class ExportController {
       if (!result.isGranted) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                '❌ Debes conceder permiso para guardar el archivo.',
-              ),
+            SnackBar(
+              content: Text(t.permissionRequiredForFile),
             ),
           );
         }
@@ -27,9 +27,9 @@ class ExportController {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('⚠️ El permiso fue denegado permanentemente.'),
+            content: Text(t.permissionPermanentlyDenied),
             action: SnackBarAction(
-              label: 'Abrir ajustes',
+              label: t.openSettings,
               onPressed: openAppSettings,
             ),
           ),
@@ -48,13 +48,13 @@ class ExportController {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('✅ Archivo guardado en: $path')));
+        ).showSnackBar(SnackBar(content: Text(t.fileSavedSuccess(path))));
       }
     } catch (e) {
       debugPrint('❌ Error al exportar archivo CSV: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('❌ Error al exportar el archivo')),
+          SnackBar(content: Text(t.exportFileError)),
         );
       }
     }

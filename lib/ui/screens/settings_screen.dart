@@ -39,7 +39,7 @@ class SettingsScreen extends StatelessWidget {
           // Export CSV
           ListTile(
             leading: const Icon(Icons.download),
-            title: const Text("Exportar operaciones a CSV"),
+            title: Text(t.exportOperationsToCsv),
             onTap: () => ExportController.handleCsvExport(context),
           ),
 
@@ -48,8 +48,8 @@ class SettingsScreen extends StatelessWidget {
           // Reset portfolio
           ListTile(
             leading: const Icon(Icons.delete_forever, color: Colors.red),
-            title: const Text(
-              "Eliminar todos los datos del portafolio",
+            title: Text(
+              t.deleteAllPortfolioData,
               style: TextStyle(color: Colors.red),
             ),
             onTap: () async {
@@ -81,7 +81,7 @@ class SettingsScreen extends StatelessWidget {
                 if (!context.mounted) return;
 
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('✅ Portafolio eliminado')),
+                  SnackBar(content: Text(t.portfolioDeletedSuccess)),
                 );
               }
             },

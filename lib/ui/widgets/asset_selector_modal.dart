@@ -68,10 +68,10 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
               const SizedBox(height: 8),
               TextField(
                 controller: _searchController,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.search),
-                  hintText: 'Ej. BTC, Ethereum…',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search),
+                  hintText: loc.searchAssetPlaceholder,
+                  border: const OutlineInputBorder(),
                 ),
                 onChanged:
                     (value) => context.read<AssetListProvider>().filter(value),

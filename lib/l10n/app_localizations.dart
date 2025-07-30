@@ -62,8 +62,7 @@ import 'app_localizations_es.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,18 +82,17 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('es'),
+    Locale('es')
   ];
 
   /// No description provided for @appTitle.
@@ -355,10 +352,87 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This action will delete all your investments.'**
   String get confirmResetMessage;
+
+  /// No description provided for @baseCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Base currency'**
+  String get baseCurrency;
+
+  /// No description provided for @selectCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a currency'**
+  String get selectCurrency;
+
+  /// No description provided for @exportOperationsToCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Export operations to CSV'**
+  String get exportOperationsToCsv;
+
+  /// No description provided for @deleteAllPortfolioData.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all portfolio data'**
+  String get deleteAllPortfolioData;
+
+  /// No description provided for @portfolioDeletedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'✅ Portfolio deleted'**
+  String get portfolioDeletedSuccess;
+
+  /// No description provided for @searchAssetPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g. BTC, Ethereum…'**
+  String get searchAssetPlaceholder;
+
+  /// No description provided for @operationQuantitySeparator.
+  ///
+  /// In en, this message translates to:
+  /// **' of '**
+  String get operationQuantitySeparator;
+
+  /// No description provided for @permissionRequiredForFile.
+  ///
+  /// In en, this message translates to:
+  /// **'❌ You must grant permission to save the file.'**
+  String get permissionRequiredForFile;
+
+  /// No description provided for @permissionPermanentlyDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'⚠️ Permission was permanently denied.'**
+  String get permissionPermanentlyDenied;
+
+  /// No description provided for @openSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get openSettings;
+
+  /// No description provided for @fileSavedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'✅ File saved at: {path}'**
+  String fileSavedSuccess(String path);
+
+  /// No description provided for @exportFileError.
+  ///
+  /// In en, this message translates to:
+  /// **'❌ Error while exporting file'**
+  String get exportFileError;
+
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get loading;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -367,26 +441,25 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'es'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'es'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return AppLocalizationsEn();
-    case 'es':
-      return AppLocalizationsEs();
+    case 'en': return AppLocalizationsEn();
+    case 'es': return AppLocalizationsEs();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }

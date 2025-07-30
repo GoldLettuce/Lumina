@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 class CurrencySelectorModal extends StatelessWidget {
   final Map<String, String> currencies;
@@ -12,6 +13,7 @@ class CurrencySelectorModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final sortedEntries =
         currencies.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
 
@@ -25,8 +27,8 @@ class CurrencySelectorModal extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 16),
-            const Text(
-              'Selecciona una moneda',
+            Text(
+              t.selectCurrency,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,

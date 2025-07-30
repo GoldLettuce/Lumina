@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lumina/ui/providers/currency_provider.dart';
 import 'currency_selector_modal.dart';
+import '../../l10n/app_localizations.dart';
 
 class CurrencySelector extends StatelessWidget {
   const CurrencySelector({super.key});
@@ -9,12 +10,13 @@ class CurrencySelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<CurrencyProvider>();
+    final t = AppLocalizations.of(context)!;
 
     final selectedName =
         provider.currencies[provider.currency] ?? provider.currency;
 
     return ListTile(
-      title: const Text('Moneda base'),
+      title: Text(t.baseCurrency),
       subtitle: Text('${provider.currency} – $selectedName'),
       enabled: !provider.isLoading,
       onTap:

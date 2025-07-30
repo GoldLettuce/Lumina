@@ -41,5 +41,25 @@
   "spanish": "Español",
   "english": "Inglés",
   "confirmResetTitle": "¿Estás seguro?",
-  "confirmResetMessage": "Esta acción eliminará todas tus inversiones."
+  "confirmResetMessage": "Esta acción eliminará todas tus inversiones.",
+  "baseCurrency": "Moneda base",
+  "selectCurrency": "Selecciona una moneda",
+  "exportOperationsToCsv": "Exportar operaciones a CSV",
+  "deleteAllPortfolioData": "Eliminar todos los datos del portafolio",
+  "portfolioDeletedSuccess": "✅ Portafolio eliminado",
+  "searchAssetPlaceholder": "Ej. BTC, Ethereum…",
+  "operationQuantitySeparator": " de ",
+  "permissionRequiredForFile": "❌ Debes conceder permiso para guardar el archivo.",
+  "permissionPermanentlyDenied": "⚠️ El permiso fue denegado permanentemente.",
+  "openSettings": "Abrir ajustes",
+  "fileSavedSuccess": "✅ Archivo guardado en: {path}",
+  "@fileSavedSuccess": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "exportFileError": "❌ Error al exportar el archivo",
+  "loading": "Cargando..."
 }

@@ -42,5 +42,25 @@
   "spanish": "Spanish",
   "english": "English",
   "confirmResetTitle": "Are you sure?",
-  "confirmResetMessage": "This action will delete all your investments."
+  "confirmResetMessage": "This action will delete all your investments.",
+  "baseCurrency": "Base currency",
+  "selectCurrency": "Select a currency",
+  "exportOperationsToCsv": "Export operations to CSV",
+  "deleteAllPortfolioData": "Delete all portfolio data",
+  "portfolioDeletedSuccess": "✅ Portfolio deleted",
+  "searchAssetPlaceholder": "E.g. BTC, Ethereum…",
+  "operationQuantitySeparator": " of ",
+  "permissionRequiredForFile": "❌ You must grant permission to save the file.",
+  "permissionPermanentlyDenied": "⚠️ Permission was permanently denied.",
+  "openSettings": "Open settings",
+  "fileSavedSuccess": "✅ File saved at: {path}",
+  "@fileSavedSuccess": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "exportFileError": "❌ Error while exporting file",
+  "loading": "Loading..."
 }

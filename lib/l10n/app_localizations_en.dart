@@ -27,8 +27,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noInvestments => 'No investments';
 
   @override
-  String get emptyPortfolioMessage =>
-      'No investments yet.\nStart by adding your first one!';
+  String get emptyPortfolioMessage => 'No investments yet.\nStart by adding your first one!';
 
   @override
   String get newOperation => 'New Operation';
@@ -109,8 +108,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteOperations => 'Delete operations';
 
   @override
-  String get deleteOperationsMessage =>
-      'Are you sure you want to delete the selected operations? This action cannot be undone.';
+  String get deleteOperationsMessage => 'Are you sure you want to delete the selected operations? This action cannot be undone.';
 
   @override
   String get delete => 'Delete';
@@ -137,6 +135,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmResetTitle => 'Are you sure?';
 
   @override
-  String get confirmResetMessage =>
-      'This action will delete all your investments.';
+  String get confirmResetMessage => 'This action will delete all your investments.';
+
+  @override
+  String get baseCurrency => 'Base currency';
+
+  @override
+  String get selectCurrency => 'Select a currency';
+
+  @override
+  String get exportOperationsToCsv => 'Export operations to CSV';
+
+  @override
+  String get deleteAllPortfolioData => 'Delete all portfolio data';
+
+  @override
+  String get portfolioDeletedSuccess => '✅ Portfolio deleted';
+
+  @override
+  String get searchAssetPlaceholder => 'E.g. BTC, Ethereum…';
+
+  @override
+  String get operationQuantitySeparator => ' of ';
+
+  @override
+  String get permissionRequiredForFile => '❌ You must grant permission to save the file.';
+
+  @override
+  String get permissionPermanentlyDenied => '⚠️ Permission was permanently denied.';
+
+  @override
+  String get openSettings => 'Open settings';
+
+  @override
+  String fileSavedSuccess(String path) {
+    return '✅ File saved at: $path';
+  }
+
+  @override
+  String get exportFileError => '❌ Error while exporting file';
+
+  @override
+  String get loading => 'Loading...';
 }

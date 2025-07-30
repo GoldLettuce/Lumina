@@ -143,7 +143,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                           color: color,
                         ),
                         title: Text(
-                          '${isBuy ? t.buy : t.sell} de ${op.quantity}',
+                          '${isBuy ? t.buy : t.sell}${t.operationQuantitySeparator}${op.quantity}',
                           style: theme.textTheme.bodyLarge,
                         ),
                         subtitle: Text(fecha),
