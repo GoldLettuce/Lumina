@@ -12,8 +12,8 @@ class CurrencySelectorModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sortedEntries = currencies.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
+    final sortedEntries =
+        currencies.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
 
     return SafeArea(
       child: Container(

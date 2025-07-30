@@ -20,7 +20,7 @@ abstract class HistoryRepository {
 
   /// Calcula el valor actual del portafolio usando los precios spot actuales
   Future<double> calculateCurrentPortfolioValue(
-      List<Investment> investments,
-      Map<String, double> spotPrices,
-      );
+    List<Investment> investments,
+    Map<String, double> spotPrices,
+  );
 }

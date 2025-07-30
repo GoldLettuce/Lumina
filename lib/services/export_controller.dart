@@ -3,7 +3,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import 'csv_export_service.dart';
-import '../ui/providers/investment_provider.dart';
+import 'package:lumina/ui/providers/investment_provider.dart';
 
 class ExportController {
   static Future<void> handleCsvExport(BuildContext context) async {
@@ -15,7 +15,9 @@ class ExportController {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('❌ Debes conceder permiso para guardar el archivo.'),
+              content: Text(
+                '❌ Debes conceder permiso para guardar el archivo.',
+              ),
             ),
           );
         }
@@ -37,23 +39,22 @@ class ExportController {
     }
 
     try {
+      // ignore: use_build_context_synchronously
       final investments = context.read<InvestmentProvider>().investments;
-      print('📤 Iniciando exportación de ${investments.length} inversiones...');
+      debugPrint(
+        '📤 Iniciando exportación de ${investments.length} inversiones...',
+      );
       final path = await CsvExportService().export(investments);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('✅ Archivo guardado en: $path'),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('✅ Archivo guardado en: $path')));
       }
     } catch (e) {
-      print('❌ Error al exportar archivo CSV: $e');
+      debugPrint('❌ Error al exportar archivo CSV: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('❌ Error al exportar el archivo'),
-          ),
+          const SnackBar(content: Text('❌ Error al exportar el archivo')),
         );
       }
     }

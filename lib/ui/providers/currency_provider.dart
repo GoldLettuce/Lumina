@@ -1,12 +1,12 @@
 // lib/ui/providers/currency_provider.dart
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../../data/services/fx_current_rate_service.dart';  // Servicio de tasas de cambio
-import '../../data/services/fx_currency_service.dart';      // para fetchSupportedCurrencies
-import '../../data/services/fx_current_rate_service.dart';  // para getTodayRate
+import '../../data/services/fx_current_rate_service.dart'; // Servicio de tasas de cambio
+import '../../data/services/fx_currency_service.dart'; // para fetchSupportedCurrencies
+// para getTodayRate
+import '../../core/hive_service.dart';
 
 class CurrencyProvider extends ChangeNotifier {
-  static const _boxName = 'settingsBox';
   static const _key = 'baseCurrency';
 
   late Box _box;
@@ -37,13 +37,13 @@ class CurrencyProvider extends ChangeNotifier {
   /// Inicializa el provider: carga la moneda guardada, las monedas y la tasa de cambio
   Future<void> _initialize() async {
     await _init();
-    loadCurrencies();          // Carga la lista de monedas
+    loadCurrencies(); // Carga la lista de monedas
     await _loadExchangeRate(); // Carga la tasa de cambio
   }
 
   /// Abre Hive, lee la moneda base guardada y notifica
   Future<void> _init() async {
-    _box = await Hive.openBox(_boxName);
+    _box = HiveService.settings;
     _currency = _box.get(_key, defaultValue: 'USD');
     notifyListeners();
   }
@@ -85,5 +85,10 @@ class CurrencyProvider extends ChangeNotifier {
     _box.put(_key, newCurrency);
     _loadExchangeRate(); // Recarga la tasa al cambiar moneda
     notifyListeners();
+  }
+
+  static Future<Map<String, dynamic>> preload() async {
+    // Implementa la carga real de currency aquí
+    return {};
   }
 }

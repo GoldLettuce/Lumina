@@ -3,25 +3,25 @@
 import 'package:hive/hive.dart';
 import '../../domain/entities/investment.dart';
 import '../../domain/repositories/investment_repository.dart';
+import '../../core/hive_service.dart';
 
 class InvestmentRepositoryImpl implements InvestmentRepository {
   static const String boxName = 'investments';
-  late Box<Investment> _box;
+
+  /// Getter para acceder a la caja lazy desde HiveService
+  LazyBox<Investment> get _box => HiveService.investments;
 
   /// Inicializa la caja Hive para almacenar inversiones.
   /// Debe llamarse antes de usar los métodos de este repositorio.
   Future<void> init() async {
-    if (!Hive.isBoxOpen(boxName)) {
-      _box = await Hive.openBox<Investment>(boxName);
-    } else {
-      _box = Hive.box<Investment>(boxName);
-    }
+    // La caja ya está abierta como LazyBox en HiveService
+    // No necesitamos abrirla nuevamente
   }
 
   @override
   Future<void> addInvestment(Investment investment) async {
     // Usamos el símbolo como clave única
-    final existing = _box.get(investment.symbol);
+    final existing = await _box.get(investment.symbol);
 
     if (existing != null) {
       // Agregar operación en vez de sobrescribir
@@ -35,7 +35,17 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
 
   @override
   Future<List<Investment>> getAllInvestments() async {
-    return _box.values.toList();
+    // ✅ Optimización: usar Future.wait para cargar todas las inversiones en paralelo
+    // Esto es significativamente más rápido que lecturas secuenciales
+    final keys = _box.keys.toList();
+    if (keys.isEmpty) return [];
+
+    // Cargar todas las inversiones en paralelo - mucho más eficiente
+    final futures = keys.map((key) => _box.get(key));
+    final results = await Future.wait(futures);
+
+    // Filtrar valores nulos y convertir a lista
+    return results.whereType<Investment>().toList();
   }
 
   @override
@@ -44,8 +54,11 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
   }
 
   /// ✅ Añadir operación directamente a un activo ya existente
-  Future<void> addOperation(String investmentKey, InvestmentOperation op) async {
-    final inv = _box.get(investmentKey);
+  Future<void> addOperation(
+    String investmentKey,
+    InvestmentOperation op,
+  ) async {
+    final inv = await _box.get(investmentKey);
     if (inv == null) return;
 
     inv.operations.add(op);
@@ -53,13 +66,17 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
   }
 
   /// ✅ Editar una operación existente por ID
-  Future<void> editOperation(String investmentKey, InvestmentOperation updatedOp) async {
-    final inv = _box.get(investmentKey);
+  Future<void> editOperation(
+    String investmentKey,
+    InvestmentOperation updatedOp,
+  ) async {
+    final inv = await _box.get(investmentKey);
     if (inv == null) return;
 
-    final newOps = inv.operations.map((op) {
-      return op.id == updatedOp.id ? updatedOp : op;
-    }).toList();
+    final newOps =
+        inv.operations.map((op) {
+          return op.id == updatedOp.id ? updatedOp : op;
+        }).toList();
 
     final updatedInvestment = inv.copyWith(operations: newOps);
 
@@ -67,11 +84,15 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
   }
 
   /// ✅ Eliminar múltiples operaciones por ID
-  Future<void> removeOperations(String investmentKey, List<String> operationIds) async {
-    final inv = _box.get(investmentKey);
+  Future<void> removeOperations(
+    String investmentKey,
+    List<String> operationIds,
+  ) async {
+    final inv = await _box.get(investmentKey);
     if (inv == null) return;
 
-    final newOps = inv.operations.where((op) => !operationIds.contains(op.id)).toList();
+    final newOps =
+        inv.operations.where((op) => !operationIds.contains(op.id)).toList();
 
     if (newOps.isEmpty) {
       await _box.delete(investmentKey);

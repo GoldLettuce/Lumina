@@ -8,8 +8,8 @@ class FxRateRepositoryImpl {
   FxRateRepositoryImpl({
     FxRateService? historicalService,
     FxCurrentRateService? currentService,
-  })  : _historicalService = historicalService ?? FxRateService(),
-        _currentService = currentService ?? FxCurrentRateService();
+  }) : _historicalService = historicalService ?? FxRateService(),
+       _currentService = currentService ?? FxCurrentRateService();
 
   Future<double> getCurrentRate(String currency) {
     return _currentService.getTodayRate(currency);
@@ -28,10 +28,10 @@ class FxRateRepositoryImpl {
   }
 
   Future<Map<DateTime, double>> getHistoricalRatesInRange(
-      String currency,
-      DateTime start,
-      DateTime end,
-      ) {
+    String currency,
+    DateTime start,
+    DateTime end,
+  ) {
     return _historicalService.getRatesForRange(currency, start, end);
   }
 }

@@ -23,12 +23,13 @@ class ConfirmResetDialog extends StatelessWidget {
   }) {
     return showDialog<bool>(
       context: context,
-      builder: (ctx) => ConfirmResetDialog(
-        title: title,
-        content: content,
-        cancelText: cancelText,
-        confirmText: confirmText,
-      ),
+      builder:
+          (ctx) => ConfirmResetDialog(
+            title: title,
+            content: content,
+            cancelText: cancelText,
+            confirmText: confirmText,
+          ),
     ).then((value) => value == true);
   }
 

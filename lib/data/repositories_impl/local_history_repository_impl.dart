@@ -1,9 +1,11 @@
-import 'package:hive/hive.dart';
-import '../models/local_history.dart';
+import '../../core/hive_service.dart';
 
 class LocalHistoryRepositoryImpl {
-  Future<void> markAsNeedingRebuildIfNecessary(String symbol, DateTime earliest) async {
-    final box = await Hive.openBox<LocalHistory>('history_$symbol');
+  Future<void> markAsNeedingRebuildIfNecessary(
+    String symbol,
+    DateTime earliest,
+  ) async {
+    final box = HiveService.history;
     final hist = box.get('all');
 
     if (hist != null && earliest.isBefore(hist.from)) {

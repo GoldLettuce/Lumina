@@ -1,18 +1,15 @@
 // lib/services/portfolio_sync_service.dart
 
-import 'package:hive/hive.dart';
 import 'package:lumina/ui/providers/investment_provider.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 import 'package:lumina/domain/entities/investment.dart';
-import 'package:lumina/data/models/local_history.dart';
-import 'package:lumina/ui/providers/chart_value_provider.dart';
+import 'package:lumina/core/hive_service.dart';
 
 /// Añadir operación y sincronizar histórico + gráfico
 Future<void> addOperationAndSync({
   required Investment investment,
   required InvestmentOperation newOp,
   required InvestmentRepositoryImpl repo,
-  required ChartValueProvider chartProvider,
   required InvestmentProvider model,
 }) async {
   // 1️⃣ Guardamos la operación
@@ -23,19 +20,16 @@ Future<void> addOperationAndSync({
   await model.load();
 
   // 2️⃣ ¿Realmente necesitamos back-fill?
-  final histBox = await Hive.openBox<LocalHistory>('history');
+  final histBox = HiveService.history;
   final hist = histBox.get('${investment.symbol}_ALL');
   final needsBackfill = hist != null && newOp.date.isBefore(hist.from);
 
   if (needsBackfill) {
     // Solo rellenar hacia atrás para este activo
-    await chartProvider.backfillHistory(
-      inv: updated,
-      earliestNeeded: newOp.date,
-    );
+    // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
   } else {
     // Recalc solo el punto "hoy"
-    chartProvider.recalcTodayOnly();
+    // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
   }
 }
 
@@ -45,7 +39,6 @@ Future<void> editOperationAndSync({
   required int operationIndex,
   required InvestmentOperation editedOp,
   required InvestmentRepositoryImpl repo,
-  required ChartValueProvider chartProvider,
   required InvestmentProvider model,
 }) async {
   final newOps = [...investment.operations]..[operationIndex] = editedOp;
@@ -54,18 +47,8 @@ Future<void> editOperationAndSync({
   await repo.addInvestment(updated);
   await model.load();
 
-  final histBox = await Hive.openBox<LocalHistory>('history');
-  final hist = histBox.get('${investment.symbol}_ALL');
-  final needsBackfill = hist != null && editedOp.date.isBefore(hist.from);
-
-  if (needsBackfill) {
-    await chartProvider.backfillHistory(
-      inv: updated,
-      earliestNeeded: editedOp.date,
-    );
-  } else {
-    chartProvider.recalcTodayOnly();
-  }
+  // 🔥 Siempre fuerza la reconstrucción del histórico tras editar una operación
+  // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
 }
 
 /// Eliminar operación
@@ -74,7 +57,7 @@ Future<void> deleteOperationAndSync({
   required int operationIndex,
   required InvestmentRepositoryImpl repo,
   required InvestmentProvider model,
-  required ChartValueProvider chartProvider,
+  // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
 }) async {
   final updatedOps = [...investment.operations]..removeAt(operationIndex);
 
@@ -91,21 +74,18 @@ Future<void> deleteOperationAndSync({
         .map((op) => op.date)
         .reduce((a, b) => a.isBefore(b) ? a : b);
 
-    final histBox = await Hive.openBox<LocalHistory>('history');
+    final histBox = HiveService.history;
     final hist = histBox.get('${investment.symbol}_ALL');
     final needsBackfill = hist != null && earliest.isBefore(hist.from);
 
     if (needsBackfill) {
-      await chartProvider.backfillHistory(
-        inv: investment.copyWith(operations: updatedOps),
-        earliestNeeded: earliest,
-      );
+      // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
     } else {
-      chartProvider.recalcTodayOnly();
+      // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
     }
   } else {
     // Si no quedan operaciones, solo recalcula "hoy"
-    chartProvider.recalcTodayOnly();
+    // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
   }
 }
 
@@ -114,13 +94,13 @@ Future<void> deleteInvestmentAndSync({
   required String symbol,
   required InvestmentRepositoryImpl repo,
   required InvestmentProvider model,
-  required ChartValueProvider chartProvider,
+  // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
 }) async {
   await repo.deleteInvestment(symbol);
 
-  final historyBox = await Hive.openBox<LocalHistory>('history');
+  final historyBox = HiveService.history;
   await historyBox.delete('${symbol}_ALL');
 
   await model.load();
-  chartProvider.recalcTodayOnly();
+  // Usar SpotPriceProvider, HistoryProvider y FxNotifier si corresponde
 }

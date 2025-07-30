@@ -1,32 +1,35 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'point.dart';
+part of 'spot_price.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class PointAdapter extends TypeAdapter<Point> {
+class SpotPriceAdapter extends TypeAdapter<SpotPrice> {
   @override
-  final int typeId = 2;
+  final int typeId = 10;
 
   @override
-  Point read(BinaryReader reader) {
+  SpotPrice read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Point(time: fields[0] as DateTime, value: fields[1] as double);
+    return SpotPrice(
+      symbol: fields[0] as String,
+      price: fields[1] as double,
+    );
   }
 
   @override
-  void write(BinaryWriter writer, Point obj) {
+  void write(BinaryWriter writer, SpotPrice obj) {
     writer
       ..writeByte(2)
       ..writeByte(0)
-      ..write(obj.time)
+      ..write(obj.symbol)
       ..writeByte(1)
-      ..write(obj.value);
+      ..write(obj.price);
   }
 
   @override
@@ -35,7 +38,7 @@ class PointAdapter extends TypeAdapter<Point> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is PointAdapter &&
+      other is SpotPriceAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
-}
+} 

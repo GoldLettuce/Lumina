@@ -6,6 +6,8 @@ class InvestmentProvider extends ChangeNotifier {
   final InvestmentRepositoryImpl _repository;
 
   List<Investment> _investments = [];
+  bool _isLoading = true;
+  bool get isLoading => _isLoading;
   List<Investment> get investments => List.unmodifiable(_investments);
 
   InvestmentProvider(this._repository) {
@@ -14,7 +16,10 @@ class InvestmentProvider extends ChangeNotifier {
 
   // ---------- CARGA ----------
   Future<void> loadInvestments() async {
+    _isLoading = true;
+    notifyListeners();
     _investments = await _repository.getAllInvestments();
+    _isLoading = false;
     notifyListeners();
   }
 
@@ -32,25 +37,25 @@ class InvestmentProvider extends ChangeNotifier {
 
   // ---------- OPERACIONES ----------
   Future<void> addOperationToInvestment(
-      String investmentKey,
-      InvestmentOperation op,
-      ) async {
+    String investmentKey,
+    InvestmentOperation op,
+  ) async {
     await _repository.addOperation(investmentKey, op);
     await loadInvestments();
   }
 
   Future<void> editOperation(
-      String investmentKey,
-      InvestmentOperation updatedOp,
-      ) async {
+    String investmentKey,
+    InvestmentOperation updatedOp,
+  ) async {
     await _repository.editOperation(investmentKey, updatedOp);
     await loadInvestments();
   }
 
   Future<void> removeOperations(
-      String investmentKey,
-      List<String> operationIds,
-      ) async {
+    String investmentKey,
+    List<String> operationIds,
+  ) async {
     await _repository.removeOperations(investmentKey, operationIds);
     await loadInvestments();
   }
@@ -90,5 +95,11 @@ class InvestmentProvider extends ChangeNotifier {
   void clearAll() {
     _investments.clear();
     notifyListeners();
+  }
+
+  static Future<List<Investment>> preload() async {
+    final repo = InvestmentRepositoryImpl();
+    await repo.init();
+    return await repo.getAllInvestments();
   }
 }

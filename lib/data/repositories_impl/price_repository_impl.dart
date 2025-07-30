@@ -10,15 +10,13 @@ class PriceRepositoryImpl implements PriceRepository {
   final CoinGeckoPriceService _service = CoinGeckoPriceService();
 
   // ─────────── Mapa símbolo → id (BTC → bitcoin) ───────────
-  final _assetsDs     = CoinGeckoAssetsDatasource();
+  final _assetsDs = CoinGeckoAssetsDatasource();
   Map<String, String> _symbolToId = {};
 
   Future<void> _ensureMap() async {
     if (_symbolToId.isEmpty) {
       final list = await _assetsDs.fetchAssets();
-      _symbolToId = {
-        for (final a in list) a.symbol.toUpperCase(): a.id,
-      };
+      _symbolToId = {for (final a in list) a.symbol.toUpperCase(): a.id};
     }
   }
 
@@ -31,20 +29,22 @@ class PriceRepositoryImpl implements PriceRepository {
   // ─────────── API pública ───────────
   @override
   Future<Map<String, double>> getPrices(
-      Set<String> symbols, {
-        String currency = 'USD',
-      }) async {
+    Set<String> symbols, {
+    String currency = 'USD',
+  }) async {
+    print('[TRACE][getPrices()] Iniciado → ${DateTime.now().toIso8601String()}');
+    print('[TRACE][getPrices()] Solicita precios para: ${symbols.join(', ')}');
     if (symbols.isEmpty) return {};
 
     await _ensureMap();
     currency = currency.toLowerCase();
     final now = _now();
 
-    final fresh   = <String, double>{};
+    final fresh = <String, double>{};
     final toFetch = <String, String>{}; // symbol → id
 
     for (final symbol in symbols) {
-      final key    = symbol.toUpperCase();
+      final key = symbol.toUpperCase();
       final cached = _cache[key];
 
       if (cached != null && now.difference(cached.ts) < _ttl) {
@@ -55,15 +55,24 @@ class PriceRepositoryImpl implements PriceRepository {
       }
     }
 
+    // Log de símbolos que faltan en cache
+    if (toFetch.isNotEmpty) {
+      print('[TRACE][getPrices()] Faltan en cache: ${toFetch.keys.join(', ')}');
+    } else {
+      print('[TRACE][getPrices()] Todos los símbolos están en cache');
+    }
+
     // Una sola llamada bulk para los símbolos caducados/faltantes
     if (toFetch.isNotEmpty) {
-      final prices =
-      await _service.getPrices(toFetch.values.toList(), currency: currency);
+      final prices = await _service.getPrices(
+        toFetch.values.toList(),
+        currency: currency,
+      );
       for (final entry in toFetch.entries) {
         final price = prices[entry.value]; // id
         if (price != null) {
           _cache[entry.key] = _CachedPrice(price, now); // symbol
-          fresh[entry.key]  = price;
+          fresh[entry.key] = price;
         }
       }
     }
@@ -73,9 +82,9 @@ class PriceRepositoryImpl implements PriceRepository {
 
   @override
   Future<double?> getCurrentPrice(
-      String symbol, {
-        String currency = 'USD',
-      }) async {
+    String symbol, {
+    String currency = 'USD',
+  }) async {
     final map = await getPrices({symbol}, currency: currency);
     return map[symbol.toUpperCase()];
   }
@@ -83,7 +92,7 @@ class PriceRepositoryImpl implements PriceRepository {
 
 // Helper interno para la caché
 class _CachedPrice {
-  final double    value;
-  final DateTime  ts;
+  final double value;
+  final DateTime ts;
   _CachedPrice(this.value, this.ts);
 }

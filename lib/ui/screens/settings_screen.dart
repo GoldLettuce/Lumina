@@ -2,11 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
-import '../providers/settings_provider.dart';
-import '../providers/investment_provider.dart';     // Import InvestmentProvider
-import '../providers/chart_value_provider.dart';    // Import ChartValueProvider
+import 'package:lumina/ui/providers/settings_provider.dart';
+import 'package:lumina/ui/providers/investment_provider.dart'; // Import InvestmentProvider
+import 'package:lumina/ui/providers/spot_price_provider.dart'; // Import SpotPriceProvider
+import 'package:lumina/ui/providers/history_provider.dart'; // Import HistoryProvider
+import 'package:lumina/ui/providers/fx_notifier.dart'; // Import FxNotifier
 import '../widgets/language_selector.dart';
 import '../widgets/currency_selector.dart';
 import '../../l10n/app_localizations.dart';
@@ -23,9 +24,7 @@ class SettingsScreen extends StatelessWidget {
     final t = AppLocalizations.of(context)!;
 
     if (!settings.isInitialized) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -62,23 +61,28 @@ class SettingsScreen extends StatelessWidget {
                 confirmText: t.delete,
               );
 
-              if (confirm) {
-                final invProv   = context.read<InvestmentProvider>();
-                final modelProv = context.read<InvestmentProvider>();
-                final chartProv = context.read<ChartValueProvider>();
+              if (!context.mounted) return;
 
-                // Llamada ajustada para pasar también chartProv al servicio
+              if (confirm) {
+                final invProv = context.read<InvestmentProvider>();
+                final modelProv = context.read<InvestmentProvider>();
+                final spotProv = context.read<SpotPriceProvider>();
+                final histProv = context.read<HistoryProvider>();
+                final fxProv = context.read<FxNotifier>();
+
                 await ResetPortfolioService.resetAllData(
                   invProv,
                   modelProv,
-                  chartProv,
+                  spotProv,
+                  histProv,
+                  fxProv,
                 );
 
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('✅ Portafolio eliminado')),
-                  );
-                }
+                if (!context.mounted) return;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('✅ Portafolio eliminado')),
+                );
               }
             },
           ),

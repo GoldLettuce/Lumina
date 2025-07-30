@@ -1,41 +1,35 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'core/init_hive.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 
 import 'core/theme.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'data/repositories_impl/investment_repository_impl.dart';
-
-import 'ui/providers/chart_value_provider.dart';
-import 'ui/providers/asset_list_provider.dart';
-import 'ui/providers/settings_provider.dart';
-import 'ui/providers/locale_provider.dart';
-import 'ui/providers/investment_provider.dart';
-import 'ui/providers/currency_provider.dart';
-
 import 'ui/screens/portfolio_screen.dart';
+import 'core/hive_service.dart';
+import 'ui/providers/app_initialization_provider.dart';
+import 'ui/providers/fx_notifier.dart';
+import 'ui/providers/spot_price_provider.dart';
+import 'package:lumina/provider_setup.dart';
+import 'ui/providers/locale_provider.dart'; // asegúrate de importar esto
 
 Future<void> main() async {
+  print('[ARRANQUE][${DateTime.now().toIso8601String()}] main() START');
   WidgetsFlutterBinding.ensureInitialized();
 
-  final investmentRepository = await initHive();
+  assert(() {
+    debugPrintRebuildDirtyWidgets = true;
+    debugProfileBuildsEnabled = true;
+    return true;
+  }());
 
+  // Eliminado: HiveService se inicializa en AppInitializationProvider
+  print('[ARRANQUE][${DateTime.now().toIso8601String()}] Antes de runApp()');
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AssetListProvider()),
-        ChangeNotifierProvider(create: (_) => InvestmentProvider(investmentRepository)),
-        ChangeNotifierProvider(create: (_) => ChartValueProvider()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()),
-        ChangeNotifierProvider(create: (_) => LocaleProvider()),
-        ChangeNotifierProvider(create: (_) => CurrencyProvider()),
-      ],
-      child: const PortfolioApp(),
-    ),
-  );
+  runApp(const PortfolioApp());
 }
 
 class PortfolioApp extends StatelessWidget {
@@ -43,24 +37,99 @@ class PortfolioApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = context.watch<LocaleProvider>().locale;
+    return MultiProvider(
+      providers: buildAppProviders(),
+      child: Builder(
+        builder: (context) {
+          final locale = context.watch<LocaleProvider>().locale;
 
-    return MaterialApp(
-      title: 'Mi Portafolio',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      locale: locale,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('en'),
-        Locale('es'),
-      ],
-      home: const PortfolioScreen(),
+          return MaterialApp(
+            title: 'Lumina',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            locale: locale,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('en'), Locale('es')],
+            home: const PortfolioGate(),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class PortfolioGate extends StatefulWidget {
+  const PortfolioGate({super.key});
+
+  @override
+  State<PortfolioGate> createState() => _PortfolioGateState();
+}
+
+class _PortfolioGateState extends State<PortfolioGate> {
+  bool _hasInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasInitialized) {
+      _hasInitialized = true;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        final appInit = context.read<AppInitializationProvider>();
+        if (!appInit.isAppReady) {
+          appInit.initialize();
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final appInit = context.watch<AppInitializationProvider>();
+    if (!appInit.isAppReady) return const SkeletonView();
+
+    final fxNotifier = context.read<FxNotifier>();
+    final fxValue = appInit.preloadedData['fx'];
+    if (fxValue != null) {
+      fxNotifier.setFx(fxValue);
+    }
+
+    // Cargar precios desde Hive cache
+    final spotPriceProvider = context.read<SpotPriceProvider>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppInitializationProvider.loadFromHive(spotPriceProvider);
+    });
+
+    return const PortfolioScreen();
+  }
+}
+
+class SkeletonView extends StatelessWidget {
+  const SkeletonView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Cargando...',
+              style: TextStyle(color: AppColors.textPrimary, fontSize: 16),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

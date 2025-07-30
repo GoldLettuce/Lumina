@@ -3,10 +3,7 @@ import 'asset_type.dart';
 
 part 'investment.g.dart';
 
-enum OperationType {
-  buy,
-  sell,
-}
+enum OperationType { buy, sell }
 
 @HiveType(typeId: 0)
 class Investment extends HiveObject {
@@ -23,10 +20,10 @@ class Investment extends HiveObject {
   final AssetType type;
 
   @HiveField(4)
-  final String coingeckoId;    // p.ej. "bitcoin"
+  final String coingeckoId; // p.ej. "bitcoin"
 
   @HiveField(5)
-  final String vsCurrency;     // p.ej. "usd"
+  final String vsCurrency; // p.ej. "usd"
 
   Investment({
     required this.symbol,
@@ -56,12 +53,9 @@ class Investment extends HiveObject {
     );
   }
 
-  double get totalQuantity =>
-      operations.fold(0.0, (sum, op) {
-        return op.type == OperationType.buy
-            ? sum + op.quantity
-            : sum - op.quantity;
-      });
+  double get totalQuantity => operations.fold(0.0, (sum, op) {
+    return op.type == OperationType.buy ? sum + op.quantity : sum - op.quantity;
+  });
 
   double get totalInvested =>
       operations.fold(0.0, (sum, op) => sum + (op.quantity * op.price));
@@ -80,6 +74,32 @@ class Investment extends HiveObject {
     if (index >= 0 && index < operations.length) {
       operations.removeAt(index);
     }
+  }
+
+  Map<String, dynamic> toJson() => {
+    'symbol': symbol,
+    'name': name,
+    'type': type.index,
+    'coingeckoId': coingeckoId,
+    'vsCurrency': vsCurrency,
+    'operations': operations.map((op) => op.toJson()).toList(),
+  };
+
+  static Investment fromJson(Map<String, dynamic> json) {
+    return Investment(
+      symbol: json['symbol'],
+      name: json['name'],
+      type: AssetType.values[json['type']],
+      coingeckoId: json['coingeckoId'],
+      vsCurrency: json['vsCurrency'] ?? 'usd',
+      operations:
+          (json['operations'] as List)
+              .map(
+                (e) =>
+                    InvestmentOperation.fromJson(Map<String, dynamic>.from(e)),
+              )
+              .toList(),
+    );
   }
 }
 
@@ -121,6 +141,24 @@ class InvestmentOperation {
       price: price ?? this.price,
       date: date ?? this.date,
       type: type ?? this.type,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'quantity': quantity,
+    'price': price,
+    'date': date.toIso8601String(),
+    'type': type.index,
+    'id': id,
+  };
+
+  static InvestmentOperation fromJson(Map<String, dynamic> json) {
+    return InvestmentOperation(
+      quantity: (json['quantity'] as num).toDouble(),
+      price: (json['price'] as num).toDouble(),
+      date: DateTime.parse(json['date']),
+      type: OperationType.values[json['type']],
+      id: json['id'],
     );
   }
 }

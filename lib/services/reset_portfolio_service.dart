@@ -2,37 +2,40 @@
 
 import 'package:hive/hive.dart';
 
-import '../domain/entities/investment.dart';
-import '../ui/providers/investment_provider.dart';
-import '../ui/providers/chart_value_provider.dart';
-import '../data/models/chart_cache.dart';
+import 'package:lumina/ui/providers/investment_provider.dart';
+import 'package:lumina/ui/providers/spot_price_provider.dart';
+import 'package:lumina/ui/providers/history_provider.dart';
+import 'package:lumina/ui/providers/fx_notifier.dart';
 import '../data/repositories_impl/investment_repository_impl.dart';
+import '../core/hive_service.dart';
 
 class ResetPortfolioService {
   /// Borra todas las inversiones de Hive y limpia los tres providers:
-  /// InvestmentProvider y ChartValueProvider.
+  /// InvestmentProvider.
   static Future<void> resetAllData(
-      InvestmentProvider invProv,
-      InvestmentProvider modelProv,
-      ChartValueProvider chartProv,
-      ) async {
+    InvestmentProvider invProv,
+    InvestmentProvider modelProv,
+    SpotPriceProvider spotProv,
+    HistoryProvider historyProv,
+    FxNotifier fxNotifier,
+  ) async {
     // 1) Cerrar y borrar la caja de inversiones
-    if (Hive.isBoxOpen(InvestmentRepositoryImpl.boxName)) {
-      await Hive.box<Investment>(InvestmentRepositoryImpl.boxName).close();
-    }
+    await HiveService.investments.close();
     await Hive.deleteBoxFromDisk(InvestmentRepositoryImpl.boxName);
-    await Hive.openBox<Investment>(InvestmentRepositoryImpl.boxName);
+    // Reabrir la caja y actualizar la referencia en HiveService
+    await HiveService.reopenInvestmentsBox();
 
     // 2) Cerrar y borrar la caja de cache de la gráfica
-    if (Hive.isBoxOpen('chart_cache')) {
-      await Hive.box<ChartCache>('chart_cache').close();
-    }
+    await HiveService.chartCache.close();
     await Hive.deleteBoxFromDisk('chart_cache');
-    await Hive.openBox<ChartCache>('chart_cache');
+    // Reabrir la caja y actualizar la referencia en HiveService
+    await HiveService.reopenChartCacheBox();
 
     // 3) Limpiar datos en memoria
     invProv.clearAll();
     modelProv.clearAll();
-    chartProv.clear();  // limpia estado interno del gráfico
+    spotProv.clear();
+    historyProv.clear();
+    fxNotifier.clear(); // limpia estado interno del gráfico
   }
 }

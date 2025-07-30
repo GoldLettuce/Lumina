@@ -39,30 +39,33 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
 
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(t.deleteOperations),
-        content: Text(t.deleteOperationsMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(t.cancel),
+      builder:
+          (_) => AlertDialog(
+            title: Text(t.deleteOperations),
+            content: Text(t.deleteOperationsMessage),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(t.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(t.delete),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(t.delete),
-          ),
-        ],
-      ),
     );
 
     if (confirm == true) {
+      // ignore: use_build_context_synchronously
       final model = context.read<InvestmentProvider>();
-      await model.removeOperations(asset.symbol, _selectedIds.toList());
+      final idsToRemove = _selectedIds.toList();
+      await model.removeOperations(asset.symbol, idsToRemove);
       _clearSelection();
 
-      final stillExists = model.investments.any((e) => e.symbol == asset.symbol);
-      if (!stillExists && mounted) {
-        Navigator.of(context).pop();
+      if (idsToRemove.isNotEmpty && mounted) {
+        // ignore: use_build_context_synchronously
+        Navigator.of(context).pop(true);
       }
     }
   }
@@ -74,9 +77,10 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     final theme = Theme.of(context);
     final t = AppLocalizations.of(context)!;
 
-    final currentAsset = model.investments
-        .where((inv) => inv.symbol == widget.asset.symbol)
-        .firstOrNull;
+    final currentAsset =
+        model.investments
+            .where((inv) => inv.symbol == widget.asset.symbol)
+            .firstOrNull;
 
     if (currentAsset == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -95,88 +99,94 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.delete),
-            onPressed: _selectedIds.isNotEmpty
-                ? () => _confirmDelete(context, currentAsset)
-                : null,
+            onPressed:
+                _selectedIds.isNotEmpty
+                    ? () => _confirmDelete(context, currentAsset)
+                    : null,
             color: _selectedIds.isNotEmpty ? Colors.red : Colors.grey,
           ),
         ],
       ),
-      body: currentAsset.operations.isEmpty
-          ? Center(
-        child: Text(
-          t.noOperations,
-          style: theme.textTheme.bodyLarge,
-        ),
-      )
-          : ListView.separated(
-        padding: const EdgeInsets.all(16),
-        separatorBuilder: (_, __) => const Divider(),
-        itemCount: currentAsset.operations.length,
-        itemBuilder: (context, index) {
-          final op = currentAsset.operations[index];
-          final isBuy = op.type == OperationType.buy;
-          final fecha = DateFormat('d MMM y – HH:mm').format(op.date);
-          final color = isBuy ? Colors.green : Colors.red;
-          final selected = _selectedIds.contains(op.id);
+      body:
+          currentAsset.operations.isEmpty
+              ? Center(
+                child: Text(t.noOperations, style: theme.textTheme.bodyLarge),
+              )
+              : ListView.separated(
+                padding: const EdgeInsets.all(16),
+                separatorBuilder: (_, __) => const Divider(),
+                itemCount: currentAsset.operations.length,
+                itemBuilder: (context, index) {
+                  final op = currentAsset.operations[index];
+                  final isBuy = op.type == OperationType.buy;
+                  final fecha = DateFormat('d MMM y – HH:mm').format(op.date);
+                  final color = isBuy ? Colors.green : Colors.red;
+                  final selected = _selectedIds.contains(op.id);
 
-          // Convertir precio USD a moneda seleccionada
-          final convertedPrice = op.price * fx.exchangeRate;
-          final priceText = currencyFormatter.format(convertedPrice);
+                  // Convertir precio USD a moneda seleccionada
+                  final convertedPrice = op.price * fx.exchangeRate;
+                  final priceText = currencyFormatter.format(convertedPrice);
 
-          return GestureDetector(
-            onLongPress: () => _toggleSelection(op.id),
-            onTap: () {
-              if (_selectedIds.isNotEmpty) {
-                _toggleSelection(op.id);
-              }
-            },
-            child: Container(
-              color: selected ? Colors.grey.shade300 : null,
-              child: ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Icon(
-                  isBuy ? Icons.arrow_upward : Icons.arrow_downward,
-                  color: color,
-                ),
-                title: Text(
-                  '${isBuy ? t.buy : t.sell} de ${op.quantity}',
-                  style: theme.textTheme.bodyLarge,
-                ),
-                subtitle: Text(fecha),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      priceText,
-                      style: theme.textTheme.bodyMedium!.copyWith(
-                        color: color,
-                        fontWeight: FontWeight.w600,
+                  return GestureDetector(
+                    onLongPress: () => _toggleSelection(op.id),
+                    onTap: () {
+                      if (_selectedIds.isNotEmpty) {
+                        _toggleSelection(op.id);
+                      }
+                    },
+                    child: Container(
+                      color: selected ? Colors.grey.shade300 : null,
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
+                          isBuy ? Icons.arrow_upward : Icons.arrow_downward,
+                          color: color,
+                        ),
+                        title: Text(
+                          '${isBuy ? t.buy : t.sell} de ${op.quantity}',
+                          style: theme.textTheme.bodyLarge,
+                        ),
+                        subtitle: Text(fecha),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              priceText,
+                              style: theme.textTheme.bodyMedium!.copyWith(
+                                color: color,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              icon: const Icon(Icons.edit, size: 20),
+                              onPressed: () async {
+                                final edited =
+                                    await showDialog<InvestmentOperation>(
+                                      context: context,
+                                      builder:
+                                          (_) => AddInvestmentDialog(
+                                            initialOperation: op,
+                                            initialSymbol: currentAsset.symbol,
+                                          ),
+                                    );
+                                if (edited != null) {
+                                  await model.editOperation(
+                                    currentAsset.symbol,
+                                    edited,
+                                  );
+                                  // ignore: use_build_context_synchronously
+                                  // Reemplazar context.read<ChartValueProvider>() por el provider adecuado (SpotPriceProvider, HistoryProvider o FxNotifier)
+                                }
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: const Icon(Icons.edit, size: 20),
-                      onPressed: () async {
-                        final edited = await showDialog<InvestmentOperation>(
-                          context: context,
-                          builder: (_) => AddInvestmentDialog(
-                            initialOperation: op,
-                            initialSymbol: currentAsset.symbol,
-                          ),
-                        );
-                        if (edited != null) {
-                          await model.editOperation(currentAsset.symbol, edited);
-                        }
-                      },
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
-            ),
-          );
-        },
-      ),
     );
   }
 }
