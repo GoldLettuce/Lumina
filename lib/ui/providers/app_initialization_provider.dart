@@ -59,4 +59,9 @@ class AppInitializationProvider extends ChangeNotifier {
       'currency': currency,
     };
   }
+
+  /// Método para cargar datos desde Hive cache
+  static Future<void> loadFromHive(SpotPriceProvider spotPriceProvider) async {
+    await spotPriceProvider.loadFromHive();
+  }
 }

@@ -12,6 +12,7 @@ import 'ui/screens/portfolio_screen.dart';
 import 'core/hive_service.dart';
 import 'ui/providers/app_initialization_provider.dart';
 import 'ui/providers/fx_notifier.dart';
+import 'ui/providers/spot_price_provider.dart';
 import 'package:lumina/provider_setup.dart';
 import 'ui/providers/locale_provider.dart'; // asegúrate de importar esto
 
@@ -96,6 +97,12 @@ class _PortfolioGateState extends State<PortfolioGate> {
     if (fxValue != null) {
       fxNotifier.setFx(fxValue);
     }
+
+    // Cargar precios desde Hive cache
+    final spotPriceProvider = context.read<SpotPriceProvider>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppInitializationProvider.loadFromHive(spotPriceProvider);
+    });
 
     return const PortfolioScreen();
   }

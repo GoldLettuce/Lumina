@@ -5,6 +5,7 @@ import 'package:lumina/domain/entities/asset_type.dart';
 import 'package:lumina/core/point.dart';
 import 'package:lumina/data/models/local_history.dart';
 import 'package:lumina/data/models/chart_cache.dart';
+import 'package:lumina/data/models/spot_price.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 
 /// Servicio centralizado para gestionar todas las cajas de Hive
@@ -111,6 +112,7 @@ class HiveService {
     Hive.registerAdapter(PointAdapter());
     Hive.registerAdapter(LocalHistoryAdapter());
     Hive.registerAdapter(ChartCacheAdapter());
+    Hive.registerAdapter(SpotPriceAdapter());
   }
 
   /// Abre la caja de inversiones como LazyBox

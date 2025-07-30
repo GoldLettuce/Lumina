@@ -3,6 +3,8 @@ import 'package:flutter/widgets.dart';
 import 'dart:collection';
 import 'dart:async';
 import '../../data/repositories_impl/price_repository_impl.dart';
+import '../../core/hive_service.dart';
+import '../../data/models/spot_price.dart';
 
 class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
   final Map<String, double> _spotPrices = {};
@@ -41,6 +43,22 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
+  /// Carga precios desde Hive cache
+  Future<void> loadFromHive() async {
+    final box = HiveService.metaBox;
+    final List<dynamic>? cached = box?.get('spot_prices');
+
+    if (cached != null) {
+      for (final p in cached) {
+        if (p is SpotPrice) {
+          _spotPrices[p.symbol] = p.price;
+        }
+      }
+      print('[SpotPriceProvider] Precios cargados desde Hive: ${_spotPrices.length} activos');
+      notifyListeners();
+    }
+  }
+
   /// Carga precios desde la red (si no se está cargando ya)
   Future<void> loadPrices() async {
     if (_isLoading || _symbols.isEmpty) return;
@@ -51,6 +69,14 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
     try {
       final prices = await PriceRepositoryImpl().getPrices(_symbols);
       updatePrices(prices);
+      
+      // Guardar precios en Hive cache
+      final box = HiveService.metaBox;
+      final toStore = prices.entries
+          .map((e) => SpotPrice(symbol: e.key, price: e.value))
+          .toList();
+      await box?.put('spot_prices', toStore);
+      print('[SpotPriceProvider] Precios guardados en Hive: ${toStore.length} activos');
     } catch (e) {
       print('[ERROR][SpotPriceProvider] $e');
     } finally {
