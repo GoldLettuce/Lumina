@@ -21,16 +21,20 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   /// Establece los símbolos visibles para el refresco automático
   void setSymbols(Set<String> symbols) {
+    final added = symbols.difference(_symbols); // Nuevos símbolos añadidos
     _symbols = symbols;
 
-    // ✅ Iniciar el timer solo si no está activo aún
+    // ✅ Iniciar el timer si aún no existe
     _refreshTimer ??= Timer.periodic(
       const Duration(seconds: 60),
       (_) => loadPrices(),
     );
 
-    // ✅ Hacer una carga inicial si aún no hay precios
-    if (_spotPrices.isEmpty && symbols.isNotEmpty) {
+    // ✅ Hacer una carga inicial si no hay precios o si hay símbolos nuevos no cargados
+    final needInitialLoad = _spotPrices.isEmpty ||
+        added.any((symbol) => !_spotPrices.containsKey(symbol));
+
+    if (needInitialLoad && symbols.isNotEmpty) {
       loadPrices();
     }
 
