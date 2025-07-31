@@ -238,13 +238,39 @@ class AssetListTile extends StatelessWidget {
     final theme = Theme.of(context);
     final valorActual = priceUsd != null ? asset.totalQuantity * priceUsd * fx : null;
 
+    // Calcular rentabilidad individual del activo
+    double rentabilidad = 0.0;
+    if (priceUsd != null) {
+      final valorActualUsd = asset.totalQuantity * priceUsd;
+      final costeTotal = asset.operations.fold(0.0, (s, op) => s + op.quantity * op.price);
+      rentabilidad = costeTotal == 0 ? 0 : (valorActualUsd - costeTotal) / costeTotal * 100;
+    }
+
+    final colorRentabilidad = rentabilidad >= 0
+        ? AppColors.positive
+        : AppColors.negative;
+
     final trailing = valorActual == null
         ? const SizedBox(width: 60)
-        : Text(
-      NumberFormat.simpleCurrency(name: currency).format(valorActual),
-      key: ValueKey(valorActual),
-      style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
-    );
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                NumberFormat.simpleCurrency(name: currency).format(valorActual),
+                key: ValueKey(valorActual),
+                style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
+              ),
+              Text(
+                '${rentabilidad >= 0 ? '+' : ''}${rentabilidad.toStringAsFixed(2)}%',
+                style: TextStyle(
+                  color: colorRentabilidad,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          );
 
     return ListTile(
       contentPadding: EdgeInsets.zero,
