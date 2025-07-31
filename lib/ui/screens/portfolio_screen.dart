@@ -345,15 +345,15 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: true,
-      ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: null,
-        onPressed: () => showDialog(
-          context: context,
-          builder: (_) => const AddInvestmentDialog(),
-        ),
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => showDialog(
+              context: context,
+              builder: (_) => const AddInvestmentDialog(),
+            ),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -475,12 +475,12 @@ class SkeletonView extends StatelessWidget {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: true,
-      ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: null,
-        onPressed: null,
-        backgroundColor: AppColors.primary.withOpacity(0.5),
-        child: const Icon(Icons.add),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: null, // Deshabilitado mientras carga
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
