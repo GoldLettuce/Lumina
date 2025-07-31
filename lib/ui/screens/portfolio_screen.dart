@@ -17,6 +17,7 @@ import 'settings_screen.dart';
 import '../../core/point.dart';
 import '../../domain/entities/investment.dart';
 import 'package:lumina/ui/providers/currency_provider.dart';
+import 'package:lumina/ui/providers/profit_display_mode_notifier.dart';
 import '../../data/repositories_impl/history_repository_impl.dart';
 import '../../core/chart_range.dart';
 import '../../core/hive_service.dart';
@@ -252,24 +253,42 @@ class AssetListTile extends StatelessWidget {
 
     final trailing = valorActual == null
         ? const SizedBox(width: 60)
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                NumberFormat.simpleCurrency(name: currency).format(valorActual),
-                key: ValueKey(valorActual),
-                style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
-              ),
-              Text(
-                '${rentabilidad >= 0 ? '+' : ''}${rentabilidad.toStringAsFixed(2)}%',
-                style: TextStyle(
-                  color: colorRentabilidad,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 12,
+        : Consumer<ProfitDisplayModeNotifier>(
+            builder: (context, displayMode, child) {
+              final valorGanado = priceUsd != null 
+                  ? (asset.totalQuantity * priceUsd * fx) - (asset.operations.fold(0.0, (s, op) => s + op.quantity * op.price) * fx)
+                  : 0.0;
+              
+              final displayText = displayMode.showPercentage
+                  ? '${rentabilidad >= 0 ? '+' : ''}${rentabilidad.toStringAsFixed(2)}%'
+                  : '${valorGanado >= 0 ? '+' : ''}${NumberFormat.simpleCurrency(name: currency).format(valorGanado)}';
+              
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  context.read<ProfitDisplayModeNotifier>().toggle();
+                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      NumberFormat.simpleCurrency(name: currency).format(valorActual),
+                      key: ValueKey(valorActual),
+                      style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    Text(
+                      displayText,
+                      style: TextStyle(
+                        color: colorRentabilidad,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              );
+            },
           );
 
     return ListTile(
