@@ -65,14 +65,24 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.search),
-                  hintText: loc.searchAssetPlaceholder,
-                  border: const OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.search, size: 20, color: Colors.grey),
+                  border: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blueAccent),
+                  ),
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                 ),
+                style: TextStyle(fontSize: 14),
                 onChanged:
                     (value) => context.read<AssetListProvider>().filter(value),
               ),
