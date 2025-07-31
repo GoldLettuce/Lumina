@@ -161,22 +161,18 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                             IconButton(
                               icon: const Icon(Icons.edit, size: 20),
                               onPressed: () async {
-                                final edited =
-                                    await showDialog<InvestmentOperation>(
-                                      context: context,
-                                      builder:
-                                          (_) => AddInvestmentDialog(
-                                            initialOperation: op,
-                                            initialSymbol: currentAsset.symbol,
-                                          ),
-                                    );
-                                if (edited != null) {
-                                  await model.editOperation(
-                                    currentAsset.symbol,
-                                    edited,
-                                  );
-                                  // ignore: use_build_context_synchronously
-                                  // Reemplazar context.read<ChartValueProvider>() por el provider adecuado (SpotPriceProvider, HistoryProvider o FxNotifier)
+                                final result = await showDialog<bool>(
+                                  context: context,
+                                  builder:
+                                      (_) => AddInvestmentDialog(
+                                        initialOperation: op,
+                                        initialSymbol: currentAsset.symbol,
+                                      ),
+                                );
+
+                                if (result == true) {
+                                  // Se editó con éxito; los cambios ya están sincronizados desde el diálogo
+                                  // Puedes añadir aquí lógica extra si se desea refrescar algo manualmente
                                 }
                               },
                             ),

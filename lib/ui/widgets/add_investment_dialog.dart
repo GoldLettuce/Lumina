@@ -170,8 +170,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       final investments = model.investments;
       _loadHistory(context, investments);
 
-      // 3) Devuelve la operación editada
-      Navigator.of(context).pop(operation);
+      // 3) Devuelve true para indicar que se editó exitosamente
+      Navigator.of(context).pop(true);
       return;
     }
 
@@ -204,7 +204,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     // Actualizar gráfico y precios usando la función loadHistory
     _loadHistory(context, model.investments);
 
-    Navigator.of(context).pop();
+    Navigator.of(context).pop(true);
   }
 
   void _loadHistory(BuildContext context, List<Investment> investments) async {

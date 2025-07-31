@@ -468,10 +468,15 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => showDialog(
-              context: context,
-              builder: (_) => const AddInvestmentDialog(),
-            ),
+            onPressed: () async {
+              final result = await showDialog(
+                context: context,
+                builder: (_) => const AddInvestmentDialog(),
+              );
+              if (result == true && context.mounted) {
+                _maybeReloadHistory(); // Esto actualizará correctamente el gráfico
+              }
+            },
           ),
         ],
       ),
