@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
-import 'package:lumina/ui/providers/fx_notifier.dart';
 import 'package:lumina/ui/providers/spot_price_provider.dart';
 import 'package:lumina/ui/providers/history_provider.dart';
 import 'package:lumina/ui/providers/investment_provider.dart';
@@ -19,9 +18,8 @@ import '../../core/point.dart';
 import '../../domain/entities/investment.dart';
 import 'package:lumina/ui/providers/currency_provider.dart';
 import '../../data/repositories_impl/history_repository_impl.dart';
-import '../../data/repositories_impl/price_repository_impl.dart';
 import '../../core/chart_range.dart';
-import '../../domain/entities/asset_type.dart';
+import '../../core/hive_service.dart';
 
 // ======================
 // PortfolioSummaryMinimal
@@ -37,6 +35,7 @@ class PortfolioSummaryMinimal extends StatelessWidget {
     required this.selectedDate,
     required this.exchangeRate,
     required this.currency,
+    required this.investments,
   });
 
   final List<Point> history;
@@ -46,6 +45,38 @@ class PortfolioSummaryMinimal extends StatelessWidget {
   final DateTime? selectedDate;
   final double exchangeRate;
   final String currency;
+  final List<Investment> investments;
+
+  /// Calcula el valor inicial del portfolio usando datos locales
+  double calcularValorInicial(List<Investment> investments, DateTime startDate) {
+    // Buscar precios históricos locales desde Hive
+    final key = 'history_${startDate.toIso8601String().substring(0, 10)}';
+    final localHistory = HiveService.history.get(key);
+    
+    if (localHistory == null) {
+      // Si no hay datos históricos, usar el primer valor del historial
+      return history.isNotEmpty ? history.first.value : 0.0;
+    }
+
+    // Calcular el valor del portfolio en esa fecha
+    double total = 0;
+    for (final inv in investments) {
+      final qty = inv.operations
+          .where((op) => !op.date.isAfter(startDate))
+          .fold<double>(0, (s, op) => s + op.quantity);
+      
+      // Buscar el precio en el cache de precios
+      final cacheKey = 'prices_${startDate.toIso8601String().substring(0, 10)}';
+      final chartCache = HiveService.chartCache.get(cacheKey);
+      final precio = chartCache?.spotPrices[inv.symbol];
+      
+      if (precio != null && qty > 0) {
+        total += qty * precio;
+      }
+    }
+    
+    return total;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,8 +84,27 @@ class PortfolioSummaryMinimal extends StatelessWidget {
     final currentValueUsd = hasSelection
         ? selectedValue!
         : (history.isNotEmpty ? history.last.value : 0.0);
-    final initialValueUsd = history.isNotEmpty ? history.first.value : 0.0;
     final currentValue = currentValueUsd * exchangeRate;
+
+    // Buscar la fecha más antigua entre todas las operaciones
+    DateTime? firstDate;
+    if (investments.isNotEmpty) {
+      final allOperations = investments.expand((e) => e.operations).toList();
+      if (allOperations.isNotEmpty) {
+        firstDate = allOperations
+            .map((op) => op.date)
+            .reduce((a, b) => a.isBefore(b) ? a : b);
+      }
+    }
+
+    // Calcular el valor inicial usando datos locales
+    double initialValueUsd;
+    if (firstDate != null) {
+      final startDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
+      initialValueUsd = calcularValorInicial(investments, startDate);
+    } else {
+      initialValueUsd = history.isNotEmpty ? history.first.value : 0.0;
+    }
 
     final rentabilidad = hasSelection
         ? selectedPct!
@@ -402,6 +452,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
               selectedDate: historyProvider.selectedDate,
               exchangeRate: fx.exchangeRate,
               currency: fx.currency,
+              investments: investments,
             ),
             const SizedBox(height: 12),
             Selector<InvestmentProvider, List<Investment>>(
