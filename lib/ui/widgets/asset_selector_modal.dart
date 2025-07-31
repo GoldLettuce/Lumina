@@ -106,9 +106,24 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                       itemBuilder: (context, index) {
                         final coin = prov.filteredSymbols[index];
                         return ListTile(
-                          title: Text(
-                            '${coin.symbol} – ${coin.name}',
-                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          title: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                coin.symbol,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Text(
+                                coin.name,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
                           ),
                           onTap: () {
                             // Devuelve un Map<String,String> para no romper la lógica existente
