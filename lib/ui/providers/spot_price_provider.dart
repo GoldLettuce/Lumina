@@ -9,6 +9,7 @@ import '../../data/models/spot_price.dart';
 class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
   final Map<String, double> _spotPrices = {};
   Set<String> _symbols = {};
+  Map<String, String> _symbolToId = {}; // Mapeo de símbolos a IDs de CoinGecko
   Timer? _refreshTimer;
   bool _isLoading = false;
 
@@ -22,9 +23,14 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
   bool get isLoading => _isLoading;
 
   /// Establece los símbolos visibles para el refresco automático
-  void setSymbols(Set<String> symbols) {
+  void setSymbols(Set<String> symbols, {Map<String, String>? symbolToId}) {
     final added = symbols.difference(_symbols); // Nuevos símbolos añadidos
     _symbols = symbols;
+    
+    // Guardar el mapeo de símbolos a IDs
+    if (symbolToId != null) {
+      _symbolToId.addAll(symbolToId);
+    }
 
     // ✅ Iniciar el timer si aún no existe
     _refreshTimer ??= Timer.periodic(
@@ -67,7 +73,14 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
     
     try {
-      final prices = await PriceRepositoryImpl().getPrices(_symbols);
+      // Actualizar el mapeo en el repositorio de precios usando el mapeo almacenado
+      final priceRepo = PriceRepositoryImpl();
+      if (_symbolToId.isNotEmpty) {
+        priceRepo.updateSymbolMapping(_symbolToId);
+      }
+      
+      // Usar los símbolos directamente - el PriceRepositoryImpl ahora maneja la conversión
+      final prices = await priceRepo.getPrices(_symbols);
       updatePrices(prices);
       
       // Guardar precios en Hive cache

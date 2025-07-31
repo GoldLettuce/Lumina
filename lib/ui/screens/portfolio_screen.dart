@@ -365,7 +365,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
 
     // Configurar símbolos y cargar precios centralizados
     final symbols = investments.map((e) => e.symbol).toSet();
-    spotProv.setSymbols(symbols);
+    final symbolToId = {for (final inv in investments) inv.symbol.toUpperCase(): inv.coingeckoId};
+    spotProv.setSymbols(symbols, symbolToId: symbolToId);
 
     final prices = spotProv.spotPrices;
 

@@ -22,16 +22,34 @@ class CoinGeckoAsset {
 class CoinGeckoAssetsDatasource {
   static const _baseUrl = 'https://api.coingecko.com/api/v3';
 
-  /// Nuevo endpoint: top 100 por capitalización en USD
-  static const _top100Endpoint =
+  /// Endpoint dinámico para paginación
+  String _getMarketsEndpoint(int page) =>
       '$_baseUrl/coins/markets'
       '?vs_currency=usd'
       '&order=market_cap_desc'
-      '&per_page=100'
-      '&page=1'
+      '&per_page=250'
+      '&page=$page'
       '&sparkline=false';
 
-  /// Ahora fetchAssets() solo trae 100 items con cache de 24 horas.
+  /// Obtiene una página específica de activos
+  Future<List<CoinGeckoAsset>> fetchMarketsPage(int page) async {
+    print('[PAGINATION] Cargando página $page...');
+    
+    final url = Uri.parse(_getMarketsEndpoint(page));
+    final response = await RequestManager().get(url);
+
+    if (response.statusCode == 200) {
+      final assets = await compute(_parseAssets, response.body);
+      print('[PAGINATION] Página $page cargada con ${assets.length} activos');
+      return assets;
+    } else {
+      throw Exception(
+        'Error al obtener activos de CoinGecko: [${response.statusCode}]',
+      );
+    }
+  }
+
+  /// Método legacy para compatibilidad (mantiene cache para primera carga)
   Future<List<CoinGeckoAsset>> fetchAssets() async {
     // Verificar cache primero
     final cachedData = _getCachedAssets();
@@ -42,20 +60,35 @@ class CoinGeckoAssetsDatasource {
     // Cache vencida o no existe, obtener desde red
     print('[CACHE][ASSETS] Cache vencida, actualizando desde red…');
     
-    final url = Uri.parse(_top100Endpoint);
+    final assets = await fetchMarketsPage(1);
+    
+    // Guardar en cache
+    _saveAssetsToCache(assets);
+    
+    return assets;
+  }
+
+  /// Búsqueda remota de activos usando la API de CoinGecko
+  Future<List<CoinGeckoAsset>> searchAssets(String query) async {
+    print('[SEARCH] Buscando: $query');
+    
+    final url = Uri.parse('https://api.coingecko.com/api/v3/search?query=$query');
     final response = await RequestManager().get(url);
 
     if (response.statusCode == 200) {
-      final assets = await compute(_parseAssets, response.body);
+      final data = json.decode(response.body);
+      final coins = data['coins'] as List<dynamic>;
       
-      // Guardar en cache
-      _saveAssetsToCache(assets);
+      final results = coins.map((c) => CoinGeckoAsset(
+        id: c['id'],
+        symbol: c['symbol'].toString().toUpperCase(),
+        name: c['name'],
+      )).toList();
       
-      return assets;
+      print('[SEARCH] Encontrados ${results.length} resultados para "$query"');
+      return results;
     } else {
-      throw Exception(
-        'Error al obtener activos de CoinGecko:  [${response.statusCode}',
-      );
+      throw Exception('Error en búsqueda: ${response.statusCode}');
     }
   }
 

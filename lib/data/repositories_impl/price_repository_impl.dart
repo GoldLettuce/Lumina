@@ -20,6 +20,11 @@ class PriceRepositoryImpl implements PriceRepository {
     }
   }
 
+  /// Actualiza el mapeo de símbolos a IDs usando las inversiones actuales
+  void updateSymbolMapping(Map<String, String> symbolToId) {
+    _symbolToId.addAll(symbolToId);
+  }
+
   // ─────────── Caché en memoria ───────────
   static const _ttl = Duration(seconds: 60);
   final _cache = HashMap<String, _CachedPrice>();
@@ -50,7 +55,8 @@ class PriceRepositoryImpl implements PriceRepository {
       if (cached != null && now.difference(cached.ts) < _ttl) {
         fresh[key] = cached.value;
       } else {
-        final id = _symbolToId[key] ?? key.toLowerCase(); // fallback
+        // Usar el mapeo de símbolo a ID de CoinGecko
+        final id = _symbolToId[key] ?? key.toLowerCase();
         toFetch[key] = id;
       }
     }
@@ -79,6 +85,8 @@ class PriceRepositoryImpl implements PriceRepository {
 
     return fresh;
   }
+
+
 
   @override
   Future<double?> getCurrentPrice(
