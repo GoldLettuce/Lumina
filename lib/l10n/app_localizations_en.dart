@@ -177,4 +177,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loading => 'Loading...';
+
+  @override
+  String get donationsTitle => '☕ Donations';
+
+  @override
+  String get donationsMessage => 'Thank you for using Lumina!';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String currencyFormat(String currency, String name) {
+    return '$currency – $name';
+  }
 }

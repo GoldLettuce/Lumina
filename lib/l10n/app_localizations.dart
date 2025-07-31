@@ -430,6 +430,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Loading...'**
   String get loading;
+
+  /// No description provided for @donationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'☕ Donations'**
+  String get donationsTitle;
+
+  /// No description provided for @donationsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for using Lumina!'**
+  String get donationsMessage;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @currencyFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'{currency} – {name}'**
+  String currencyFormat(String currency, String name);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

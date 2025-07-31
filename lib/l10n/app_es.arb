@@ -61,5 +61,19 @@
     }
   },
   "exportFileError": "❌ Error al exportar el archivo",
-  "loading": "Cargando..."
+  "loading": "Cargando...",
+  "donationsTitle": "☕ Donaciones",
+  "donationsMessage": "¡Gracias por usar Lumina!",
+  "ok": "OK",
+  "currencyFormat": "{currency} – {name}",
+  "@currencyFormat": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

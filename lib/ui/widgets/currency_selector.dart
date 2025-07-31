@@ -17,7 +17,7 @@ class CurrencySelector extends StatelessWidget {
 
     return ListTile(
       title: Text(t.baseCurrency),
-      subtitle: Text('${provider.currency} – $selectedName'),
+      subtitle: Text(t.currencyFormat(provider.currency, selectedName)),
       enabled: !provider.isLoading,
       onTap:
           provider.isLoading

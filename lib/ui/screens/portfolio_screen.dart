@@ -450,12 +450,12 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text('☕ Donaciones'),
-                    content: const Text('¡Gracias por usar Lumina!'),
+                    title: Text(t.donationsTitle),
+                    content: Text(t.donationsMessage),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('OK'),
+                        child: Text(t.ok),
                       ),
                     ],
                   ),
