@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
 import 'package:lumina/ui/providers/fx_notifier.dart';
@@ -260,6 +261,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
     }
   }
 
+
+
   Future<void> _loadHistory(List<Investment> investments) async {
     final histRepo = HistoryRepositoryImpl();
     final spotProv = context.read<SpotPriceProvider>();
@@ -329,22 +332,43 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
 
     return Scaffold(
       appBar: AppBar(
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
-              );
-            },
-          ),
-        ),
-        title: const SizedBox.shrink(),
+        elevation: 0,
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
-        elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
+        titleSpacing: 0,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(LucideIcons.coffee),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('☕ Donaciones'),
+                    content: const Text('¡Gracias por usar Lumina!'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -466,15 +490,24 @@ class SkeletonView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.settings),
-          onPressed: null, // Deshabilitado mientras carga
-        ),
-        title: const SizedBox.shrink(),
+        elevation: 0,
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
-        elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
+        titleSpacing: 0,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: null, // Deshabilitado mientras carga
+            ),
+            IconButton(
+              icon: const Icon(LucideIcons.coffee),
+              onPressed: null, // Deshabilitado mientras carga
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
