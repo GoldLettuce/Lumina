@@ -8,6 +8,7 @@ import 'history_provider.dart';
 import 'fx_notifier.dart';
 import 'settings_provider.dart';
 import 'currency_provider.dart';
+import 'theme_mode_provider.dart';
 
 class AppInitializationProvider extends ChangeNotifier {
   bool _isAppReady = false;
@@ -58,6 +59,11 @@ class AppInitializationProvider extends ChangeNotifier {
       'settings': settings,
       'currency': currency,
     };
+  }
+
+  /// Inicializa el ThemeModeProvider después de que Hive esté listo
+  static Future<void> initializeThemeMode(ThemeModeProvider themeModeProvider) async {
+    await themeModeProvider.initialize();
   }
 
   /// Método para cargar datos desde Hive cache

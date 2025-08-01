@@ -64,6 +64,12 @@ flutter:
   # Generación automática de localización
   generate: true
 
+  fonts:
+    - family: RobotoMono
+      fonts:
+        - asset: fonts/RobotoMono-Regular.ttf
+          weight: 400
+
 flutter_native_splash:
   color: "#121212"
   image: assets/splash.png

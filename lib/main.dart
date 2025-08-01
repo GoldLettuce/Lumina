@@ -14,7 +14,8 @@ import 'ui/providers/app_initialization_provider.dart';
 import 'ui/providers/fx_notifier.dart';
 import 'ui/providers/spot_price_provider.dart';
 import 'package:lumina/provider_setup.dart';
-import 'ui/providers/locale_provider.dart'; // asegúrate de importar esto
+import 'ui/providers/locale_provider.dart';
+import 'ui/providers/theme_mode_provider.dart';
 
 Future<void> main() async {
   print('[ARRANQUE][${DateTime.now().toIso8601String()}] main() START');
@@ -42,11 +43,15 @@ class PortfolioApp extends StatelessWidget {
       child: Builder(
         builder: (context) {
           final locale = context.watch<LocaleProvider>().locale;
+          final themeModeProvider = context.watch<ThemeModeProvider>();
+          final themeMode = themeModeProvider.mode;
 
           return MaterialApp(
             title: 'Lumina',
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
+            theme: themeMode == AppThemeMode.lightMono ? AppTheme.lightMonoTheme : AppTheme.lightTheme,
+            darkTheme: themeMode == AppThemeMode.darkMono ? AppTheme.darkMonoTheme : AppTheme.darkTheme,
+            themeMode: themeModeProvider.flutterThemeMode,
             locale: locale,
             localizationsDelegates: const [
               AppLocalizations.delegate,
@@ -100,8 +105,10 @@ class _PortfolioGateState extends State<PortfolioGate> {
 
     // Cargar precios desde Hive cache
     final spotPriceProvider = context.read<SpotPriceProvider>();
+    final themeModeProvider = context.read<ThemeModeProvider>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AppInitializationProvider.loadFromHive(spotPriceProvider);
+      AppInitializationProvider.initializeThemeMode(themeModeProvider);
     });
 
     return const PortfolioScreen();

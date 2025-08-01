@@ -4,16 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:lumina/ui/providers/settings_provider.dart';
-import 'package:lumina/ui/providers/investment_provider.dart'; // Import InvestmentProvider
-import 'package:lumina/ui/providers/spot_price_provider.dart'; // Import SpotPriceProvider
-import 'package:lumina/ui/providers/history_provider.dart'; // Import HistoryProvider
-import 'package:lumina/ui/providers/fx_notifier.dart'; // Import FxNotifier
+import 'package:lumina/ui/providers/investment_provider.dart';
+import 'package:lumina/ui/providers/spot_price_provider.dart';
+import 'package:lumina/ui/providers/history_provider.dart';
+import 'package:lumina/ui/providers/fx_notifier.dart';
+import 'package:lumina/ui/providers/theme_mode_provider.dart';
 import '../widgets/language_selector.dart';
 import '../widgets/currency_selector.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/export_controller.dart';
 import '../../services/reset_portfolio_service.dart';
 import '../widgets/confirm_reset_dialog.dart';
+import '../../core/theme.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -21,6 +23,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
+    final themeModeProvider = context.watch<ThemeModeProvider>();
     final t = AppLocalizations.of(context)!;
 
     if (!settings.isInitialized) {
@@ -34,6 +37,8 @@ class SettingsScreen extends StatelessWidget {
           const LanguageSelector(),
           const SizedBox(height: 24),
           const CurrencySelector(),
+          const SizedBox(height: 24),
+          _buildThemeSelector(context, themeModeProvider),
           const SizedBox(height: 32),
 
           // Export CSV
@@ -87,6 +92,124 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildThemeSelector(BuildContext context, ThemeModeProvider themeModeProvider) {
+    final t = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            t.themeOptions,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.2,
+            children: [
+              _buildThemeCard(
+                context,
+                themeModeProvider,
+                AppThemeMode.light,
+                t.themeLight,
+                Icons.wb_sunny,
+                Colors.orange,
+              ),
+              _buildThemeCard(
+                context,
+                themeModeProvider,
+                AppThemeMode.dark,
+                t.themeDark,
+                Icons.nightlight_round,
+                Colors.indigo,
+              ),
+              _buildThemeCard(
+                context,
+                themeModeProvider,
+                AppThemeMode.lightMono,
+                t.themeLightMono,
+                Icons.text_fields,
+                Colors.grey,
+              ),
+              _buildThemeCard(
+                context,
+                themeModeProvider,
+                AppThemeMode.darkMono,
+                t.themeDarkMono,
+                Icons.text_fields,
+                Colors.grey,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildThemeCard(
+    BuildContext context,
+    ThemeModeProvider themeModeProvider,
+    AppThemeMode mode,
+    String title,
+    IconData icon,
+    Color iconColor,
+  ) {
+    final isSelected = themeModeProvider.mode == mode;
+    
+    return Card(
+      elevation: isSelected ? 4 : 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+          width: isSelected ? 2 : 0,
+        ),
+      ),
+      child: InkWell(
+        onTap: () => themeModeProvider.setMode(mode),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 32,
+                color: iconColor,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              if (isSelected) ...[
+                const SizedBox(height: 8),
+                Icon(
+                  Icons.check_circle,
+                  size: 20,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
