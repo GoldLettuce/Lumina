@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 // por si se necesita conversión en el futuro
 import 'package:lumina/ui/providers/investment_provider.dart';
 import '../../core/theme.dart';
+import '../../core/colors.dart';
 import '../../l10n/app_localizations.dart';
 import 'asset_detail_screen.dart';
 
@@ -22,8 +23,8 @@ class ArchivedAssetsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(t.archivedAssetsTitle),
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: AppColors.lightAppBarBackground,
+        foregroundColor: AppColors.lightAppBarForeground,
         centerTitle: true,
       ),
       body:
@@ -40,7 +41,7 @@ class ArchivedAssetsScreen extends StatelessWidget {
                   vertical: 20,
                 ),
                 itemCount: archived.length,
-                separatorBuilder: (_, __) => Divider(color: AppColors.border),
+                separatorBuilder: (_, __) => Divider(color: AppColors.lightDivider),
                 itemBuilder: (context, index) {
                   final asset = archived[index];
                   return ListTile(

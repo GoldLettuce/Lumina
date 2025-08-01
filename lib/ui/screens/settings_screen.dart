@@ -16,6 +16,7 @@ import '../../services/export_controller.dart';
 import '../../services/reset_portfolio_service.dart';
 import '../widgets/confirm_reset_dialog.dart';
 import '../../core/theme.dart';
+import '../../core/colors.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -52,10 +53,10 @@ class SettingsScreen extends StatelessWidget {
 
           // Reset portfolio
           ListTile(
-            leading: const Icon(Icons.delete_forever, color: Colors.red),
+            leading: const Icon(Icons.delete_forever, color: AppColors.lightNegative),
             title: Text(
               t.deleteAllPortfolioData,
-              style: TextStyle(color: Colors.red),
+              style: TextStyle(color: AppColors.lightNegative),
             ),
             onTap: () async {
               final confirm = await ConfirmResetDialog.show(
@@ -126,7 +127,7 @@ class SettingsScreen extends StatelessWidget {
                 AppThemeMode.light,
                 t.themeLight,
                 Icons.wb_sunny,
-                Colors.orange,
+                AppColors.lightIconPrimary,
               ),
               _buildThemeCard(
                 context,
@@ -134,24 +135,24 @@ class SettingsScreen extends StatelessWidget {
                 AppThemeMode.dark,
                 t.themeDark,
                 Icons.nightlight_round,
-                Colors.indigo,
+                AppColors.lightIconPrimary,
               ),
               _buildThemeCard(
                 context,
                 themeModeProvider,
                 AppThemeMode.lightMono,
-                t.themeLightMono,
-                Icons.text_fields,
-                Colors.grey,
-              ),
+                                  t.themeLightMono,
+                  Icons.text_fields,
+                  AppColors.lightIconSecondary,
+                ),
               _buildThemeCard(
                 context,
                 themeModeProvider,
                 AppThemeMode.darkMono,
-                t.themeDarkMono,
-                Icons.text_fields,
-                Colors.grey,
-              ),
+                                  t.themeDarkMono,
+                  Icons.text_fields,
+                  AppColors.lightIconSecondary,
+                ),
             ],
           ),
         ),

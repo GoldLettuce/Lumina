@@ -5,6 +5,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 
 import 'core/theme.dart';
+import 'core/colors.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -122,18 +123,18 @@ class SkeletonView extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.lightBackground,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.lightPrimary),
             ),
             const SizedBox(height: 16),
             Text(
               t.loading,
-              style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
+              style: const TextStyle(color: AppColors.lightTextPrimary, fontSize: 16),
             ),
           ],
         ),

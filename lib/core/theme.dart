@@ -1,39 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-
-class AppColors {
-  static const background = Colors.white;
-  static const textPrimary = Color(0xFF212121);
-  static const textSecondary = Color(0xFF757575);
-  static const primary = Color(0xFF3949AB); // Azul índigo suave
-  static const positive = Color(0xFF4CAF50); // Verde suave
-  static const negative = Color(0xFFE53935); // Rojo apagado
-  static const border = Color(0xFFE0E0E0);
-}
+import 'colors.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData.light(
       useMaterial3: true,
     ).copyWith(
-      scaffoldBackgroundColor: AppColors.background,
-      primaryColor: AppColors.primary,
+      scaffoldBackgroundColor: AppColors.lightBackground,
+      primaryColor: AppColors.lightPrimary,
       colorScheme: ColorScheme.light(
-        primary: AppColors.primary,
-        secondary: AppColors.primary,
-        onPrimary: Colors.white,
+        primary: AppColors.lightPrimary,
+        secondary: AppColors.lightSecondary,
+        onPrimary: AppColors.lightOnPrimary,
+        surface: AppColors.lightSurface,
+        background: AppColors.lightBackground,
+        onSurface: AppColors.lightOnSurface,
+        onBackground: AppColors.lightOnBackground,
       ),
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
+          color: AppColors.lightTextPrimary,
           fontFamily: 'Roboto',
         ),
-        bodyLarge: TextStyle(fontSize: 16, color: AppColors.textPrimary, fontFamily: 'Roboto'),
-        bodyMedium: TextStyle(fontSize: 14, color: AppColors.textSecondary, fontFamily: 'Roboto'),
+        bodyLarge: TextStyle(fontSize: 16, color: AppColors.lightTextPrimary, fontFamily: 'Roboto'),
+        bodyMedium: TextStyle(fontSize: 14, color: AppColors.lightTextSecondary, fontFamily: 'Roboto'),
       ),
-      dividerColor: AppColors.border,
+      dividerColor: AppColors.lightDivider,
     );
   }
 
@@ -42,10 +37,10 @@ class AppTheme {
       useMaterial3: true,
     ).copyWith(
       scaffoldBackgroundColor: const Color(0xFF121212),
-      primaryColor: AppColors.primary,
+      primaryColor: AppColors.lightPrimary,
       colorScheme: ColorScheme.dark(
-        primary: AppColors.primary,
-        secondary: AppColors.primary,
+        primary: AppColors.lightPrimary,
+        secondary: AppColors.lightPrimary,
         onPrimary: Colors.white,
         surface: const Color(0xFF1E1E1E),
       ),
@@ -67,13 +62,13 @@ class AppTheme {
     return ThemeData.light(
       useMaterial3: true,
     ).copyWith(
-      scaffoldBackgroundColor: Colors.white,
+      scaffoldBackgroundColor: AppColors.lightBackground,
       colorScheme: const ColorScheme.light(
         primary: Colors.black,
         secondary: Colors.black,
-        onPrimary: Colors.white,
-        surface: Colors.white,
-        background: Colors.white,
+        onPrimary: AppColors.lightOnPrimary,
+        surface: AppColors.lightSurface,
+        background: AppColors.lightBackground,
         onSurface: Colors.black,
         onBackground: Colors.black,
       ),

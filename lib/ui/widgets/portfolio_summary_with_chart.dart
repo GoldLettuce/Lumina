@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:lumina/ui/providers/currency_provider.dart';
 import 'package:lumina/core/point.dart';
 import '../../core/theme.dart';
+import '../../core/colors.dart';
 import 'package:lumina/l10n/app_localizations.dart';
 import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/ui/providers/fx_notifier.dart';
@@ -73,7 +74,7 @@ class _PortfolioChart extends StatelessWidget {
         }
 
         final isPositive = spots.first.y <= spots.last.y;
-        final lineColor = isPositive ? AppColors.positive : AppColors.negative;
+        final lineColor = isPositive ? AppColors.lightPositive : AppColors.lightNegative;
 
         return SizedBox(
           height: 200,
