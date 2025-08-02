@@ -444,8 +444,13 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                       color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
                     ),
-                    border: const UnderlineInputBorder(),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.surface,
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 14,
+                    ),
                   ),
                   style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                   onChanged: (_) {
@@ -469,8 +474,13 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                       color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
                     ),
-                    border: const UnderlineInputBorder(),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.surface,
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 14,
+                    ),
                   ),
                   style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                   autovalidateMode:

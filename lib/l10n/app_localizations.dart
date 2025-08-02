@@ -194,7 +194,7 @@ abstract class AppLocalizations {
   /// No description provided for @unitPrice.
   ///
   /// In en, this message translates to:
-  /// **'Unit Price (€)'**
+  /// **'Price per unit'**
   String get unitPrice;
 
   /// No description provided for @invalidPrice.

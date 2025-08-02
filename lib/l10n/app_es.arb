@@ -16,7 +16,7 @@
   "sell": "Venta",
   "fieldRequired": "Campo obligatorio",
   "invalidQuantity": "Cantidad inválida",
-  "unitPrice": "Precio unitario (€)",
+  "unitPrice": "Precio por unidad",
   "invalidPrice": "Precio inválido",
   "date": "Fecha",
   "selectDate": "Seleccionar fecha",

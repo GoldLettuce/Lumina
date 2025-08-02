@@ -16,7 +16,7 @@
   "sell": "Sell",
   "fieldRequired": "Field required",
   "invalidQuantity": "Invalid quantity",
-  "unitPrice": "Unit Price (€)",
+  "unitPrice": "Price per unit",
   "invalidPrice": "Invalid price",
   "date": "Date",
   "selectDate": "Select date",

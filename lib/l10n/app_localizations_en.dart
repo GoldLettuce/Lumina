@@ -57,7 +57,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invalidQuantity => 'Invalid quantity';
 
   @override
-  String get unitPrice => 'Unit Price (€)';
+  String get unitPrice => 'Price per unit';
 
   @override
   String get invalidPrice => 'Invalid price';
