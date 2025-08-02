@@ -49,4 +49,20 @@ class AppColors {
   static const lightInputBorder = Color(0xFFE0E0E0);
   static const lightInputText = Color(0xFF212121);
   static const lightInputPlaceholder = Color(0xFF757575);
+
+  // DARK THEME (recomendación basada en Material Design + apps reales)
+  static const darkBackground = Color(0xFF121212); // fondo base
+  static const darkSurface = Color(0xFF1E1E1E);    // tarjetas, dialogs
+  static const darkPrimary = Color(0xFF4FD8EB);    // color de acento actual
+  static const darkOnPrimary = Color(0xFF00363F);
+  static const darkOnBackground = Color(0xE0FFFFFF); // 88% blanco para texto
+  static const darkOnSurface = Color(0xB3FFFFFF);    // 70% blanco para texto secundario
+  static const darkDivider = Color(0x29FFFFFF);      // 16% blanco
+  
+  // Colores genéricos para usar en ambos temas (estado financiero más suave y profesional)
+  static const positive = Color(0xFF81C784); // Material soft green
+  static const negative = Color(0xFFE57373); // Material soft red
+  
+  // Color de acento azul suave para acciones secundarias
+  static const accentBlue = Color(0xFF64B5F6); // azul pastel Material 300
 } 

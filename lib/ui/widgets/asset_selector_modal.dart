@@ -81,9 +81,9 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
       heightFactor: 0.65,
       child: SafeArea(
         child: Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(
@@ -104,15 +104,15 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
               TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.search, size: 20, color: Colors.grey),
+                  prefixIcon: Icon(Icons.search, size: 20, color: Theme.of(context).iconTheme.color),
                   border: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey.shade300),
+                    borderSide: BorderSide(color: Theme.of(context).dividerColor),
                   ),
                   enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey.shade300),
+                    borderSide: BorderSide(color: Theme.of(context).dividerColor),
                   ),
                   focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blueAccent),
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
                   ),
                   isDense: true,
                   contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
@@ -142,7 +142,7 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                       controller: _scrollController,
                       itemCount: prov.filteredSymbols.length + (prov.isLoadingMore ? 1 : 0),
                       separatorBuilder:
-                          (_, __) => Divider(color: Colors.grey.shade300),
+                          (_, __) => Divider(color: Theme.of(context).dividerColor),
                       itemBuilder: (context, index) {
                         // Mostrar loading indicator al final si está cargando más
                         if (index == prov.filteredSymbols.length && prov.isLoadingMore) {
@@ -170,7 +170,7 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                                 coin.name,
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.grey,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color,
                                 ),
                               ),
                             ],

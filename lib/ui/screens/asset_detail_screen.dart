@@ -7,6 +7,7 @@ import 'package:lumina/ui/providers/investment_provider.dart';
 import 'package:lumina/ui/widgets/add_investment_dialog.dart';
 import 'package:lumina/ui/providers/currency_provider.dart'; // Import CurrencyProvider
 import '../../l10n/app_localizations.dart';
+import 'package:lumina/core/colors.dart';
 
 class AssetDetailScreen extends StatefulWidget {
   final Investment asset;
@@ -103,7 +104,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                 _selectedIds.isNotEmpty
                     ? () => _confirmDelete(context, currentAsset)
                     : null,
-            color: _selectedIds.isNotEmpty ? Colors.red : Colors.grey,
+            color: _selectedIds.isNotEmpty ? AppColors.negative : Theme.of(context).iconTheme.color,
           ),
         ],
       ),
@@ -120,7 +121,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                   final op = currentAsset.operations[index];
                   final isBuy = op.type == OperationType.buy;
                   final fecha = DateFormat('d MMM y – HH:mm').format(op.date);
-                  final color = isBuy ? Colors.green : Colors.red;
+                  final color = isBuy ? AppColors.positive : AppColors.negative;
                   final selected = _selectedIds.contains(op.id);
 
                   // Convertir precio USD a moneda seleccionada
@@ -135,7 +136,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                       }
                     },
                     child: Container(
-                      color: selected ? Colors.grey.shade300 : null,
+                      color: selected ? Theme.of(context).colorScheme.surface.withOpacity(0.3) : null,
                       child: ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: Icon(

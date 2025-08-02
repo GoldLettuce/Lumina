@@ -23,8 +23,8 @@ class ArchivedAssetsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(t.archivedAssetsTitle),
-        backgroundColor: AppColors.lightAppBarBackground,
-        foregroundColor: AppColors.lightAppBarForeground,
+        backgroundColor: Theme.of(context).colorScheme.background,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         centerTitle: true,
       ),
       body:
@@ -41,7 +41,7 @@ class ArchivedAssetsScreen extends StatelessWidget {
                   vertical: 20,
                 ),
                 itemCount: archived.length,
-                separatorBuilder: (_, __) => Divider(color: AppColors.lightDivider),
+                separatorBuilder: (_, __) => Divider(color: Theme.of(context).dividerColor),
                 itemBuilder: (context, index) {
                   final asset = archived[index];
                   return ListTile(

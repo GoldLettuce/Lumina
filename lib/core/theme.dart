@@ -33,28 +33,44 @@ class AppTheme {
   }
 
   static ThemeData get darkTheme {
-    return ThemeData.dark(
+    return ThemeData(
+      brightness: Brightness.dark,
       useMaterial3: true,
-    ).copyWith(
-      scaffoldBackgroundColor: const Color(0xFF121212),
-      primaryColor: AppColors.lightPrimary,
+      scaffoldBackgroundColor: AppColors.darkBackground,
       colorScheme: ColorScheme.dark(
-        primary: AppColors.lightPrimary,
-        secondary: AppColors.lightPrimary,
-        onPrimary: Colors.white,
-        surface: const Color(0xFF1E1E1E),
+        primary: AppColors.darkPrimary,
+        onPrimary: AppColors.darkOnPrimary,
+        background: AppColors.darkBackground,
+        onBackground: AppColors.darkOnBackground,
+        surface: AppColors.darkBackground,
+        onSurface: AppColors.darkOnSurface,
       ),
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.darkBackground,
+        foregroundColor: AppColors.darkOnBackground,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+      ),
+      dividerColor: AppColors.darkDivider,
+      textTheme: Typography.whiteCupertino.copyWith(
+        headlineLarge: const TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: AppColors.darkOnBackground,
           fontFamily: 'Roboto',
         ),
-        bodyLarge: TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Roboto'),
-        bodyMedium: TextStyle(fontSize: 14, color: Colors.grey, fontFamily: 'Roboto'),
+        bodyLarge: const TextStyle(
+          fontSize: 16,
+          color: AppColors.darkOnBackground,
+          fontFamily: 'Roboto',
+        ),
+        bodyMedium: const TextStyle(
+          fontSize: 14,
+          color: AppColors.darkOnSurface,
+          fontFamily: 'Roboto',
+        ),
       ),
-      dividerColor: const Color(0xFF424242),
     );
   }
 

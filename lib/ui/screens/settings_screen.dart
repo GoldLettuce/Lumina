@@ -53,10 +53,10 @@ class SettingsScreen extends StatelessWidget {
 
           // Reset portfolio
           ListTile(
-            leading: const Icon(Icons.delete_forever, color: AppColors.lightNegative),
+            leading: Icon(Icons.delete_forever, color: AppColors.negative),
             title: Text(
               t.deleteAllPortfolioData,
-              style: TextStyle(color: AppColors.lightNegative),
+              style: TextStyle(color: AppColors.negative),
             ),
             onTap: () async {
               final confirm = await ConfirmResetDialog.show(
@@ -127,7 +127,7 @@ class SettingsScreen extends StatelessWidget {
                 AppThemeMode.light,
                 t.themeLight,
                 Icons.wb_sunny,
-                AppColors.lightIconPrimary,
+                Theme.of(context).iconTheme.color ?? Theme.of(context).colorScheme.onSurface,
               ),
               _buildThemeCard(
                 context,
@@ -135,7 +135,7 @@ class SettingsScreen extends StatelessWidget {
                 AppThemeMode.dark,
                 t.themeDark,
                 Icons.nightlight_round,
-                AppColors.lightIconPrimary,
+                Theme.of(context).iconTheme.color ?? Theme.of(context).colorScheme.onSurface,
               ),
               _buildThemeCard(
                 context,
@@ -143,7 +143,7 @@ class SettingsScreen extends StatelessWidget {
                 AppThemeMode.lightMono,
                                   t.themeLightMono,
                   Icons.text_fields,
-                  AppColors.lightIconSecondary,
+                  Theme.of(context).iconTheme.color ?? Theme.of(context).colorScheme.onSurface,
                 ),
               _buildThemeCard(
                 context,
@@ -151,7 +151,7 @@ class SettingsScreen extends StatelessWidget {
                 AppThemeMode.darkMono,
                                   t.themeDarkMono,
                   Icons.text_fields,
-                  AppColors.lightIconSecondary,
+                  Theme.of(context).iconTheme.color ?? Theme.of(context).colorScheme.onSurface,
                 ),
             ],
           ),

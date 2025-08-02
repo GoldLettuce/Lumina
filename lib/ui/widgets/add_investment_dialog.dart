@@ -20,6 +20,7 @@ import 'package:lumina/data/repositories_impl/history_repository_impl.dart';
 import 'package:lumina/data/repositories_impl/price_repository_impl.dart';
 import 'package:lumina/core/point.dart';
 import 'package:lumina/core/chart_range.dart';
+import 'package:lumina/core/colors.dart';
 
 /// Diálogo para añadir o editar una operación **solo de criptomonedas**.
 class AddInvestmentDialog extends StatefulWidget {
@@ -102,7 +103,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     final result = await showModalBottomSheet<Map<String, String>>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -255,7 +256,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
             ).formatMediumDate(_selectedDate!);
 
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       elevation: 12,
       child: Padding(
@@ -294,9 +295,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               _operationType == OperationType.buy
-                                  ? Colors.green[200]
-                                  : Colors.green[50],
-                          foregroundColor: Colors.green[800],
+                                  ? AppColors.positive.withOpacity(0.2)
+                                  : AppColors.positive.withOpacity(0.1),
+                          foregroundColor: AppColors.positive,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -317,9 +318,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               _operationType == OperationType.sell
-                                  ? Colors.yellow[100]
-                                  : Colors.yellow[50],
-                          foregroundColor: Colors.amber[900],
+                                  ? AppColors.negative.withOpacity(0.2)
+                                  : AppColors.negative.withOpacity(0.1),
+                          foregroundColor: AppColors.negative,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -353,7 +354,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                               _selectSymbol();
                             },
                     borderRadius: BorderRadius.circular(12),
-                    highlightColor: Colors.grey[100],
+                    highlightColor: Theme.of(context).colorScheme.surface.withOpacity(0.1),
                     splashColor: Colors.transparent,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -368,7 +369,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                                           (_displaySymbol == null ||
                                               _displaySymbol!.isEmpty))
                                       ? Theme.of(context).colorScheme.error
-                                      : Colors.black87,
+                                      : Theme.of(context).colorScheme.onSurface,
                               fontSize: 17,
                               fontWeight: FontWeight.w500,
                             ),
@@ -381,7 +382,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                                         (_displaySymbol == null ||
                                             _displaySymbol!.isEmpty))
                                     ? Theme.of(context).colorScheme.error
-                                    : Colors.black54,
+                                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                           ),
                         ],
                       ),
@@ -409,16 +410,16 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.calendar_today,
                           size: 18,
-                          color: Colors.black54,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           '${loc.dateLabel} $dateText',
-                          style: const TextStyle(
-                            color: Colors.black87,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
                           ),
@@ -439,14 +440,14 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   enabled: !_isSaving,
                   decoration: InputDecoration(
                     labelText: loc.quantity,
-                    labelStyle: const TextStyle(
-                      color: Colors.black,
+                    labelStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
                     ),
                     border: const UnderlineInputBorder(),
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  style: const TextStyle(color: Colors.black),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                   onChanged: (_) {
                     if (!_quantityTouched) {
                       setState(() => _quantityTouched = true);
@@ -464,14 +465,14 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   ),
                   decoration: InputDecoration(
                     labelText: loc.unitPrice,
-                    labelStyle: const TextStyle(
-                      color: Colors.black,
+                    labelStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
                     ),
                     border: const UnderlineInputBorder(),
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  style: const TextStyle(color: Colors.black),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                   autovalidateMode:
                       _priceTouched || _formSubmitted
                           ? AutovalidateMode.always
@@ -503,7 +504,15 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                             _isSaving
                                 ? null
                                 : () => Navigator.of(context).pop(),
-                        child: Text(loc.cancel),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppColors.accentBlue),
+                        ),
+                        child: Text(
+                          loc.cancel,
+                          style: const TextStyle(
+                            color: AppColors.accentBlue,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -513,16 +522,16 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               _operationType == OperationType.buy
-                                  ? Colors.green[200]
+                                  ? AppColors.positive.withOpacity(0.2)
                                   : _operationType == OperationType.sell
-                                  ? Colors.yellow[100]
-                                  : Colors.grey[200],
+                                  ? AppColors.negative.withOpacity(0.2)
+                                  : Theme.of(context).colorScheme.surface.withOpacity(0.5),
                           foregroundColor:
                               _operationType == OperationType.buy
-                                  ? Colors.green[800]
+                                  ? AppColors.positive
                                   : _operationType == OperationType.sell
-                                  ? Colors.amber[900]
-                                  : Colors.black54,
+                                  ? AppColors.negative
+                                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: const StadiumBorder(),
                           textStyle: const TextStyle(
@@ -532,13 +541,13 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         ),
                         child:
                             _isSaving
-                                ? const SizedBox(
+                                ? SizedBox(
                                   height: 22,
                                   width: 22,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2.2,
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.black87,
+                                      Theme.of(context).colorScheme.onSurface,
                                     ),
                                   ),
                                 )

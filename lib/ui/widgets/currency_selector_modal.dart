@@ -19,9 +19,9 @@ class CurrencySelectorModal extends StatelessWidget {
 
     return SafeArea(
       child: Container(
-        decoration: const BoxDecoration(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          color: Colors.white,
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          color: Theme.of(context).colorScheme.surface,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -32,7 +32,7 @@ class CurrencySelectorModal extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.black, // ✅ Color claro
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 12),
@@ -56,9 +56,9 @@ class CurrencySelectorModal extends StatelessWidget {
                           Expanded(
                             child: Text(
                               '${entry.key} – ${entry.value}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.black, // ✅ Texto oscuro
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                           ),
@@ -68,7 +68,7 @@ class CurrencySelectorModal extends StatelessWidget {
                               height: 16,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.black, // ✅ Círculo oscuro
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                             ),
                         ],

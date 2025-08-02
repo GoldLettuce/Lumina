@@ -137,7 +137,7 @@ class PortfolioSummaryMinimal extends StatelessWidget {
     final percentStyle = TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.w600,
-              color: rentabilidad >= 0 ? AppColors.lightPositive : AppColors.lightNegative,
+              color: rentabilidad >= 0 ? AppColors.positive : AppColors.negative,
     );
 
     return Column(
@@ -206,7 +206,7 @@ class PortfolioSummaryMinimal extends StatelessWidget {
           opacity: hasSelection ? 1.0 : 0.0,
           child: Text(
             dateText,
-            style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.lightTextSecondary),
+            style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
           ),
         ),
       ],
@@ -249,8 +249,8 @@ class AssetListTile extends StatelessWidget {
     }
 
     final colorRentabilidad = rentabilidad >= 0
-        ? AppColors.lightPositive
-        : AppColors.lightNegative;
+        ? AppColors.positive
+        : AppColors.negative;
 
     final trailing = valorActual == null
         ? const SizedBox(width: 60)
@@ -430,8 +430,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: AppColors.lightAppBarBackground,
-        foregroundColor: AppColors.lightAppBarForeground,
+        backgroundColor: Theme.of(context).colorScheme.background,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         centerTitle: false,
         titleSpacing: 0,
         title: Row(
@@ -569,7 +569,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                             child: Text(
                               t.archivedAssetsTitle,
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: Colors.grey,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                               ),
                             ),
                           ),
@@ -594,8 +594,8 @@ class SkeletonView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: AppColors.lightAppBarBackground,
-        foregroundColor: AppColors.lightAppBarForeground,
+        backgroundColor: Theme.of(context).colorScheme.background,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         centerTitle: false,
         titleSpacing: 0,
         title: Row(
@@ -630,7 +630,7 @@ class SkeletonView extends StatelessWidget {
                   height: 40,
                   width: 200,
                   decoration: BoxDecoration(
-                    color: AppColors.lightDivider,
+                    color: Theme.of(context).dividerColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
@@ -639,7 +639,7 @@ class SkeletonView extends StatelessWidget {
                   height: 24,
                   width: 120,
                   decoration: BoxDecoration(
-                    color: AppColors.lightDivider,
+                    color: Theme.of(context).dividerColor,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -650,7 +650,7 @@ class SkeletonView extends StatelessWidget {
             Container(
               height: 200,
               decoration: BoxDecoration(
-                color: AppColors.lightDivider,
+                color: Theme.of(context).dividerColor,
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
@@ -664,7 +664,7 @@ class SkeletonView extends StatelessWidget {
                     margin: const EdgeInsets.symmetric(vertical: 8),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.lightCardBackground,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -673,7 +673,7 @@ class SkeletonView extends StatelessWidget {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: AppColors.lightDivider,
+                            color: Theme.of(context).dividerColor,
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
@@ -686,7 +686,7 @@ class SkeletonView extends StatelessWidget {
                                 height: 16,
                                 width: 100,
                                 decoration: BoxDecoration(
-                                  color: AppColors.lightDivider,
+                                  color: Theme.of(context).dividerColor,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                               ),
@@ -695,7 +695,7 @@ class SkeletonView extends StatelessWidget {
                                 height: 12,
                                 width: 80,
                                 decoration: BoxDecoration(
-                                  color: AppColors.lightDivider,
+                                  color: Theme.of(context).dividerColor,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                               ),
@@ -706,7 +706,7 @@ class SkeletonView extends StatelessWidget {
                           height: 20,
                           width: 60,
                           decoration: BoxDecoration(
-                            color: AppColors.lightDivider,
+                            color: Theme.of(context).dividerColor,
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
