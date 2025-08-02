@@ -496,6 +496,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{currency} – {name}'**
   String currencyFormat(String currency, String name);
+
+  /// No description provided for @assetIconVisibilityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show asset icons'**
+  String get assetIconVisibilityTitle;
+
+  /// No description provided for @assetIconVisibilityShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show icons'**
+  String get assetIconVisibilityShow;
+
+  /// No description provided for @assetIconVisibilityHide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide icons'**
+  String get assetIconVisibilityHide;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

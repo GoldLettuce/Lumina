@@ -1,8 +1,22 @@
 import 'package:flutter/material.dart';
 
+enum AssetIconVisibility { show, hide }
+
 class SettingsProvider extends ChangeNotifier {
   bool _initialized = false;
   bool get isInitialized => _initialized;
+  
+  AssetIconVisibility _assetIconVisibility = AssetIconVisibility.show;
+  AssetIconVisibility get assetIconVisibility => _assetIconVisibility;
+
+  set assetIconVisibility(AssetIconVisibility value) {
+    if (_assetIconVisibility != value) {
+      _assetIconVisibility = value;
+      notifyListeners();
+    }
+  }
+
+  bool get showAssetIcons => _assetIconVisibility == AssetIconVisibility.show;
 
   SettingsProvider() {
     _load();

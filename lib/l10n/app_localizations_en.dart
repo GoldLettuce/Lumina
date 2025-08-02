@@ -212,4 +212,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String currencyFormat(String currency, String name) {
     return '$currency – $name';
   }
+
+  @override
+  String get assetIconVisibilityTitle => 'Show asset icons';
+
+  @override
+  String get assetIconVisibilityShow => 'Show icons';
+
+  @override
+  String get assetIconVisibilityHide => 'Hide icons';
 }

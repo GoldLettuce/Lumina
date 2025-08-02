@@ -82,5 +82,8 @@
         "type": "String"
       }
     }
-  }
+  },
+  "assetIconVisibilityTitle": "Mostrar iconos de activos",
+  "assetIconVisibilityShow": "Mostrar iconos",
+  "assetIconVisibilityHide": "Ocultar iconos"
 }

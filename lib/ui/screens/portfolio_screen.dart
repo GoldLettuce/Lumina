@@ -18,6 +18,7 @@ import '../../core/point.dart';
 import '../../domain/entities/investment.dart';
 import 'package:lumina/ui/providers/currency_provider.dart';
 import 'package:lumina/ui/providers/profit_display_mode_notifier.dart';
+import 'package:lumina/ui/providers/settings_provider.dart';
 import '../../data/repositories_impl/history_repository_impl.dart';
 import '../../core/chart_range.dart';
 import '../../core/hive_service.dart';
@@ -304,6 +305,8 @@ class AssetListTile extends StatelessWidget {
             },
           );
 
+    final showIcons = context.watch<SettingsProvider>().showAssetIcons;
+    
     return GestureDetector(
       onTap: () async {
         final result = await Navigator.push(
@@ -318,7 +321,7 @@ class AssetListTile extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (asset.imageUrl != null && asset.imageUrl!.isNotEmpty)
+            if (showIcons && asset.imageUrl != null && asset.imageUrl!.isNotEmpty)
               CircleAvatar(
                 backgroundImage: NetworkImage(asset.imageUrl!),
                 backgroundColor: Colors.transparent,

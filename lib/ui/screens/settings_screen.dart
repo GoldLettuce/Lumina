@@ -11,6 +11,7 @@ import 'package:lumina/ui/providers/fx_notifier.dart';
 import 'package:lumina/ui/providers/theme_mode_provider.dart';
 import '../widgets/language_selector.dart';
 import '../widgets/currency_selector.dart';
+import '../widgets/asset_icon_visibility_selector.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/export_controller.dart';
 import '../../services/reset_portfolio_service.dart';
@@ -39,6 +40,8 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 24),
           const CurrencySelector(),
           const SizedBox(height: 24),
+          const AssetIconVisibilitySelector(),
+          const SizedBox(height: 24),
           _buildThemeSelector(context, themeModeProvider),
           const SizedBox(height: 32),
 
@@ -54,7 +57,7 @@ class SettingsScreen extends StatelessWidget {
           // Reset portfolio
           ListTile(
             leading: Icon(
-              Icons.delete_forever, 
+              Icons.delete_forever,
               color: Theme.of(context).colorScheme.error,
             ),
             title: Text(
@@ -174,7 +177,7 @@ class SettingsScreen extends StatelessWidget {
     Color iconColor,
   ) {
     final isSelected = themeModeProvider.mode == mode;
-    
+
     return Card(
       elevation: isSelected ? 4 : 2,
       shape: RoundedRectangleBorder(
