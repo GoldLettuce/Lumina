@@ -508,21 +508,22 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed:
-                            _isSaving
-                                ? null
-                                : () => Navigator.of(context).pop(),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: Theme.of(context).colorScheme.primary),
-                        ),
-                        child: Text(
-                          loc.cancel,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
+                      child: () {
+                        final isDark = Theme.of(context).brightness == Brightness.dark;
+                        final cancelColor = isDark ? cancelButtonDark : cancelButtonLight;
+                        final cancelTextColor = isDark ? cancelButtonTextDark : cancelButtonTextLight;
+
+                        return ElevatedButton(
+                          onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: cancelColor,
+                            foregroundColor: cancelTextColor,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
-                        ),
-                      ),
+                          child: Text(loc.cancel),
+                        );
+                      }(),
                     ),
                     const SizedBox(width: 12),
                     Expanded(

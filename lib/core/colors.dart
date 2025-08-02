@@ -107,4 +107,12 @@ const Color sellButtonSelectedDark = Color(0xFF4B5B68);         // Azul sobrio (
 
 // Botón de COMPRA (BUY) minimalista
 const Color buyButtonGreenLight = Color(0xFFDFF5E3);     // no seleccionado (modo claro)
-const Color buyButtonGreenSelectedLight = Color(0xFF98C7A7); // seleccionado (modo claro) 
+const Color buyButtonGreenSelectedLight = Color(0xFF98C7A7); // seleccionado (modo claro)
+
+// Botón CANCEL rojo pastel minimalista
+const Color cancelButtonLight = Color(0xFFF5DADA);  // Rojo pastel claro
+const Color cancelButtonDark = Color(0xFF5A3C3C);   // Rojo apagado oscuro 
+
+// Texto del botón CANCEL
+const Color cancelButtonTextLight = Color(0xFFBB4444);   // Texto rojo más fuerte (claro)
+const Color cancelButtonTextDark = Color(0xFFFF8888);    // Texto rojo suave vibrante (oscuro) 
