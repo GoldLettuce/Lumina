@@ -39,12 +39,14 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
   @override
   void initState() {
     super.initState();
+    _searchController.clear();
     _setupScrollListener();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<AssetListProvider>();
       if (!provider.isLoading && provider.filteredSymbols.isEmpty) {
         provider.loadAllSymbols();
       }
+      provider.resetSearch();
     });
   }
 
