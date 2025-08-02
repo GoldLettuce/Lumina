@@ -14,6 +14,7 @@ import 'ui/providers/spot_price_provider.dart';
 import 'package:lumina/provider_setup.dart';
 import 'ui/providers/locale_provider.dart';
 import 'ui/providers/theme_mode_provider.dart';
+import 'ui/providers/settings_provider.dart';
 
 Future<void> main() async {
   print('[ARRANQUE][${DateTime.now().toIso8601String()}] main() START');
@@ -106,9 +107,11 @@ class _PortfolioGateState extends State<PortfolioGate> {
     // Cargar precios desde Hive cache
     final spotPriceProvider = context.read<SpotPriceProvider>();
     final themeModeProvider = context.read<ThemeModeProvider>();
+    final settingsProvider = context.read<SettingsProvider>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AppInitializationProvider.loadFromHive(spotPriceProvider);
       AppInitializationProvider.initializeThemeMode(themeModeProvider);
+      settingsProvider.loadFromHive();
     });
 
     return const PortfolioScreen();

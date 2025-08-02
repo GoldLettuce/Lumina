@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/hive_service.dart';
 
 enum AssetIconVisibility { show, hide }
 
@@ -12,11 +13,22 @@ class SettingsProvider extends ChangeNotifier {
   set assetIconVisibility(AssetIconVisibility value) {
     if (_assetIconVisibility != value) {
       _assetIconVisibility = value;
+      HiveService.settings.put('assetIconVisibility', value.name);
       notifyListeners();
     }
   }
 
   bool get showAssetIcons => _assetIconVisibility == AssetIconVisibility.show;
+
+  void loadFromHive() {
+    final stored = HiveService.settings.get('assetIconVisibility');
+    if (stored is String) {
+      _assetIconVisibility = AssetIconVisibility.values.firstWhere(
+        (e) => e.name == stored,
+        orElse: () => AssetIconVisibility.show,
+      );
+    }
+  }
 
   SettingsProvider() {
     _load();
