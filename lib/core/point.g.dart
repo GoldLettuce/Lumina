@@ -16,7 +16,10 @@ class PointAdapter extends TypeAdapter<Point> {
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Point(time: fields[0] as DateTime, value: fields[1] as double);
+    return Point(
+      time: fields[0] as DateTime,
+      value: fields[1] as double,
+    );
   }
 
   @override

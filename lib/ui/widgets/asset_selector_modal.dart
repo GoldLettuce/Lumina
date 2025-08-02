@@ -183,6 +183,7 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                               'id': coin.id,
                               'symbol': coin.symbol,
                               'name': coin.name,
+                              'imageUrl': coin.imageUrl ?? '',
                             });
                           },
                         );

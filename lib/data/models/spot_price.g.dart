@@ -41,4 +41,4 @@ class SpotPriceAdapter extends TypeAdapter<SpotPrice> {
       other is SpotPriceAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
-} 
+}

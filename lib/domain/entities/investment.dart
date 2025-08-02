@@ -25,12 +25,16 @@ class Investment extends HiveObject {
   @HiveField(5)
   final String vsCurrency; // p.ej. "usd"
 
+  @HiveField(6)
+  final String? imageUrl;
+
   Investment({
     required this.symbol,
     required this.name,
     required this.type,
     required this.coingeckoId,
     this.vsCurrency = 'usd',
+    this.imageUrl,
     List<InvestmentOperation>? operations,
   }) : operations = operations ?? [];
 
@@ -42,6 +46,7 @@ class Investment extends HiveObject {
     AssetType? type,
     String? coingeckoId,
     String? vsCurrency,
+    String? imageUrl,
   }) {
     return Investment(
       symbol: symbol ?? this.symbol,
@@ -49,6 +54,7 @@ class Investment extends HiveObject {
       type: type ?? this.type,
       coingeckoId: coingeckoId ?? this.coingeckoId,
       vsCurrency: vsCurrency ?? this.vsCurrency,
+      imageUrl: imageUrl ?? this.imageUrl,
       operations: operations ?? this.operations,
     );
   }
@@ -82,6 +88,7 @@ class Investment extends HiveObject {
     'type': type.index,
     'coingeckoId': coingeckoId,
     'vsCurrency': vsCurrency,
+    'imageUrl': imageUrl,
     'operations': operations.map((op) => op.toJson()).toList(),
   };
 
@@ -92,6 +99,7 @@ class Investment extends HiveObject {
       type: AssetType.values[json['type']],
       coingeckoId: json['coingeckoId'],
       vsCurrency: json['vsCurrency'] ?? 'usd',
+      imageUrl: json['imageUrl'],
       operations:
           (json['operations'] as List)
               .map(

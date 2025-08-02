@@ -306,6 +306,13 @@ class AssetListTile extends StatelessWidget {
 
     return ListTile(
       contentPadding: EdgeInsets.zero,
+      leading: asset.imageUrl != null && asset.imageUrl!.isNotEmpty
+          ? CircleAvatar(
+              backgroundImage: NetworkImage(asset.imageUrl!),
+              backgroundColor: Colors.transparent,
+              radius: 20,
+            )
+          : null,
       title: Text(
         asset.symbol,
         style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),

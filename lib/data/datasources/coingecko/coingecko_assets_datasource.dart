@@ -7,14 +7,21 @@ class CoinGeckoAsset {
   final String id;
   final String symbol;
   final String name;
+  final String? imageUrl;
 
-  CoinGeckoAsset({required this.id, required this.symbol, required this.name});
+  CoinGeckoAsset({
+    required this.id, 
+    required this.symbol, 
+    required this.name,
+    this.imageUrl,
+  });
 
   factory CoinGeckoAsset.fromJson(Map<String, dynamic> json) {
     return CoinGeckoAsset(
       id: json['id'],
       symbol: json['symbol'].toString().toUpperCase(),
       name: json['name'],
+      imageUrl: json['image'] ?? json['thumb'],
     );
   }
 }
@@ -83,6 +90,7 @@ class CoinGeckoAssetsDatasource {
         id: c['id'],
         symbol: c['symbol'].toString().toUpperCase(),
         name: c['name'],
+        imageUrl: c['large'] ?? c['thumb'],
       )).toList();
       
       print('[SEARCH] Encontrados ${results.length} resultados para "$query"');
@@ -127,6 +135,7 @@ class CoinGeckoAssetsDatasource {
         'id': asset.id,
         'symbol': asset.symbol,
         'name': asset.name,
+        'imageUrl': asset.imageUrl,
       }).toList();
       
       final cacheData = {

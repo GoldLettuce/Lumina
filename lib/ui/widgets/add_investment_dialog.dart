@@ -41,6 +41,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   OperationType? _operationType;
   String? _displaySymbol;
   String? _coingeckoId;
+  String? _imageUrl;
   DateTime? _selectedDate = DateTime.now();
   final _quantityController = TextEditingController();
   final _priceController = TextEditingController();
@@ -111,6 +112,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       setState(() {
         _displaySymbol = result['symbol'];
         _coingeckoId = result['id'];
+        _imageUrl = result['imageUrl'] ?? '';
       });
     }
   }
@@ -179,13 +181,14 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     // Verificar si el widget sigue montado
     if (!mounted) return;
 
-    // Crear Investment con símbolo, nombre, ID y vsCurrency
+    // Crear Investment con símbolo, nombre, ID, vsCurrency e imageUrl
     final newInvestment = Investment(
       symbol: _displaySymbol!,
       name: _displaySymbol!,
       type: AssetType.crypto,
       coingeckoId: _coingeckoId!,
       vsCurrency: currencyCode,
+      imageUrl: _imageUrl,
     );
 
     await addOperationAndSync(
