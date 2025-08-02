@@ -52,7 +52,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
   /// Carga precios desde Hive cache
   Future<void> loadFromHive() async {
     final box = HiveService.metaBox;
-    final List<dynamic>? cached = box?.get('spot_prices');
+    final List<dynamic>? cached = box.get('spot_prices');
 
     if (cached != null) {
       for (final p in cached) {
@@ -88,7 +88,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
       final toStore = prices.entries
           .map((e) => SpotPrice(symbol: e.key, price: e.value))
           .toList();
-      await box?.put('spot_prices', toStore);
+      await box.put('spot_prices', toStore);
       print('[SpotPriceProvider] Precios guardados en Hive: ${toStore.length} activos');
     } catch (e) {
       print('[ERROR][SpotPriceProvider] $e');

@@ -1,16 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 
 import 'core/theme.dart';
-import 'core/colors.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'ui/screens/portfolio_screen.dart';
-import 'core/hive_service.dart';
 import 'ui/providers/app_initialization_provider.dart';
 import 'ui/providers/fx_notifier.dart';
 import 'ui/providers/spot_price_provider.dart';

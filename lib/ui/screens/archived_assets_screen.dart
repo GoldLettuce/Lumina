@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 // por si se necesita conversión en el futuro
 import 'package:lumina/ui/providers/investment_provider.dart';
-import '../../core/theme.dart';
-import '../../core/colors.dart';
 import '../../l10n/app_localizations.dart';
 import 'asset_detail_screen.dart';
 

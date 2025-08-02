@@ -29,7 +29,7 @@ List<SingleChildWidget> buildAppProviders() {
     ChangeNotifierProxyProvider<AppInitializationProvider, InvestmentProvider>(
       create: (_) => InvestmentProvider(InvestmentRepositoryImpl()),
       update: (context, appInit, previous) {
-        return InvestmentProvider(appInit.repository ?? InvestmentRepositoryImpl());
+        return InvestmentProvider(appInit.repository);
       },
     ),
   ];

@@ -246,15 +246,4 @@ class HistoryRepositoryImpl implements HistoryRepository {
     }
     return total;
   }
-
-  /*──────────────────────── interno ───────────────────────*/
-  List<Point> _dedupeByDay(List<Point> pts) {
-    final map = <String, Point>{};
-    for (final p in pts) {
-      final k = '${p.time.year}-${p.time.month}-${p.time.day}';
-      map[k] = p;
-    }
-    final out = map.values.toList()..sort((a, b) => a.time.compareTo(b.time));
-    return out;
-  }
 }

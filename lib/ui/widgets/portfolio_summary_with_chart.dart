@@ -3,14 +3,11 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:lumina/ui/providers/currency_provider.dart';
 import 'package:lumina/core/point.dart';
-import '../../core/theme.dart';
 import '../../core/colors.dart';
 import 'package:lumina/l10n/app_localizations.dart';
 import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/ui/providers/fx_notifier.dart';
-import 'package:lumina/ui/providers/spot_price_provider.dart';
 import 'package:lumina/ui/providers/history_provider.dart';
 
 /// Contenedor general: inicializa símbolos y fuerza la recarga.

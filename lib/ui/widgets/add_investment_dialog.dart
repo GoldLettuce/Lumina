@@ -10,14 +10,12 @@ import '../../domain/entities/asset_type.dart';
 import '../../l10n/app_localizations.dart';
 import 'asset_selector_modal.dart';
 import 'package:provider/provider.dart';
-import 'package:lumina/ui/providers/fx_notifier.dart';
 import 'package:lumina/ui/providers/spot_price_provider.dart';
 import 'package:lumina/ui/providers/history_provider.dart';
 import 'package:lumina/ui/providers/investment_provider.dart';
 import 'package:lumina/data/repositories_impl/investment_repository_impl.dart';
 import 'package:lumina/ui/providers/currency_provider.dart';
 import 'package:lumina/data/repositories_impl/history_repository_impl.dart';
-import 'package:lumina/data/repositories_impl/price_repository_impl.dart';
 import 'package:lumina/core/point.dart';
 import 'package:lumina/core/chart_range.dart';
 import 'package:lumina/core/colors.dart';
@@ -144,8 +142,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
 
     // Guardar referencias antes del await
     final fx = context.read<CurrencyProvider>();
-    final spotProv = context.read<SpotPriceProvider>();
-    final histProv = context.read<HistoryProvider>();
     final model = context.read<InvestmentProvider>();
     final currencyCode = fx.currency.toLowerCase();
 
@@ -212,7 +208,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     final histRepo = HistoryRepositoryImpl();
     final spotProv = context.read<SpotPriceProvider>();
     final histProv = context.read<HistoryProvider>();
-    final fx = context.read<CurrencyProvider>().exchangeRate;
 
     await histRepo.downloadAndStoreIfNeeded(
       range: ChartRange.all,

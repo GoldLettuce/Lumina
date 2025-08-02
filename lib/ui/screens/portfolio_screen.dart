@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../core/theme.dart';
 import '../../core/colors.dart';
 import '../../l10n/app_localizations.dart';
 import 'package:lumina/ui/providers/spot_price_provider.dart';
@@ -431,10 +430,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
 
     final fxRate = fx.exchangeRate;
     final currency = fx.currency;
-    final history = historyProvider.history;
 
     final isFXReady = fxRate > 0 && currency.isNotEmpty;
-    final hasHistory = history.isNotEmpty;
 
     final isLoading = model.isLoading || !isFXReady;
 
