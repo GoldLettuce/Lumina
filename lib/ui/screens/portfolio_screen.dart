@@ -321,13 +321,14 @@ class AssetListTile extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (showIcons && asset.imageUrl != null && asset.imageUrl!.isNotEmpty)
+            if (showIcons && asset.imageUrl != null && asset.imageUrl!.isNotEmpty) ...[
               CircleAvatar(
                 backgroundImage: NetworkImage(asset.imageUrl!),
                 backgroundColor: Colors.transparent,
                 radius: 20,
               ),
-            const SizedBox(width: 12),
+              const SizedBox(width: 12),
+            ],
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
