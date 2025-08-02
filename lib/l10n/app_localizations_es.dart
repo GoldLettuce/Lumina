@@ -162,6 +162,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get selectCurrency => 'Selecciona una moneda';
 
   @override
+  String get selectLanguage => 'Selecciona un idioma';
+
+  @override
   String get exportOperationsToCsv => 'Exportar operaciones a CSV';
 
   @override

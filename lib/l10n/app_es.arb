@@ -50,6 +50,7 @@
   "confirmResetMessage": "Esta acción eliminará todas tus inversiones.",
   "baseCurrency": "Moneda base",
   "selectCurrency": "Selecciona una moneda",
+  "selectLanguage": "Selecciona un idioma",
   "exportOperationsToCsv": "Exportar operaciones a CSV",
   "deleteAllPortfolioData": "Eliminar todos los datos del portafolio",
   "portfolioDeletedSuccess": "✅ Portafolio eliminado",

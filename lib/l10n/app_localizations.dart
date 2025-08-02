@@ -401,6 +401,12 @@ abstract class AppLocalizations {
   /// **'Select a currency'**
   String get selectCurrency;
 
+  /// No description provided for @selectLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a language'**
+  String get selectLanguage;
+
   /// No description provided for @exportOperationsToCsv.
   ///
   /// In en, this message translates to:
