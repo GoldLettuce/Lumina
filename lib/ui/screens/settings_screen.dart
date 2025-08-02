@@ -53,10 +53,15 @@ class SettingsScreen extends StatelessWidget {
 
           // Reset portfolio
           ListTile(
-            leading: Icon(Icons.delete_forever, color: AppColors.negative),
+            leading: Icon(
+              Icons.delete_forever, 
+              color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkNegative : AppColors.lightNegative,
+            ),
             title: Text(
               t.deleteAllPortfolioData,
-              style: TextStyle(color: AppColors.negative),
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkNegative : AppColors.lightNegative,
+              ),
             ),
             onTap: () async {
               final confirm = await ConfirmResetDialog.show(

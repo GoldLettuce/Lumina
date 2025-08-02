@@ -59,6 +59,10 @@ class AppColors {
   static const darkOnSurface = Color(0xB3FFFFFF);    // 70% blanco para texto secundario
   static const darkDivider = Color(0x29FFFFFF);      // 16% blanco
   
+  // Colores de estado para tema oscuro (tonos refinados pastel)
+  static const darkPositive = Color(0xFF81C784); // Material soft green
+  static const darkNegative = Color(0xFFE57373); // Material soft red
+  
   // Colores genéricos para usar en ambos temas (estado financiero más suave y profesional)
   static const positive = Color(0xFF81C784); // Material soft green
   static const negative = Color(0xFFE57373); // Material soft red

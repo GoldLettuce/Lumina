@@ -295,9 +295,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               _operationType == OperationType.buy
-                                  ? AppColors.positive.withOpacity(0.2)
-                                  : AppColors.positive.withOpacity(0.1),
-                          foregroundColor: AppColors.positive,
+                                  ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkPositive : AppColors.lightPositive).withOpacity(0.2)
+                                  : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkPositive : AppColors.lightPositive).withOpacity(0.1),
+                          foregroundColor: Theme.of(context).brightness == Brightness.dark ? AppColors.darkPositive : AppColors.lightPositive,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -318,9 +318,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               _operationType == OperationType.sell
-                                  ? AppColors.negative.withOpacity(0.2)
-                                  : AppColors.negative.withOpacity(0.1),
-                          foregroundColor: AppColors.negative,
+                                  ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkNegative : AppColors.lightNegative).withOpacity(0.2)
+                                  : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkNegative : AppColors.lightNegative).withOpacity(0.1),
+                          foregroundColor: Theme.of(context).brightness == Brightness.dark ? AppColors.darkNegative : AppColors.lightNegative,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -522,15 +522,15 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               _operationType == OperationType.buy
-                                  ? AppColors.positive.withOpacity(0.2)
+                                  ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkPositive : AppColors.lightPositive).withOpacity(0.2)
                                   : _operationType == OperationType.sell
-                                  ? AppColors.negative.withOpacity(0.2)
+                                  ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkNegative : AppColors.lightNegative).withOpacity(0.2)
                                   : Theme.of(context).colorScheme.surface.withOpacity(0.5),
                           foregroundColor:
                               _operationType == OperationType.buy
-                                  ? AppColors.positive
+                                  ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkPositive : AppColors.lightPositive)
                                   : _operationType == OperationType.sell
-                                  ? AppColors.negative
+                                  ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkNegative : AppColors.lightNegative)
                                   : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: const StadiumBorder(),

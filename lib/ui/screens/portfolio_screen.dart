@@ -137,7 +137,9 @@ class PortfolioSummaryMinimal extends StatelessWidget {
     final percentStyle = TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.w600,
-              color: rentabilidad >= 0 ? AppColors.positive : AppColors.negative,
+              color: rentabilidad >= 0 
+                  ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkPositive : AppColors.lightPositive)
+                  : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkNegative : AppColors.lightNegative),
     );
 
     return Column(
@@ -249,8 +251,8 @@ class AssetListTile extends StatelessWidget {
     }
 
     final colorRentabilidad = rentabilidad >= 0
-        ? AppColors.positive
-        : AppColors.negative;
+        ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkPositive : AppColors.lightPositive)
+        : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkNegative : AppColors.lightNegative);
 
     final trailing = valorActual == null
         ? const SizedBox(width: 60)

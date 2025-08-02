@@ -104,7 +104,9 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                 _selectedIds.isNotEmpty
                     ? () => _confirmDelete(context, currentAsset)
                     : null,
-            color: _selectedIds.isNotEmpty ? AppColors.negative : Theme.of(context).iconTheme.color,
+            color: _selectedIds.isNotEmpty 
+                ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkNegative : AppColors.lightNegative)
+                : Theme.of(context).iconTheme.color,
           ),
         ],
       ),
@@ -121,7 +123,9 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                   final op = currentAsset.operations[index];
                   final isBuy = op.type == OperationType.buy;
                   final fecha = DateFormat('d MMM y – HH:mm').format(op.date);
-                  final color = isBuy ? AppColors.positive : AppColors.negative;
+                  final color = isBuy 
+                      ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkPositive : AppColors.lightPositive)
+                      : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkNegative : AppColors.lightNegative);
                   final selected = _selectedIds.contains(op.id);
 
                   // Convertir precio USD a moneda seleccionada

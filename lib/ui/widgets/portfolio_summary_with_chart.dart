@@ -74,7 +74,9 @@ class _PortfolioChart extends StatelessWidget {
         }
 
         final isPositive = spots.first.y <= spots.last.y;
-        final lineColor = isPositive ? AppColors.positive : AppColors.negative;
+        final lineColor = isPositive 
+            ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkPositive : AppColors.lightPositive)
+            : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkNegative : AppColors.lightNegative);
 
         return SizedBox(
           height: 200,
