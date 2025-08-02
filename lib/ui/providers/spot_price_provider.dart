@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'dart:collection';
 import 'dart:async';
@@ -9,7 +8,7 @@ import '../../data/models/spot_price.dart';
 class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
   final Map<String, double> _spotPrices = {};
   Set<String> _symbols = {};
-  Map<String, String> _symbolToId = {}; // Mapeo de símbolos a IDs de CoinGecko
+  final Map<String, String> _symbolToId = {};
   Timer? _refreshTimer;
   bool _isLoading = false;
 

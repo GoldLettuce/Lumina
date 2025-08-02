@@ -5,7 +5,7 @@ import '../../data/datasources/coingecko/coingecko_assets_datasource.dart';
 class AssetListProvider extends ChangeNotifier {
   final CoinGeckoAssetsDatasource _datasource = CoinGeckoAssetsDatasource();
 
-  List<CoinGeckoAsset> _allAssets = [];
+  final List<CoinGeckoAsset> _allAssets = [];
   List<CoinGeckoAsset> _filteredAssets = [];
 
   bool _isLoading = false;

@@ -34,7 +34,7 @@ class AssetSelectorModal extends StatefulWidget {
 class _AssetSelectorModalState extends State<AssetSelectorModal> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  Debouncer _debouncer = Debouncer(delay: Duration(milliseconds: 500));
+  final Debouncer _debouncer = Debouncer(delay: Duration(milliseconds: 500));
 
   @override
   void initState() {
