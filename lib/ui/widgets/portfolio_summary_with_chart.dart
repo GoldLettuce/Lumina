@@ -75,13 +75,15 @@ class _PortfolioChart extends StatelessWidget {
 
         final isPositive = spots.first.y <= spots.last.y;
         final lineColor = isPositive 
-            ? (Theme.of(context).brightness == Brightness.dark ? AppColors.darkPositive : AppColors.lightPositive)
-            : (Theme.of(context).brightness == Brightness.dark ? AppColors.darkNegative : AppColors.lightNegative);
+            ? Theme.of(context).colorScheme.tertiary
+            : Theme.of(context).colorScheme.error;
 
         return SizedBox(
           height: 200,
           child: RepaintBoundary(
             child: LineChart(
+              key: ValueKey(Theme.of(context).brightness),
+              duration: Duration.zero,
               LineChartData(
                 clipData: FlClipData(
                   top: false,

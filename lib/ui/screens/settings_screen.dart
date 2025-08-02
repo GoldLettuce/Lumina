@@ -55,12 +55,12 @@ class SettingsScreen extends StatelessWidget {
           ListTile(
             leading: Icon(
               Icons.delete_forever, 
-              color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkNegative : AppColors.lightNegative,
+              color: Theme.of(context).colorScheme.error,
             ),
             title: Text(
               t.deleteAllPortfolioData,
               style: TextStyle(
-                color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkNegative : AppColors.lightNegative,
+                color: Theme.of(context).colorScheme.error,
               ),
             ),
             onTap: () async {

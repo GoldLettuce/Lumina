@@ -53,6 +53,8 @@ class PortfolioApp extends StatelessWidget {
             theme: themeMode == AppThemeMode.lightMono ? AppTheme.lightMonoTheme : AppTheme.lightTheme,
             darkTheme: themeMode == AppThemeMode.darkMono ? AppTheme.darkMonoTheme : AppTheme.darkTheme,
             themeMode: themeModeProvider.flutterThemeMode,
+            themeAnimationDuration: Duration.zero,
+            themeAnimationCurve: Curves.linear,
             locale: locale,
             localizationsDelegates: const [
               AppLocalizations.delegate,

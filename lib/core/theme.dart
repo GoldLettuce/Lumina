@@ -17,6 +17,8 @@ class AppTheme {
         background: AppColors.lightBackground,
         onSurface: AppColors.lightOnSurface,
         onBackground: AppColors.lightOnBackground,
+        tertiary: AppColors.lightPositive,
+        error: AppColors.lightNegative,
       ),
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
@@ -44,6 +46,8 @@ class AppTheme {
         onBackground: AppColors.darkOnBackground,
         surface: AppColors.darkBackground,
         onSurface: AppColors.darkOnSurface,
+        tertiary: AppColors.darkPositive,
+        error: AppColors.darkNegative,
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.darkBackground,
