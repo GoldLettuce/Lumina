@@ -505,12 +505,12 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                                 ? null
                                 : () => Navigator.of(context).pop(),
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.accentBlue),
+                          side: BorderSide(color: Theme.of(context).colorScheme.primary),
                         ),
                         child: Text(
                           loc.cancel,
-                          style: const TextStyle(
-                            color: AppColors.accentBlue,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                       ),

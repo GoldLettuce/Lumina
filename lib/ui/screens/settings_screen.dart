@@ -180,7 +180,7 @@ class SettingsScreen extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+          color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
           width: isSelected ? 2 : 0,
         ),
       ),
@@ -210,7 +210,7 @@ class SettingsScreen extends StatelessWidget {
                 Icon(
                   Icons.check_circle,
                   size: 20,
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ],
             ],

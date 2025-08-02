@@ -84,22 +84,22 @@ class AppTheme {
     ).copyWith(
       scaffoldBackgroundColor: AppColors.lightBackground,
       colorScheme: const ColorScheme.light(
-        primary: Colors.black,
-        secondary: Colors.black,
+        primary: AppColors.lightTextPrimary,
+        secondary: AppColors.lightTextPrimary,
         onPrimary: AppColors.lightOnPrimary,
         surface: AppColors.lightSurface,
         background: AppColors.lightBackground,
-        onSurface: Colors.black,
-        onBackground: Colors.black,
+        onSurface: AppColors.lightTextPrimary,
+        onBackground: AppColors.lightTextPrimary,
       ),
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.bold,
-          color: Colors.black,
+          color: AppColors.lightTextPrimary,
         ),
-        bodyLarge: TextStyle(fontSize: 16, color: Colors.black),
-        bodyMedium: TextStyle(fontSize: 14, color: Colors.black87),
+        bodyLarge: TextStyle(fontSize: 16, color: AppColors.lightTextPrimary),
+        bodyMedium: TextStyle(fontSize: 14, color: AppColors.lightTextSecondary),
       ),
     );
   }
@@ -108,24 +108,24 @@ class AppTheme {
     return ThemeData.dark(
       useMaterial3: true,
     ).copyWith(
-      scaffoldBackgroundColor: Colors.black,
+      scaffoldBackgroundColor: AppColors.darkBackground,
       colorScheme: const ColorScheme.dark(
-        primary: Colors.white,
-        secondary: Colors.white,
-        onPrimary: Colors.black,
-        surface: Colors.black,
-        background: Colors.black,
-        onSurface: Colors.white,
-        onBackground: Colors.white,
+        primary: AppColors.darkOnBackground,
+        secondary: AppColors.darkOnBackground,
+        onPrimary: AppColors.darkBackground,
+        surface: AppColors.darkBackground,
+        background: AppColors.darkBackground,
+        onSurface: AppColors.darkOnBackground,
+        onBackground: AppColors.darkOnBackground,
       ),
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: AppColors.darkOnBackground,
         ),
-        bodyLarge: TextStyle(fontSize: 16, color: Colors.white),
-        bodyMedium: TextStyle(fontSize: 14, color: Colors.white70),
+        bodyLarge: TextStyle(fontSize: 16, color: AppColors.darkOnBackground),
+        bodyMedium: TextStyle(fontSize: 14, color: AppColors.darkOnSurface),
       ),
     );
   }
