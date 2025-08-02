@@ -232,6 +232,17 @@ class AssetListTile extends StatelessWidget {
   final double fx;
   final String currency;
 
+  /// Formatea la cantidad eliminando ceros decimales innecesarios
+  String _formatQuantity(double quantity) {
+    if (quantity == quantity.toInt()) {
+      // Si es un número entero, mostrar sin decimales
+      return quantity.toInt().toString();
+    } else {
+      // Si tiene decimales, mostrar solo los significativos
+      return quantity.toString().replaceAll(RegExp(r'\.?0+$'), '');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final priceUsd = context.select<SpotPriceProvider, double?>(
@@ -301,7 +312,7 @@ class AssetListTile extends StatelessWidget {
         style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
       ),
       subtitle: Text(
-        '${t.quantity}: ${asset.totalQuantity}',
+        '${t.quantity}: ${_formatQuantity(asset.totalQuantity)}',
         style: theme.textTheme.bodyMedium,
       ),
       trailing: AnimatedSwitcher(
