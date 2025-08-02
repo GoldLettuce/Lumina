@@ -464,24 +464,25 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
     if (isLoading) return const SkeletonView();
 
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-        centerTitle: false,
-        titleSpacing: 0,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                );
-              },
-            ),
+             appBar: AppBar(
+         elevation: 0,
+         scrolledUnderElevation: 0,
+         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+         foregroundColor: Theme.of(context).colorScheme.onSurface,
+         centerTitle: false,
+         titleSpacing: 0,
+         title: Row(
+           mainAxisAlignment: MainAxisAlignment.start,
+           children: [
+             IconButton(
+               icon: const Icon(Icons.settings),
+               onPressed: () {
+                 Navigator.push(
+                   context,
+                   MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                 );
+               },
+             ),
             IconButton(
               icon: const Icon(LucideIcons.coffee),
               onPressed: () {
@@ -517,12 +518,14 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // 👇 Selector para sincronizar automáticamente cuando cambien los precios
+      body: Container(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // 👇 Selector para sincronizar automáticamente cuando cambien los precios
             Selector<SpotPriceProvider, Map<String, double>>(
               selector: (_, p) => p.spotPrices,
               builder: (_, __, ___) {
@@ -615,6 +618,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
             ),
           ],
         ),
+        ),
       ),
     );
   }
@@ -624,20 +628,21 @@ class SkeletonView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-        centerTitle: false,
-        titleSpacing: 0,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: null, // Deshabilitado mientras carga
-            ),
+         return Scaffold(
+       appBar: AppBar(
+         elevation: 0,
+         scrolledUnderElevation: 0,
+         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+         foregroundColor: Theme.of(context).colorScheme.onSurface,
+         centerTitle: false,
+         titleSpacing: 0,
+         title: Row(
+           mainAxisAlignment: MainAxisAlignment.start,
+           children: [
+             IconButton(
+               icon: const Icon(Icons.settings),
+               onPressed: null, // Deshabilitado mientras carga
+             ),
             IconButton(
               icon: const Icon(LucideIcons.coffee),
               onPressed: null, // Deshabilitado mientras carga
@@ -651,12 +656,14 @@ class SkeletonView extends StatelessWidget {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Placeholder para resumen de portafolio
+      body: Container(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Placeholder para resumen de portafolio
             Column(
               children: [
                 Container(
@@ -750,6 +757,7 @@ class SkeletonView extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     );
