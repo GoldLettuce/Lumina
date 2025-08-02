@@ -21,7 +21,7 @@ class ArchivedAssetsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(t.archivedAssetsTitle),
-        backgroundColor: Theme.of(context).colorScheme.background,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
         centerTitle: true,
       ),

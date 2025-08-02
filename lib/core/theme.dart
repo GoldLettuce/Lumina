@@ -13,10 +13,8 @@ class AppTheme {
         primary: AppColors.lightPrimary,
         secondary: AppColors.lightSecondary,
         onPrimary: AppColors.lightOnPrimary,
-        surface: AppColors.lightSurface,
-        background: AppColors.lightBackground,
-        onSurface: AppColors.lightOnSurface,
-        onBackground: AppColors.lightOnBackground,
+        surface: AppColors.lightBackground,
+        onSurface: AppColors.lightOnBackground,
         tertiary: AppColors.lightPositive,
         error: AppColors.lightNegative,
       ),
@@ -42,10 +40,8 @@ class AppTheme {
       colorScheme: ColorScheme.dark(
         primary: AppColors.darkPrimary,
         onPrimary: AppColors.darkOnPrimary,
-        background: AppColors.darkBackground,
-        onBackground: AppColors.darkOnBackground,
         surface: AppColors.darkBackground,
-        onSurface: AppColors.darkOnSurface,
+        onSurface: AppColors.darkOnBackground,
         tertiary: AppColors.darkPositive,
         error: AppColors.darkNegative,
       ),
@@ -87,10 +83,8 @@ class AppTheme {
         primary: AppColors.lightTextPrimary,
         secondary: AppColors.lightTextPrimary,
         onPrimary: AppColors.lightOnPrimary,
-        surface: AppColors.lightSurface,
-        background: AppColors.lightBackground,
+        surface: AppColors.lightBackground,
         onSurface: AppColors.lightTextPrimary,
-        onBackground: AppColors.lightTextPrimary,
       ),
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
@@ -114,9 +108,7 @@ class AppTheme {
         secondary: AppColors.darkOnBackground,
         onPrimary: AppColors.darkBackground,
         surface: AppColors.darkBackground,
-        background: AppColors.darkBackground,
         onSurface: AppColors.darkOnBackground,
-        onBackground: AppColors.darkOnBackground,
       ),
       textTheme: const TextTheme(
         headlineLarge: TextStyle(

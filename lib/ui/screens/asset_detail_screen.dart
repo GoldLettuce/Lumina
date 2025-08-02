@@ -140,7 +140,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                       }
                     },
                     child: Container(
-                      color: selected ? Theme.of(context).colorScheme.surface.withOpacity(0.3) : null,
+                      color: selected ? Theme.of(context).colorScheme.surface.withAlpha(77) : null,
                       child: ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: Icon(

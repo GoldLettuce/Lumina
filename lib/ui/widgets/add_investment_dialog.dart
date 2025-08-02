@@ -290,8 +290,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               _operationType == OperationType.buy
-                                  ? Theme.of(context).colorScheme.tertiary.withOpacity(0.3)
-                                  : Theme.of(context).colorScheme.tertiary.withOpacity(0.1),
+                                  ? Theme.of(context).colorScheme.tertiary.withAlpha(77)
+                                  : Theme.of(context).colorScheme.tertiary.withAlpha(26),
                           foregroundColor: Theme.of(context).colorScheme.tertiary,
                           elevation: _operationType == OperationType.buy ? 2 : 0,
                           shape: RoundedRectangleBorder(
@@ -313,8 +313,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               _operationType == OperationType.sell
-                                  ? AppColors.textNegative(context).withOpacity(0.3)
-                                  : AppColors.textNegative(context).withOpacity(0.1),
+                                  ? AppColors.textNegative(context).withAlpha(77)
+                                  : AppColors.textNegative(context).withAlpha(26),
                           foregroundColor: AppColors.textNegative(context),
                           elevation: _operationType == OperationType.sell ? 2 : 0,
                           shape: RoundedRectangleBorder(
@@ -349,7 +349,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                               _selectSymbol();
                             },
                     borderRadius: BorderRadius.circular(12),
-                    highlightColor: Theme.of(context).colorScheme.surface.withOpacity(0.1),
+                    highlightColor: Theme.of(context).colorScheme.surface.withAlpha(26),
                     splashColor: AppColors.transparent,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -377,7 +377,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                                         (_displaySymbol == null ||
                                             _displaySymbol!.isEmpty))
                                     ? Theme.of(context).colorScheme.error
-                                    : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                    : Theme.of(context).colorScheme.onSurface.withAlpha(153),
                           ),
                         ],
                       ),
@@ -408,7 +408,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         Icon(
                           Icons.calendar_today,
                           size: 18,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          color: Theme.of(context).colorScheme.onSurface.withAlpha(153),
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -527,16 +527,16 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               _operationType == OperationType.buy
-                                  ? Theme.of(context).colorScheme.tertiary.withOpacity(0.3)
+                                  ? Theme.of(context).colorScheme.tertiary.withAlpha(77)
                                   : _operationType == OperationType.sell
-                                  ? AppColors.textNegative(context).withOpacity(0.3)
-                                  : Theme.of(context).colorScheme.surface.withOpacity(0.5),
+                                  ? AppColors.textNegative(context).withAlpha(77)
+                                  : Theme.of(context).colorScheme.surface.withAlpha(128),
                           foregroundColor:
                               _operationType == OperationType.buy
                                   ? Theme.of(context).colorScheme.tertiary
                                   : _operationType == OperationType.sell
                                   ? AppColors.textNegative(context)
-                                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                  : Theme.of(context).colorScheme.onSurface.withAlpha(153),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: const StadiumBorder(),
                           textStyle: const TextStyle(

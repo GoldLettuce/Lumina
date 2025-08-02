@@ -122,7 +122,7 @@ class SkeletonView extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+              backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -133,7 +133,7 @@ class SkeletonView extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               t.loading,
-              style: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 16),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 16),
             ),
           ],
         ),

@@ -130,7 +130,7 @@ class PortfolioSummaryMinimal extends StatelessWidget {
       fontSize: 32,
       fontWeight: FontWeight.bold,
       letterSpacing: -1.5,
-      color: Theme.of(context).colorScheme.onBackground,
+                  color: Theme.of(context).colorScheme.onSurface,
     );
 
     final percentStyle = TextStyle(
@@ -207,7 +207,7 @@ class PortfolioSummaryMinimal extends StatelessWidget {
           opacity: hasSelection ? 1.0 : 0.0,
           child: Text(
             dateText,
-            style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+            style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Theme.of(context).colorScheme.onSurface.withAlpha(153)),
           ),
         ),
       ],
@@ -440,7 +440,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Theme.of(context).colorScheme.background,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
         centerTitle: false,
         titleSpacing: 0,
@@ -579,7 +579,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                             child: Text(
                               t.archivedAssetsTitle,
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                color: Theme.of(context).colorScheme.onSurface.withAlpha(153),
                               ),
                             ),
                           ),
@@ -604,7 +604,7 @@ class SkeletonView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Theme.of(context).colorScheme.background,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         foregroundColor: Theme.of(context).colorScheme.onSurface,
         centerTitle: false,
         titleSpacing: 0,
