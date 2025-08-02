@@ -1,7 +1,7 @@
 // lib/ui/providers/locale_provider.dart
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/hive_service.dart';
 
 class LocaleProvider extends ChangeNotifier {
   Locale _locale = const Locale('en'); // Idioma por defecto
@@ -13,11 +13,15 @@ class LocaleProvider extends ChangeNotifier {
   }
 
   Future<void> _loadLocale() async {
-    final prefs = await SharedPreferences.getInstance();
-    final langCode = prefs.getString('locale');
+    // Asegurar que Hive esté inicializado
+    await HiveService.init();
+    
+    // Cargar desde Hive
+    final langCode = HiveService.settings.get('locale') as String?;
+    
     if (langCode != null && ['es', 'en'].contains(langCode)) {
       _locale = Locale(langCode);
-      notifyListeners(); // Actualiza la UI si es necesario
+      notifyListeners();
     }
   }
 
@@ -27,7 +31,7 @@ class LocaleProvider extends ChangeNotifier {
     _locale = locale;
     notifyListeners();
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('locale', locale.languageCode);
+    // Guardar en Hive
+    HiveService.settings.put('locale', locale.languageCode);
   }
 }
