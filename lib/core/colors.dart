@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:lumina/core/theme.dart';
+import 'package:lumina/ui/providers/theme_mode_provider.dart';
 
 /// Colores centralizados para el tema claro de la aplicación
 class AppColors {
@@ -69,4 +72,20 @@ class AppColors {
   
   // Color de acento azul suave para acciones secundarias
   static const accentBlue = Color(0xFF64B5F6); // azul pastel Material 300
+
+  /// Devuelve el color apropiado para valores negativos según el modo de tema
+  /// En modo monoclaro, usa el color de texto primario en lugar del rojo
+  static Color textNegative(BuildContext context) {
+    // Obtener el provider usando Provider.of
+    final themeModeProvider = Provider.of<ThemeModeProvider>(context, listen: false);
+    final themeMode = themeModeProvider.mode;
+    
+    // Si el modo es monoclaro, usar el color de texto primario
+    if (themeMode == AppThemeMode.lightMono || themeMode == AppThemeMode.darkMono) {
+      return Theme.of(context).colorScheme.onSurface;
+    }
+    
+    // En cualquier otro caso, usar el color rojo estándar
+    return Colors.red;
+  }
 } 

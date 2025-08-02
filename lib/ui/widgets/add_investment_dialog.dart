@@ -318,9 +318,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               _operationType == OperationType.sell
-                                  ? Theme.of(context).colorScheme.error.withOpacity(0.3)
-                                  : Theme.of(context).colorScheme.error.withOpacity(0.1),
-                          foregroundColor: Theme.of(context).colorScheme.error,
+                                  ? AppColors.textNegative(context).withOpacity(0.3)
+                                  : AppColors.textNegative(context).withOpacity(0.1),
+                          foregroundColor: AppColors.textNegative(context),
                           elevation: _operationType == OperationType.sell ? 2 : 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -337,7 +337,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                     child: Text(
                       loc.selectOperationType,
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
+                        color: AppColors.textNegative(context),
                         fontSize: 12,
                       ),
                     ),
@@ -368,7 +368,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                                   (_formSubmitted &&
                                           (_displaySymbol == null ||
                                               _displaySymbol!.isEmpty))
-                                      ? Theme.of(context).colorScheme.error
+                                      ? AppColors.textNegative(context)
                                       : Theme.of(context).colorScheme.onSurface,
                               fontSize: 17,
                               fontWeight: FontWeight.w500,
@@ -524,13 +524,13 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                               _operationType == OperationType.buy
                                   ? Theme.of(context).colorScheme.tertiary.withOpacity(0.3)
                                   : _operationType == OperationType.sell
-                                  ? Theme.of(context).colorScheme.error.withOpacity(0.3)
+                                  ? AppColors.textNegative(context).withOpacity(0.3)
                                   : Theme.of(context).colorScheme.surface.withOpacity(0.5),
                           foregroundColor:
                               _operationType == OperationType.buy
                                   ? Theme.of(context).colorScheme.tertiary
                                   : _operationType == OperationType.sell
-                                  ? Theme.of(context).colorScheme.error
+                                  ? AppColors.textNegative(context)
                                   : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: const StadiumBorder(),

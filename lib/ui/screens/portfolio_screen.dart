@@ -139,7 +139,7 @@ class PortfolioSummaryMinimal extends StatelessWidget {
       fontWeight: FontWeight.w600,
               color: rentabilidad >= 0 
                   ? Theme.of(context).colorScheme.tertiary
-                  : Theme.of(context).colorScheme.error,
+                  : AppColors.textNegative(context),
     );
 
     return Column(
@@ -252,7 +252,7 @@ class AssetListTile extends StatelessWidget {
 
     final colorRentabilidad = rentabilidad >= 0
         ? Theme.of(context).colorScheme.tertiary
-        : Theme.of(context).colorScheme.error;
+        : AppColors.textNegative(context);
 
     final trailing = valorActual == null
         ? const SizedBox(width: 60)
