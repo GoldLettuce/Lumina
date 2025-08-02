@@ -91,4 +91,20 @@ class AppColors {
     // En cualquier otro caso, usar el color rojo estándar
     return Colors.red;
   }
-} 
+}
+
+// Colores botón SELL (azul adaptado)
+const Color sellButtonBlueLight = Color(0xFF2979FF);         // Base claro
+const Color sellButtonBlueDark = Color(0xFF82B1FF);          // Base oscuro
+const Color sellButtonBlueSelectedLight = Color(0xFF1565C0); // Seleccionado claro
+const Color sellButtonBlueSelectedDark = Color(0xFF448AFF);  // Seleccionado oscuro
+
+// Botón de VENTA (SELL) minimalista
+const Color sellButtonNeutralLight = Color(0xFFC2D4E5);         // Modo claro (ajustado con azul suave)
+const Color sellButtonNeutralDark = Color(0xFF2E3A44);          // Modo oscuro
+const Color sellButtonSelectedLight = Color(0xFF90B6DA);        // Pastel azul (claro)
+const Color sellButtonSelectedDark = Color(0xFF4B5B68);         // Azul sobrio (oscuro)
+
+// Botón de COMPRA (BUY) minimalista
+const Color buyButtonGreenLight = Color(0xFFDFF5E3);     // no seleccionado (modo claro)
+const Color buyButtonGreenSelectedLight = Color(0xFF98C7A7); // seleccionado (modo claro) 

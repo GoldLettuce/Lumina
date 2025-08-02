@@ -306,26 +306,27 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed:
-                            _isSaving
-                                ? null
-                                : () => setState(
-                                  () => _operationType = OperationType.sell,
-                                ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              _operationType == OperationType.sell
-                                  ? AppColors.textNegative(context).withAlpha(77)
-                                  : AppColors.textNegative(context).withAlpha(26),
-                          foregroundColor: AppColors.textNegative(context),
-                          elevation: _operationType == OperationType.sell ? 2 : 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      child: () {
+                        final isDark = Theme.of(context).brightness == Brightness.dark;
+                        final sellColor = _operationType == OperationType.sell
+                            ? (isDark ? sellButtonSelectedDark : sellButtonSelectedLight)
+                            : (isDark ? sellButtonNeutralDark : sellButtonNeutralLight);
+                        
+                        return ElevatedButton(
+                          onPressed: _isSaving
+                              ? null
+                              : () => setState(() => _operationType = OperationType.sell),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: sellColor,
+                            foregroundColor: isDark ? Colors.white : Colors.black,
+                            elevation: _operationType == OperationType.sell ? 2 : 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                        ),
-                        child: Text(loc.sell),
-                      ),
+                          child: Text(loc.sell),
+                        );
+                      }(),
                     ),
                   ],
                 ),
@@ -528,18 +529,22 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                       child: ElevatedButton(
                         onPressed: _submit,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              _operationType == OperationType.buy
-                                  ? Theme.of(context).colorScheme.tertiary.withAlpha(77)
-                                  : _operationType == OperationType.sell
-                                  ? AppColors.textNegative(context).withAlpha(77)
-                                  : Theme.of(context).colorScheme.surface.withAlpha(128),
-                          foregroundColor:
-                              _operationType == OperationType.buy
-                                  ? Theme.of(context).colorScheme.tertiary
-                                  : _operationType == OperationType.sell
-                                  ? AppColors.textNegative(context)
-                                  : Theme.of(context).colorScheme.onSurface.withAlpha(153),
+                          backgroundColor: () {
+                            final isDark = Theme.of(context).brightness == Brightness.dark;
+                            return _operationType == OperationType.buy
+                                ? Theme.of(context).colorScheme.tertiary.withAlpha(77)
+                                : _operationType == OperationType.sell
+                                    ? (isDark ? sellButtonSelectedDark : sellButtonSelectedLight)
+                                    : Theme.of(context).colorScheme.surface.withAlpha(128);
+                          }(),
+                          foregroundColor: () {
+                            final isDark = Theme.of(context).brightness == Brightness.dark;
+                            return _operationType == OperationType.buy
+                                ? Theme.of(context).colorScheme.tertiary
+                                : _operationType == OperationType.sell
+                                    ? (isDark ? Colors.white : Colors.black)
+                                    : Theme.of(context).colorScheme.onSurface.withAlpha(153);
+                          }(),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: const StadiumBorder(),
                           textStyle: const TextStyle(
