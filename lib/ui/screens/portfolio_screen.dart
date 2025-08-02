@@ -304,27 +304,7 @@ class AssetListTile extends StatelessWidget {
             },
           );
 
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: asset.imageUrl != null && asset.imageUrl!.isNotEmpty
-          ? CircleAvatar(
-              backgroundImage: NetworkImage(asset.imageUrl!),
-              backgroundColor: Colors.transparent,
-              radius: 20,
-            )
-          : null,
-      title: Text(
-        asset.symbol,
-        style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
-      ),
-      subtitle: Text(
-        '${t.quantity}: ${_formatQuantity(asset.totalQuantity)}',
-        style: theme.textTheme.bodyMedium,
-      ),
-      trailing: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 200),
-        child: trailing,
-      ),
+    return GestureDetector(
       onTap: () async {
         final result = await Navigator.push(
           context,
@@ -333,6 +313,41 @@ class AssetListTile extends StatelessWidget {
         if (!context.mounted || result == null) return;
         context.findAncestorStateOfType<_PortfolioScreenState>()?._maybeReloadHistory();
       },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (asset.imageUrl != null && asset.imageUrl!.isNotEmpty)
+              CircleAvatar(
+                backgroundImage: NetworkImage(asset.imageUrl!),
+                backgroundColor: Colors.transparent,
+                radius: 20,
+              ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    asset.symbol,
+                    style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '${t.quantity}: ${_formatQuantity(asset.totalQuantity)}',
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: trailing,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -552,17 +567,14 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                       ),
                     )
                   else
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                              (context, index) => AssetListTile(
-                            asset: investments[index],
-                            fx: fx.exchangeRate,
-                            currency: fx.currency,
-                          ),
-                          childCount: investments.length,
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                            (context, index) => AssetListTile(
+                          asset: investments[index],
+                          fx: fx.exchangeRate,
+                          currency: fx.currency,
                         ),
+                        childCount: investments.length,
                       ),
                     ),
                   SliverFillRemaining(
