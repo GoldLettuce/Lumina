@@ -295,10 +295,10 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               _operationType == OperationType.buy
-                                  ? Theme.of(context).colorScheme.tertiary.withOpacity(0.2)
+                                  ? Theme.of(context).colorScheme.tertiary.withOpacity(0.3)
                                   : Theme.of(context).colorScheme.tertiary.withOpacity(0.1),
                           foregroundColor: Theme.of(context).colorScheme.tertiary,
-                          elevation: 0,
+                          elevation: _operationType == OperationType.buy ? 2 : 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -318,10 +318,10 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               _operationType == OperationType.sell
-                                  ? Theme.of(context).colorScheme.error.withOpacity(0.2)
+                                  ? Theme.of(context).colorScheme.error.withOpacity(0.3)
                                   : Theme.of(context).colorScheme.error.withOpacity(0.1),
                           foregroundColor: Theme.of(context).colorScheme.error,
-                          elevation: 0,
+                          elevation: _operationType == OperationType.sell ? 2 : 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -522,9 +522,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               _operationType == OperationType.buy
-                                  ? Theme.of(context).colorScheme.tertiary.withOpacity(0.2)
+                                  ? Theme.of(context).colorScheme.tertiary.withOpacity(0.3)
                                   : _operationType == OperationType.sell
-                                  ? Theme.of(context).colorScheme.error.withOpacity(0.2)
+                                  ? Theme.of(context).colorScheme.error.withOpacity(0.3)
                                   : Theme.of(context).colorScheme.surface.withOpacity(0.5),
                           foregroundColor:
                               _operationType == OperationType.buy
