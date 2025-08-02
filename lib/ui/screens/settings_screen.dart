@@ -147,7 +147,7 @@ class SettingsScreen extends StatelessWidget {
                 themeModeProvider,
                 AppThemeMode.lightMono,
                                   t.themeLightMono,
-                  Icons.text_fields,
+                  Icons.circle_outlined,
                   Theme.of(context).iconTheme.color ?? Theme.of(context).colorScheme.onSurface,
                 ),
               _buildThemeCard(
@@ -155,7 +155,7 @@ class SettingsScreen extends StatelessWidget {
                 themeModeProvider,
                 AppThemeMode.darkMono,
                                   t.themeDarkMono,
-                  Icons.text_fields,
+                  Icons.circle,
                   Theme.of(context).iconTheme.color ?? Theme.of(context).colorScheme.onSurface,
                 ),
             ],
@@ -205,14 +205,6 @@ class SettingsScreen extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              if (isSelected) ...[
-                const SizedBox(height: 8),
-                Icon(
-                  Icons.check_circle,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ],
             ],
           ),
         ),
