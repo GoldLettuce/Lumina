@@ -17,8 +17,8 @@ class LanguageSelector extends StatelessWidget {
       trailing: DropdownButton<String>(
         value: currentLang,
         items: [
-          DropdownMenuItem(value: 'es', child: Text(t.spanish)),
-          DropdownMenuItem(value: 'en', child: Text(t.english)),
+          DropdownMenuItem(value: 'es', child: Text(t.spanish, style: Theme.of(context).textTheme.bodyMedium)),
+          DropdownMenuItem(value: 'en', child: Text(t.english, style: Theme.of(context).textTheme.bodyMedium)),
         ],
         onChanged: (value) {
           if (value != null) {
