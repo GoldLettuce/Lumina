@@ -73,6 +73,9 @@ class AppColors {
   // Color de acento azul suave para acciones secundarias
   static const accentBlue = Color(0xFF64B5F6); // azul pastel Material 300
 
+  // Color transparente para uso consistente
+  static const transparent = Colors.transparent;
+
   /// Devuelve el color apropiado para valores negativos según el modo de tema
   /// En modo monoclaro, usa el color de texto primario en lugar del rojo
   static Color textNegative(BuildContext context) {

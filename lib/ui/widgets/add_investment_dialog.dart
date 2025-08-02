@@ -355,7 +355,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                             },
                     borderRadius: BorderRadius.circular(12),
                     highlightColor: Theme.of(context).colorScheme.surface.withOpacity(0.1),
-                    splashColor: Colors.transparent,
+                    splashColor: AppColors.transparent,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       child: Row(

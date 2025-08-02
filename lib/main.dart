@@ -125,18 +125,18 @@ class SkeletonView extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: Theme.of(context).colorScheme.background,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.lightPrimary),
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
             ),
             const SizedBox(height: 16),
             Text(
               t.loading,
-              style: const TextStyle(color: AppColors.lightTextPrimary, fontSize: 16),
+              style: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 16),
             ),
           ],
         ),
