@@ -64,6 +64,12 @@ flutter:
   # Generación automática de localización
   generate: true
 
+  assets:
+    - assets/images/coingecko_full_white.svg
+    - assets/images/coingecko_full_black.svg
+    - assets/images/coingecko_mono_white.svg
+    - assets/images/coingecko_mono_black.svg
+
   fonts:
     - family: RobotoMono
       fonts:
