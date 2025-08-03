@@ -59,7 +59,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
           _spotPrices[p.symbol] = p.price;
         }
       }
-      print('[SpotPriceProvider] Precios cargados desde Hive: ${_spotPrices.length} activos');
+      // Precios cargados desde Hive cache
       notifyListeners();
     }
   }
@@ -88,9 +88,9 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
           .map((e) => SpotPrice(symbol: e.key, price: e.value))
           .toList();
       await box.put('spot_prices', toStore);
-      print('[SpotPriceProvider] Precios guardados en Hive: ${toStore.length} activos');
+      // Precios guardados en Hive cache
     } catch (e) {
-      print('[ERROR][SpotPriceProvider] $e');
+      // Error handling silently
     } finally {
       _isLoading = false;
       notifyListeners();

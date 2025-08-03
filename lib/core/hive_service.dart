@@ -56,35 +56,16 @@ class HiveService {
 
   /// Método interno que contiene la lógica de apertura de cajas
   static Future<void> _openAllBoxesInternal() async {
-    final startTime = DateTime.now();
-    print(
-      '[HIVE][${startTime.toIso8601String()}] 📦 Iniciando apertura de cajas',
-    );
-
     // Fase 1: Abre solo la caja de configuración (mínima y rápida)
-    final settingsStart = DateTime.now();
     _settingsBox = await Hive.openBox('settingsBox');
     await Future.delayed(Duration.zero);
-    final settingsEnd = DateTime.now();
-    print(
-      '[HIVE][${settingsEnd.toIso8601String()}] ⚙️ Settings abierta en ${settingsEnd.difference(settingsStart).inMilliseconds}ms',
-    );
 
     // Fase 2: Abre el resto de cajas y espera a que terminen
-    print(
-      '[HIVE][${DateTime.now().toIso8601String()}] 🔄 Abriendo cajas pesadas (esperando a que terminen)',
-    );
-    
-    final heavyStart = DateTime.now();
     await _openInvestmentsBox();
     await _openChartCacheBox();
     await _openHistoryBox();
     await _openFxRatesBox();
     await _openMetaBox();
-    final heavyEnd = DateTime.now();
-    print(
-      '[HIVE][${heavyEnd.toIso8601String()}] ✅ Cajas pesadas abiertas en ${heavyEnd.difference(heavyStart).inMilliseconds}ms',
-    );
     _isInitialized = true;
   }
 
@@ -93,15 +74,9 @@ class HiveService {
   /// Este método debe llamarse una sola vez al inicio de la aplicación,
   /// antes de usar cualquier funcionalidad que requiera acceso a Hive.
   static Future<void> init() async {
-    print(
-      '[ARRANQUE][${DateTime.now().toIso8601String()}] 📦 HiveService.init() START',
-    );
     await initFlutterLight();
     await openAllBoxes();
     _isInitialized = true;
-    print(
-      '[ARRANQUE][${DateTime.now().toIso8601String()}] �� HiveService.init() END',
-    );
   }
 
   /// Registra todos los adapters de Hive necesarios

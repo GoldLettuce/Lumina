@@ -13,10 +13,9 @@ class HistoryRepositoryImpl implements HistoryRepository {
   final CoinGeckoHistoryService _service = CoinGeckoHistoryService();
 
   /*───────────────────────── logs ─────────────────────────*/
-  void _log(String msg) {
-    final ts = DateTime.now().toIso8601String().substring(11, 19);
-    debugPrint('[$ts] $msg');
-  }
+void _log(String msg) {
+  // Logging removed for release
+}
 
   /*──────────────────────── helpers ───────────────────────*/
   DateTime _roundToDay(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
