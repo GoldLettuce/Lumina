@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
-import 'package:lumina/ui/providers/settings_provider.dart';
+import 'package:lumina/ui/providers/theme_mode_provider.dart';
+import 'package:lumina/core/theme.dart';
 
 class CoinGeckoAttribution extends StatelessWidget {
   const CoinGeckoAttribution({super.key});
@@ -10,7 +11,8 @@ class CoinGeckoAttribution extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isMono = context.watch<SettingsProvider>().isMonochrome;
+    final themeMode = context.watch<ThemeModeProvider>().mode;
+    final isMono = themeMode == AppThemeMode.lightMono || themeMode == AppThemeMode.darkMono;
 
     String assetPath;
     if (isMono) {
