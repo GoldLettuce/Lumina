@@ -63,8 +63,13 @@ web/build/
 # Others
 *.log
 
-# Credentials or local env files (si usas)
+# Credentials or local env files
 .env
 .env.*
 lib.zip
 lib.zip
+
+# 🔐 Keystore y configuración de firma - NO subir nunca
+android/key.properties
+android/app/lumina_key.jks
+lumina_key.jks
