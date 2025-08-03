@@ -69,12 +69,12 @@ class CoinGeckoAttribution extends StatelessWidget {
           await launchUrl(uri, mode: LaunchMode.externalApplication);
         }
       },
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        alignment: Alignment.center,
-        child: logo,
-      ),
+             child: Container(
+         width: double.infinity,
+         padding: const EdgeInsets.only(right: 16, top: 16, bottom: 16),
+         alignment: Alignment.centerRight,
+         child: logo,
+       ),
     );
   }
 }
