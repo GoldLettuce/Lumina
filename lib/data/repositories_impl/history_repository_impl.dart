@@ -82,7 +82,15 @@ class HistoryRepositoryImpl implements HistoryRepository {
         spotPrices,
       );
       if (todayValue > 0) {
-        out.add(Point(time: DateTime.now(), value: todayValue));
+        // 🔑 Si el último punto ya es de hoy → reemplázalo
+        final today = DateTime.now();
+        final isSameDay = out.isNotEmpty &&
+            _isSameDay(out.last.time, today);
+
+        if (isSameDay) {
+          out.removeLast();
+        }
+        out.add(Point(time: today, value: todayValue));
       }
     }
 
@@ -246,4 +254,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
     }
     return total;
   }
+
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
 }

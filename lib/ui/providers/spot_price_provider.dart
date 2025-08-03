@@ -117,12 +117,17 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
     // Evitar que una respuesta vacía borre los precios actuales
     if (newPrices.isEmpty) return;
     
-    if (!_equals(newPrices)) {
-      _spotPrices
-        ..clear()
-        ..addAll(newPrices);
-      notifyListeners();
+    // 🔑 No borres lo que ya teníamos; solo actualiza/añade lo nuevo
+    bool changed = false;
+    for (final entry in newPrices.entries) {
+      if (_spotPrices[entry.key] != entry.value) {
+        _spotPrices[entry.key] = entry.value;
+        changed = true;
+      }
     }
+    if (!changed) return;
+
+    notifyListeners();
   }
 
   bool _equals(Map<String, double> other) {
