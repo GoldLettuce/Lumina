@@ -6,8 +6,10 @@ import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/ui/providers/investment_provider.dart';
 import 'package:lumina/ui/widgets/add_investment_dialog.dart';
 import 'package:lumina/ui/providers/currency_provider.dart'; // Import CurrencyProvider
+import 'package:lumina/ui/providers/theme_mode_provider.dart';
 import '../../l10n/app_localizations.dart';
 import 'package:lumina/core/colors.dart';
+import 'package:lumina/core/theme.dart';
 
 class AssetDetailScreen extends StatefulWidget {
   final Investment asset;
@@ -93,6 +95,18 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     // Formatter para la moneda seleccionada, usando su nombre
     final currencyFormatter = NumberFormat.simpleCurrency(name: fx.currency);
 
+    // Calcular color de selección según tema y modo mono
+    final themeMode = context.watch<ThemeModeProvider>().mode;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isMono = themeMode == AppThemeMode.lightMono || themeMode == AppThemeMode.darkMono;
+
+    Color getTileColor(bool selected) {
+      if (!selected) return Colors.transparent;
+      return isMono
+          ? (isDark ? selectedTileMonoDark : selectedTileMonoLight)
+          : (isDark ? selectedTileDark     : selectedTileLight);
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(currentAsset.symbol),
@@ -140,7 +154,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                       }
                     },
                     child: Container(
-                      color: selected ? Theme.of(context).colorScheme.surface.withAlpha(77) : null,
+                      color: getTileColor(selected),
                       child: ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: Icon(

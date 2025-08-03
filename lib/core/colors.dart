@@ -116,3 +116,9 @@ const Color cancelButtonDark = Color(0xFF5A3C3C);   // Rojo apagado oscuro
 // Texto del botón CANCEL
 const Color cancelButtonTextLight = Color(0xFFBB4444);   // Texto rojo más fuerte (claro)
 const Color cancelButtonTextDark = Color(0xFFFF8888);    // Texto rojo suave vibrante (oscuro) 
+
+// Colores de selección de transacción  ─── ¡SOLO CONSTANTES!
+const Color selectedTileLight       = Color(0xFFE3F2FD); // azul claro pastel
+const Color selectedTileDark        = Color(0xFF263238); // azul gris-azul oscuro
+const Color selectedTileMonoLight   = Color(0xFFE0E0E0); // gris claro mono
+const Color selectedTileMonoDark    = Color(0xFF303030); // gris oscuro mono
