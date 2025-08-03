@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 /// Gestor centralizado de peticiones HTTP que:
 /// - Limita las llamadas a 30 por minuto
 /// - Usa una cola serializada para evitar concurrencia
-/// - Implementa backoff exponencial al detectar errores HTTP 429
+/// - Espera 1 minuto y reintenta (máx. 4 veces) en caso de HTTP 429
 /// - Expone un método público `Future<http.Response> get(Uri url)`
 class RequestManager {
   static final RequestManager _instance = RequestManager._();
@@ -13,7 +13,6 @@ class RequestManager {
   // Constantes para configuración
   static const int _maxRequestsPerMinute = 30;
   static const int _maxRetries = 4;
-  static const int _maxBackoffSeconds = 8;
 
   // Cliente HTTP
   final http.Client _client = http.Client();
@@ -27,9 +26,6 @@ class RequestManager {
   // Future para encadenar las peticiones serialmente
   Future _lastRequest = Future.value();
 
-  // Delay para backoff exponencial
-  int _backoffDelay = 1;
-
   // Constructor privado que inicia el timer
   RequestManager._() {
     _startResetTimer();
@@ -39,7 +35,6 @@ class RequestManager {
   void _startResetTimer() {
     _resetTimer = Timer.periodic(const Duration(seconds: 60), (timer) {
       _requestCount = 0;
-      _backoffDelay = 1; // Reset backoff delay
     });
   }
 
@@ -72,9 +67,8 @@ class RequestManager {
     try {
       final response = await _client.get(url);
 
-      // Si es exitosa, resetea el backoff delay e incrementa el contador
+      // Si es exitosa, incrementa el contador
       if (response.statusCode == 200) {
-        _backoffDelay = 1;
         _requestCount++;
         return response;
       }

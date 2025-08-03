@@ -130,14 +130,6 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
-  bool _equals(Map<String, double> other) {
-    if (_spotPrices.length != other.length) return false;
-    for (final key in _spotPrices.keys) {
-      if (_spotPrices[key] != other[key]) return false;
-    }
-    return true;
-  }
-
   void clear() {
     _spotPrices.clear();
     notifyListeners();
