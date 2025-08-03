@@ -11,6 +11,7 @@ import 'package:lumina/ui/providers/history_provider.dart';
 import 'package:lumina/ui/providers/investment_provider.dart';
 import '../widgets/add_investment_dialog.dart';
 import '../widgets/portfolio_summary_with_chart.dart';
+import '../widgets/coingecko_attribution.dart';
 import 'asset_detail_screen.dart';
 import 'archived_assets_screen.dart';
 import 'settings_screen.dart';
@@ -555,6 +556,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                 return PortfolioSummaryWithChart(investments: investments);
               },
             ),
+            const SizedBox(height: 12),
+            const CoinGeckoAttribution(),
             const SizedBox(height: 12),
             Expanded(
               child: CustomScrollView(

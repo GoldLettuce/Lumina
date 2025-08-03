@@ -69,10 +69,11 @@ flutter:
   generate: true
 
   assets:
-    - assets/images/coingecko_full_white.svg
     - assets/images/coingecko_full_black.svg
-    - assets/images/coingecko_mono_white.svg
-    - assets/images/coingecko_mono_black.svg
+    - assets/images/coingecko_full_white.svg
+    - assets/images/coingecko_mono.svg
+    - assets/images/coingecko_mono_logo.svg
+    - assets/images/white_text_only.svg
 
   fonts:
     - family: RobotoMono
