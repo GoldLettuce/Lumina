@@ -80,20 +80,19 @@ class RequestManager {
       }
 
       // Si es error 429 (rate limited)
-      if (response.statusCode == 429 && retryCount < _maxRetries) {
-        // Incrementa el contador también para reintentos
-        _requestCount++;
+      if (response.statusCode == 429) {
+        print('[HTTP][429] Rate limited. Retrying in 1m (attempt ${retryCount + 1}/${_maxRetries + 1})');
         
-        final delay = _backoffDelay;
-        print('[HTTP][429] Rate limited. Retrying in ${delay}s');
+        // Espera 1 minuto antes de reintentar
+        await Future.delayed(const Duration(minutes: 1));
         
-        await Future.delayed(Duration(seconds: delay));
-        
-        // Duplica el delay (máximo 8 segundos)
-        _backoffDelay = (_backoffDelay * 2).clamp(1, _maxBackoffSeconds);
-        
-        // Reintenta la petición
-        return await _performRequestWithRetry(url, retryCount: retryCount + 1);
+        // Reintenta la petición si no hemos excedido el límite
+        if (retryCount < _maxRetries) {
+          return await _performRequestWithRetry(url, retryCount: retryCount + 1);
+        } else {
+          print('[HTTP][429] Max retries exceeded. Returning last response');
+          return response; // Devuelve la respuesta 429 sin lanzar excepción
+        }
       }
 
       // Si es otro error, lanza excepción

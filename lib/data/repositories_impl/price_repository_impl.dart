@@ -70,15 +70,27 @@ class PriceRepositoryImpl implements PriceRepository {
 
     // Una sola llamada bulk para los símbolos caducados/faltantes
     if (toFetch.isNotEmpty) {
-      final prices = await _service.getPrices(
-        toFetch.values.toList(),
-        currency: currency,
-      );
-      for (final entry in toFetch.entries) {
-        final price = prices[entry.value]; // id
-        if (price != null) {
-          _cache[entry.key] = _CachedPrice(price, now); // symbol
-          fresh[entry.key] = price;
+      try {
+        final prices = await _service.getPrices(
+          toFetch.values.toList(),
+          currency: currency,
+        );
+        for (final entry in toFetch.entries) {
+          final price = prices[entry.value]; // id
+          if (price != null) {
+            _cache[entry.key] = _CachedPrice(price, now); // symbol
+            fresh[entry.key] = price;
+          }
+        }
+      } catch (e) {
+        print('[ERROR][PriceRepositoryImpl] Error fetching prices: $e');
+        // En caso de error, usar los precios del caché aunque estén expirados
+        for (final symbol in toFetch.keys) {
+          final cached = _cache[symbol];
+          if (cached != null) {
+            fresh[symbol] = cached.value;
+            print('[INFO][PriceRepositoryImpl] Using cached price for $symbol: ${cached.value}');
+          }
         }
       }
     }
