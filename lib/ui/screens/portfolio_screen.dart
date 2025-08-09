@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +26,77 @@ import '../../core/chart_range.dart';
 import '../../core/hive_service.dart';
 
 // ======================
+// SummaryVM
+// ======================
+
+@immutable
+class SummaryVM {
+  final List<Point> history;
+  final int? selectedIndex;
+  final double? selectedValue;
+  final double? selectedPct;
+  final DateTime? selectedDate;
+  final double exchangeRate;
+  final String currency;
+  final List<Investment> investments;
+  final double initialValueUsd; // OPT: precálculo para evitar trabajo en scrub
+
+  const SummaryVM({
+    required this.history,
+    required this.selectedIndex,
+    required this.selectedValue,
+    required this.selectedPct,
+    required this.selectedDate,
+    required this.exchangeRate,
+    required this.currency,
+    required this.investments,
+    required this.initialValueUsd,
+  });
+
+  @override
+  bool operator ==(Object other) {
+    return other is SummaryVM
+      && identical(history, other.history) // asumimos misma lista por ref en provider
+      && selectedIndex == other.selectedIndex
+      && selectedValue == other.selectedValue
+      && selectedPct == other.selectedPct
+      && selectedDate == other.selectedDate
+      && exchangeRate == other.exchangeRate
+      && currency == other.currency
+      && listEquals(investments, other.investments)
+      && initialValueUsd == other.initialValueUsd;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    history, selectedIndex, selectedValue, selectedPct, selectedDate,
+    exchangeRate, currency, Object.hashAll(investments), initialValueUsd,
+  );
+}
+
+// ======================
+// _ChartState
+// ======================
+
+@immutable
+class _ChartState {
+  final List<Point> history;
+  final int? selectedIndex;
+
+  const _ChartState(this.history, this.selectedIndex);
+
+  @override
+  bool operator ==(Object other) {
+    return other is _ChartState
+        && identical(history, other.history)
+        && selectedIndex == other.selectedIndex;
+  }
+
+  @override
+  int get hashCode => Object.hash(history, selectedIndex);
+}
+
+// ======================
 // PortfolioSummaryMinimal
 // ======================
 
@@ -39,6 +111,7 @@ class PortfolioSummaryMinimal extends StatelessWidget {
     required this.exchangeRate,
     required this.currency,
     required this.investments,
+    required this.initialValueUsd, // OPT
   });
 
   final List<Point> history;
@@ -49,37 +122,9 @@ class PortfolioSummaryMinimal extends StatelessWidget {
   final double exchangeRate;
   final String currency;
   final List<Investment> investments;
+  final double initialValueUsd; // OPT
 
-  /// Calcula el valor inicial del portfolio usando datos locales
-  double calcularValorInicial(List<Investment> investments, DateTime startDate) {
-    // Buscar precios históricos locales desde Hive
-    final key = 'history_${startDate.toIso8601String().substring(0, 10)}';
-    final localHistory = HiveService.history.get(key);
-    
-    if (localHistory == null) {
-      // Si no hay datos históricos, usar el primer valor del historial
-      return history.isNotEmpty ? history.first.value : 0.0;
-    }
-
-    // Calcular el valor del portfolio en esa fecha
-    double total = 0;
-    for (final inv in investments) {
-      final qty = inv.operations
-          .where((op) => !op.date.isAfter(startDate))
-          .fold<double>(0, (s, op) => s + op.quantity);
-      
-      // Buscar el precio en el cache de precios
-      final cacheKey = 'prices_${startDate.toIso8601String().substring(0, 10)}';
-      final chartCache = HiveService.chartCache.get(cacheKey);
-      final precio = chartCache?.spotPrices[inv.symbol];
-      
-      if (precio != null && qty > 0) {
-        total += qty * precio;
-      }
-    }
-    
-    return total;
-  }
+  // OPT: valor inicial ya precalculado y memoizado en el Selector
 
   @override
   Widget build(BuildContext context) {
@@ -89,25 +134,8 @@ class PortfolioSummaryMinimal extends StatelessWidget {
         : (history.isNotEmpty ? history.last.value : 0.0);
     final currentValue = currentValueUsd * exchangeRate;
 
-    // Buscar la fecha más antigua entre todas las operaciones
-    DateTime? firstDate;
-    if (investments.isNotEmpty) {
-      final allOperations = investments.expand((e) => e.operations).toList();
-      if (allOperations.isNotEmpty) {
-        firstDate = allOperations
-            .map((op) => op.date)
-            .reduce((a, b) => a.isBefore(b) ? a : b);
-      }
-    }
-
-    // Calcular el valor inicial usando datos locales
-    double initialValueUsd;
-    if (firstDate != null) {
-      final startDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
-      initialValueUsd = calcularValorInicial(investments, startDate);
-    } else {
-      initialValueUsd = history.isNotEmpty ? history.first.value : 0.0;
-    }
+    // OPT: valor inicial ya precalculado y memoizado en el Selector
+    final initialValueUsd = this.initialValueUsd;
 
     final rentabilidad = hasSelection
         ? selectedPct!
@@ -306,7 +334,7 @@ class AssetListTile extends StatelessWidget {
             },
           );
 
-    final showIcons = context.watch<SettingsProvider>().showAssetIcons;
+    final showIcons = context.select<SettingsProvider, bool>((s) => s.showAssetIcons); // OPT: evita rebuilds por otros ajustes
     
     return GestureDetector(
       onTap: () async {
@@ -317,40 +345,42 @@ class AssetListTile extends StatelessWidget {
         if (!context.mounted || result == null) return;
         context.findAncestorStateOfType<_PortfolioScreenState>()?._maybeReloadHistory();
       },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            if (showIcons && asset.imageUrl != null && asset.imageUrl!.isNotEmpty) ...[
-              CircleAvatar(
-                backgroundImage: NetworkImage(asset.imageUrl!),
-                backgroundColor: Colors.transparent,
-                radius: 20,
+      child: RepaintBoundary( // OPT: evita repintar vecinas
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (showIcons && asset.imageUrl != null && asset.imageUrl!.isNotEmpty) ...[
+                CircleAvatar(
+                  backgroundImage: NetworkImage(asset.imageUrl!),
+                  backgroundColor: Colors.transparent,
+                  radius: 20,
+                ),
+                const SizedBox(width: 12),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      asset.symbol,
+                      style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '${t.quantity}: ${_formatQuantity(asset.totalQuantity)}',
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(width: 12),
-            ],
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    asset.symbol,
-                    style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    '${t.quantity}: ${_formatQuantity(asset.totalQuantity)}',
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                ],
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: trailing,
               ),
-            ),
-            const SizedBox(width: 12),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: trailing,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -365,6 +395,7 @@ class PortfolioScreen extends StatefulWidget {
 
 class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingObserver {
   bool _hasLoadedHistory = false;
+  Timer? _historyReloadDebounce;
 
   @override
   void initState() {
@@ -374,6 +405,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
 
   @override
   void dispose() {
+    _historyReloadDebounce?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -385,6 +417,14 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
       final spotProv = context.read<SpotPriceProvider>();
       spotProv.loadPrices(); // Esto reinicia el timer internamente
     }
+  }
+
+  void _scheduleReloadHistory() {
+    _historyReloadDebounce?.cancel();
+    _historyReloadDebounce = Timer(const Duration(milliseconds: 800), () {
+      if (!mounted) return;
+      _maybeReloadHistory();
+    });
   }
 
   void _maybeReloadHistory() {
@@ -434,218 +474,295 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
     final theme = Theme.of(context);
     final t = AppLocalizations.of(context)!;
 
-    final model = context.watch<InvestmentProvider>();
-    final spotPrices = context.watch<SpotPriceProvider>().spotPrices;
-
-    final investments = model.investments
-        .where((e) => e.totalQuantity > 0)
-        .toList()
-      ..sort((a, b) {
-        final aValue = a.totalQuantity * (spotPrices[a.symbol] ?? 0);
-        final bValue = b.totalQuantity * (spotPrices[b.symbol] ?? 0);
-        return bValue.compareTo(aValue); // Mayor a menor
-      });
-    final historyProvider = context.watch<HistoryProvider>();
-    final fx = context.watch<CurrencyProvider>();
-
-    if (!_hasLoadedHistory && !model.isLoading) {
-      _hasLoadedHistory = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _maybeReloadHistory();
-      });
-    }
-
-    final fxRate = fx.exchangeRate;
-    final currency = fx.currency;
-
-    final isFXReady = fxRate > 0 && currency.isNotEmpty;
-
-    final isLoading = model.isLoading || !isFXReady;
-
-    if (isLoading) return const SkeletonView();
-
-    return Scaffold(
-             appBar: AppBar(
-         elevation: 0,
-         scrolledUnderElevation: 0,
-         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-         foregroundColor: Theme.of(context).colorScheme.onSurface,
-         centerTitle: false,
-         titleSpacing: 0,
-         title: Row(
-           mainAxisAlignment: MainAxisAlignment.start,
-           children: [
-             IconButton(
-               icon: const Icon(Icons.settings),
-               onPressed: () {
-                 Navigator.push(
-                   context,
-                   MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                 );
-               },
-             ),
-            IconButton(
-              icon: const Icon(LucideIcons.coffee),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text(t.donationsTitle),
-                    content: Text(t.donationsMessage),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Text(t.ok),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () async {
-              final result = await showDialog(
-                context: context,
-                builder: (_) => const AddInvestmentDialog(),
-              );
-              if (result == true && context.mounted) {
-                _maybeReloadHistory(); // Esto actualizará correctamente el gráfico
-              }
-            },
-          ),
-        ],
-      ),
-      body: Container(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // 👇 Selector para sincronizar automáticamente cuando cambien los precios
-            Selector<SpotPriceProvider, Map<String, double>>(
-              selector: (_, p) => p.spotPrices,
-              builder: (_, __, ___) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted) _maybeReloadHistory();
-                });
-                return const SizedBox.shrink();
-              },
-            ),
-            PortfolioSummaryMinimal(
-              history: historyProvider.history,
-              selectedIndex: historyProvider.selectedIndex,
-              selectedValue: historyProvider.selectedValue,
-              selectedPct: historyProvider.selectedPct,
-              selectedDate: historyProvider.selectedDate,
-              exchangeRate: fx.exchangeRate,
-              currency: fx.currency,
-              investments: investments,
-            ),
-            const SizedBox(height: 12),
-            Selector<InvestmentProvider, List<Investment>>(
-              selector: (_, p) => p.investments
-                  .where((e) => e.totalQuantity > 0)
-                  .toList(growable: false),
-              shouldRebuild: (previous, next) => !listEquals(previous, next),
-              builder: (_, investments, __) {
-                return PortfolioSummaryWithChart(investments: investments);
-              },
-            ),
-            const SizedBox(height: 12),
-            const CoinGeckoAttribution(),
-            const SizedBox(height: 12),
-            Expanded(
-              child: CustomScrollView(
-                slivers: [
-                  if (investments.isEmpty)
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 30),
-                          child: Text(
-                            t.emptyPortfolioMessage,
-                            style: theme.textTheme.bodyLarge,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                            (context, index) => AssetListTile(
-                          asset: investments[index],
-                          fx: fx.exchangeRate,
-                          currency: fx.currency,
-                        ),
-                        childCount: investments.length,
-                      ),
+    // Remove global watches - only use Selectors for specific data
+    return Selector<InvestmentProvider, bool>(
+      selector: (_, provider) => provider.isLoading,
+      builder: (context, isLoading, child) {
+        return Selector<CurrencyProvider, bool>(
+          selector: (_, fx) => fx.exchangeRate > 0 && fx.currency.isNotEmpty,
+          builder: (context, isFXReady, child) {
+            final isStillLoading = isLoading || !isFXReady;
+            
+            if (isStillLoading) return const SkeletonView();
+            
+            // Trigger initial history load if needed
+            if (!_hasLoadedHistory) {
+              _hasLoadedHistory = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) _maybeReloadHistory();
+              });
+            }
+            
+            return Scaffold(
+              appBar: AppBar(
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
+                centerTitle: false,
+                titleSpacing: 0,
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.settings),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                        );
+                      },
                     ),
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 0),
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                const ArchivedAssetsScreen(),
+                    IconButton(
+                      icon: const Icon(LucideIcons.coffee),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text(t.donationsTitle),
+                            content: Text(t.donationsMessage),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: Text(t.ok),
                               ),
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Text(
-                              t.archivedAssetsTitle,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface.withAlpha(153),
-                              ),
-                            ),
+                            ],
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
+                  ],
+                ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () async {
+                      final result = await showDialog(
+                        context: context,
+                        builder: (_) => const AddInvestmentDialog(),
+                      );
+                      if (result == true && context.mounted) {
+                        _maybeReloadHistory();
+                      }
+                    },
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
-        ),
-      ),
+              body: Container(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Throttled history reload trigger
+                      Selector<SpotPriceProvider, int>(
+                        selector: (_, p) => p.pricesVersion, // OPT: versión fiable y barata
+                        builder: (_, __, ___) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) _scheduleReloadHistory();
+                          });
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                      // Summary with fine-grained Selector
+                      Selector3<HistoryProvider, CurrencyProvider, InvestmentProvider, SummaryVM>(
+                        selector: (_, h, fx, inv) {
+                          final investments = inv.investments.where((e) => e.totalQuantity > 0).toList(growable: false);
+                          
+                          // OPT: fecha más antigua de todas las operaciones
+                          DateTime? firstDate;
+                          if (investments.isNotEmpty) {
+                            DateTime? minDate;
+                            for (final asset in investments) {
+                              for (final op in asset.operations) {
+                                if (minDate == null || op.date.isBefore(minDate)) minDate = op.date;
+                              }
+                            }
+                            firstDate = minDate;
+                          }
+                          
+                          double initialValueUsd;
+                          if (firstDate != null) {
+                            final startDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
+                            // OPT: leer caches una vez (evitamos trabajo durante el scrub)
+                            final key = 'history_${startDate.toIso8601String().substring(0, 10)}';
+                            final localHistory = HiveService.history.get(key);
+                            if (localHistory == null) {
+                              initialValueUsd = h.history.isNotEmpty ? h.history.first.value : 0.0;
+                            } else {
+                              final cacheKey = 'prices_${startDate.toIso8601String().substring(0, 10)}';
+                              final chartCache = HiveService.chartCache.get(cacheKey);
+                              double total = 0.0;
+                              for (final asset in investments) {
+                                final qty = asset.operations
+                                    .where((op) => !op.date.isAfter(startDate))
+                                    .fold<double>(0, (s, op) => s + op.quantity);
+                                final precio = chartCache?.spotPrices[asset.symbol];
+                                if (precio != null && qty > 0) total += qty * precio;
+                              }
+                              initialValueUsd = total;
+                            }
+                          } else {
+                            initialValueUsd = h.history.isNotEmpty ? h.history.first.value : 0.0;
+                          }
+                          
+                          return SummaryVM(
+                            history: h.history,
+                            selectedIndex: h.selectedIndex,
+                            selectedValue: h.selectedValue,
+                            selectedPct: h.selectedPct,
+                            selectedDate: h.selectedDate,
+                            exchangeRate: fx.exchangeRate,
+                            currency: fx.currency,
+                            investments: investments,
+                            initialValueUsd: initialValueUsd, // <- NEW
+                          );
+                        },
+                        shouldRebuild: (prev, next) => prev != next,
+                        builder: (_, vm, __) {
+                          return RepaintBoundary(
+                            child: PortfolioSummaryMinimal(
+                              history: vm.history,
+                              selectedIndex: vm.selectedIndex,
+                              selectedValue: vm.selectedValue,
+                              selectedPct: vm.selectedPct,
+                              selectedDate: vm.selectedDate,
+                              exchangeRate: vm.exchangeRate,
+                              currency: vm.currency,
+                              investments: vm.investments,
+                              initialValueUsd: vm.initialValueUsd, // OPT: precálculo
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      // Chart with isolated rebuilds
+                      Selector<HistoryProvider, _ChartState>(
+                        selector: (_, h) => _ChartState(h.history, h.selectedIndex),
+                        shouldRebuild: (a, b) => !identical(a.history, b.history) || a.selectedIndex != b.selectedIndex,
+                        builder: (_, chartState, __) {
+                          return RepaintBoundary(
+                            child: Selector<InvestmentProvider, List<Investment>>(
+                              selector: (_, p) => p.investments.where((e) => e.totalQuantity > 0).toList(growable: false),
+                              shouldRebuild: (prev, next) => !listEquals(prev, next),
+                              builder: (_, investments, __) {
+                                return PortfolioSummaryWithChart(investments: investments);
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      const CoinGeckoAttribution(),
+                      const SizedBox(height: 12),
+                      // Assets list with sorting and isolation
+                      Expanded(
+                        child: Selector2<InvestmentProvider, SpotPriceProvider, List<Investment>>(
+                          selector: (_, inv, spot) {
+                            final prices = spot.spotPrices;
+                            final list = inv.investments.where((e) => e.totalQuantity > 0).toList(growable: false);
+                            // Ordenar por valor actual (USD) – evita mutar original
+                            list.sort((a, b) {
+                              final av = a.totalQuantity * (prices[a.symbol] ?? 0);
+                              final bv = b.totalQuantity * (prices[b.symbol] ?? 0);
+                              return bv.compareTo(av);
+                            });
+                            return list;
+                          },
+                          shouldRebuild: (prev, next) => !listEquals(prev, next),
+                          builder: (_, investments, __) {
+                            if (investments.isEmpty) {
+                              return Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                                  child: Text(
+                                    t.emptyPortfolioMessage,
+                                    style: theme.textTheme.bodyLarge,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              );
+                            }
+                            return CustomScrollView(
+                              slivers: [
+                                SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) => AssetListTile(
+                                      key: ValueKey(investments[index].symbol),
+                                      asset: investments[index],
+                                      fx: context.read<CurrencyProvider>().exchangeRate,
+                                      currency: context.read<CurrencyProvider>().currency,
+                                    ),
+                                    childCount: investments.length,
+                                  ),
+                                ),
+                                // Archived assets link
+                                SliverFillRemaining(
+                                  hasScrollBody: false,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 0),
+                                    child: Align(
+                                      alignment: Alignment.bottomCenter,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => const ArchivedAssetsScreen(),
+                                            ),
+                                          );
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(bottom: 12),
+                                          child: Text(
+                                            t.archivedAssetsTitle,
+                                            style: theme.textTheme.bodySmall?.copyWith(
+                                              color: Theme.of(context).colorScheme.onSurface.withAlpha(153),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
+
 class SkeletonView extends StatelessWidget {
   const SkeletonView({super.key});
 
   @override
   Widget build(BuildContext context) {
-         return Scaffold(
-       appBar: AppBar(
-         elevation: 0,
-         scrolledUnderElevation: 0,
-         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-         foregroundColor: Theme.of(context).colorScheme.onSurface,
-         centerTitle: false,
-         titleSpacing: 0,
-         title: Row(
-           mainAxisAlignment: MainAxisAlignment.start,
-           children: [
-             IconButton(
-               icon: const Icon(Icons.settings),
-               onPressed: null, // Deshabilitado mientras carga
-             ),
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+        centerTitle: false,
+        titleSpacing: 0,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: null, // Deshabilitado mientras carga
+            ),
             IconButton(
               icon: const Icon(LucideIcons.coffee),
               onPressed: null, // Deshabilitado mientras carga
@@ -667,100 +784,100 @@ class SkeletonView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Placeholder para resumen de portafolio
-            Column(
-              children: [
-                Container(
-                  height: 40,
-                  width: 200,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).dividerColor,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  height: 24,
-                  width: 120,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).dividerColor,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            // Placeholder para gráfico
-            Container(
-              height: 200,
-              decoration: BoxDecoration(
-                color: Theme.of(context).dividerColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            const SizedBox(height: 12),
-            // Placeholder para lista de activos
-            Expanded(
-              child: ListView.builder(
-                itemCount: 6,
-                itemBuilder: (context, index) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    padding: const EdgeInsets.all(16),
+              Column(
+                children: [
+                  Container(
+                    height: 40,
+                    width: 200,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
+                      color: Theme.of(context).dividerColor,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).dividerColor,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                height: 16,
-                                width: 100,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).dividerColor,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Container(
-                                height: 12,
-                                width: 80,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).dividerColor,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          height: 20,
-                          width: 60,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).dividerColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                      ],
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    height: 24,
+                    width: 120,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).dividerColor,
+                      borderRadius: BorderRadius.circular(4),
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
+              const SizedBox(height: 12),
+              // Placeholder para gráfico
+              Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).dividerColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Placeholder para lista de activos
+              Expanded(
+                child: ListView.builder(
+                  itemCount: 6,
+                  itemBuilder: (context, index) {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).dividerColor,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  height: 16,
+                                  width: 100,
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).dividerColor,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  height: 12,
+                                  width: 80,
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).dividerColor,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            height: 20,
+                            width: 60,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).dividerColor,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

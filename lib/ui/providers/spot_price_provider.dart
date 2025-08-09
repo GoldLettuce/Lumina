@@ -11,6 +11,12 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
   final Map<String, String> _symbolToId = {};
   Timer? _refreshTimer;
   bool _isLoading = false;
+  
+  // OPT: versión/timestamp para gatillar UI de forma barata y fiable
+  int _pricesVersion = 0;
+  int get pricesVersion => _pricesVersion;
+  DateTime? _lastUpdated;
+  DateTime? get lastUpdated => _lastUpdated;
 
   SpotPriceProvider() {
     WidgetsBinding.instance.addObserver(this);
@@ -60,6 +66,9 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
         }
       }
       print('[SpotPriceProvider] Precios cargados desde Hive: ${_spotPrices.length} activos');
+      // OPT: sube versión al cargar desde cache
+      _pricesVersion++;
+      _lastUpdated = DateTime.now();
       notifyListeners();
     }
   }
@@ -127,6 +136,11 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
     if (!changed) return;
 
+    // OPT: sube versión en cada tick válido
+    _pricesVersion++;
+    // OPT: timestamp (útil para debug/UX)
+    _lastUpdated = DateTime.now();
+    
     notifyListeners();
   }
 
