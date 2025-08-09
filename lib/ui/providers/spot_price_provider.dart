@@ -77,8 +77,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> loadPrices() async {
     if (_isLoading || _symbols.isEmpty) return;
     
-    _isLoading = true;
-    notifyListeners();
+    _isLoading = true; // OPT: Evitamos notificar aquí para no reconstruir a mitad de carga
     
     try {
       // Actualizar el mapeo en el repositorio de precios usando el mapeo almacenado
@@ -102,7 +101,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
       print('[ERROR][SpotPriceProvider] $e');
     } finally {
       _isLoading = false;
-      notifyListeners();
+      // OPT: eliminado notifyListeners() final porque la UI no observa isLoading
       
       // Reiniciar el timer para evitar llamadas dobles tras una carga manual
       _refreshTimer?.cancel();
@@ -129,6 +128,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
     // 🔑 No borres lo que ya teníamos; solo actualiza/añade lo nuevo
     bool changed = false;
     for (final entry in newPrices.entries) {
+      if (!_symbols.contains(entry.key)) continue; // OPT: ignorar símbolos no visibles
       if (_spotPrices[entry.key] != entry.value) {
         _spotPrices[entry.key] = entry.value;
         changed = true;
