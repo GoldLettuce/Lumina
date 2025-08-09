@@ -542,7 +542,11 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                         builder: (_) => const AddInvestmentDialog(),
                       );
                       if (result == true && context.mounted) {
-                        _maybeReloadHistory();
+                        // Espera a que InvestmentProvider publique la nueva inversión
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (!mounted) return;
+                          _maybeReloadHistory();
+                        });
                       }
                     },
                   ),
@@ -558,6 +562,16 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                       // Throttled history reload trigger
                       Selector<SpotPriceProvider, int>(
                         selector: (_, p) => p.pricesVersion, // OPT: versión fiable y barata
+                        builder: (_, __, ___) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) _scheduleReloadHistory();
+                          });
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                      // Trigger silencioso por cambios en número de inversiones
+                      Selector<InvestmentProvider, int>(
+                        selector: (_, p) => p.investments.length,
                         builder: (_, __, ___) {
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             if (mounted) _scheduleReloadHistory();
