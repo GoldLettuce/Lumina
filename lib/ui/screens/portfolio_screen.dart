@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/colors.dart';
 import '../../l10n/app_localizations.dart';
+import 'package:lumina/core/number_formatting.dart';
 import 'package:lumina/ui/providers/spot_price_provider.dart';
 import 'package:lumina/ui/providers/history_provider.dart';
 import 'package:lumina/ui/providers/investment_provider.dart';
@@ -152,9 +153,9 @@ class PortfolioSummaryMinimal extends StatelessWidget {
         : '';
 
     final valorText =
-    NumberFormat.simpleCurrency(name: currency).format(currentValue);
+    formatMoney(currentValue, currency, context);
     final sign = rentabilidad >= 0 ? '+' : '-';
-    final percentText = '$sign${rentabilidad.abs().toStringAsFixed(2)}%';
+    final percentText = '$sign${formatPercentLabel(rentabilidad.abs(), context, decimals: 2)}';
 
     final valorStyle = TextStyle(
       fontSize: 32,
@@ -181,7 +182,9 @@ class PortfolioSummaryMinimal extends StatelessWidget {
               textDirection: ui.TextDirection.ltr,
             )..layout(maxWidth: constraints.maxWidth);
 
-            final hasPct = percentText != '+0.00%';
+            // Con 2 decimales, todo valor con |rentabilidad| < 0.005 redondea a 0.00%
+            // rentabilidad es un porcentaje (12.34 = 12,34%)
+            final hasPct = rentabilidad.abs() >= 0.005;
             final pctPainter = hasPct
                 ? (TextPainter(
               text: TextSpan(text: percentText, style: percentStyle),
@@ -261,16 +264,7 @@ class AssetListTile extends StatelessWidget {
   final double fx;
   final String currency;
 
-  /// Formatea la cantidad eliminando ceros decimales innecesarios
-  String _formatQuantity(double quantity) {
-    if (quantity == quantity.toInt()) {
-      // Si es un número entero, mostrar sin decimales
-      return quantity.toInt().toString();
-    } else {
-      // Si tiene decimales, mostrar solo los significativos
-      return quantity.toString().replaceAll(RegExp(r'\.?0+$'), '');
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -303,8 +297,8 @@ class AssetListTile extends StatelessWidget {
                   : 0.0;
               
               final displayText = displayMode.showPercentage
-                  ? '${rentabilidad >= 0 ? '+' : ''}${rentabilidad.toStringAsFixed(2)}%'
-                  : '${valorGanado >= 0 ? '+' : ''}${NumberFormat.simpleCurrency(name: currency).format(valorGanado)}';
+                  ? '${rentabilidad >= 0 ? '+' : ''}${formatPercentLabel(rentabilidad.abs(), context, decimals: 2)}'
+                  : '${valorGanado >= 0 ? '+' : ''}${formatMoney(valorGanado, currency, context)}';
               
               return GestureDetector(
                 behavior: HitTestBehavior.opaque,
@@ -316,7 +310,7 @@ class AssetListTile extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      NumberFormat.simpleCurrency(name: currency).format(valorActual),
+                      formatMoney(valorActual, currency, context),
                       key: ValueKey(valorActual),
                       style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
                     ),
@@ -368,7 +362,7 @@ class AssetListTile extends StatelessWidget {
                       style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      '${t.quantity}: ${_formatQuantity(asset.totalQuantity)}',
+                      '${t.quantity}: ${formatQuantity(asset.totalQuantity, context, maxDecimals: 8)}',
                       style: theme.textTheme.bodyMedium,
                     ),
                   ],

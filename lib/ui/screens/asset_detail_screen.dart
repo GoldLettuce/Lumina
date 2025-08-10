@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:lumina/core/number_formatting.dart';
 
 import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/ui/providers/investment_provider.dart';
@@ -93,7 +94,6 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     }
 
     // Formatter para la moneda seleccionada, usando su nombre
-    final currencyFormatter = NumberFormat.simpleCurrency(name: fx.currency);
 
     // Calcular color de selección según tema y modo mono
     final themeMode = context.watch<ThemeModeProvider>().mode;
@@ -144,7 +144,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
 
                   // Convertir precio USD a moneda seleccionada
                   final convertedPrice = op.price * fx.exchangeRate;
-                  final priceText = currencyFormatter.format(convertedPrice);
+                  final priceText = formatMoney(convertedPrice, fx.currency, context);
 
                   return GestureDetector(
                     onLongPress: () => _toggleSelection(op.id),
@@ -162,7 +162,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                           color: color,
                         ),
                         title: Text(
-                          '${isBuy ? t.buy : t.sell}${t.operationQuantitySeparator}${op.quantity}',
+                          '${isBuy ? t.buy : t.sell}${t.operationQuantitySeparator}${formatQuantity(op.quantity, context, maxDecimals: 8)}',
                           style: theme.textTheme.bodyLarge,
                         ),
                         subtitle: Text(fecha),

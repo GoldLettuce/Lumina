@@ -2,8 +2,12 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 import 'package:lumina/services/portfolio_sync_service.dart';
+import 'package:intl/intl.dart';
+import 'package:lumina/core/num_parser.dart';
+import 'package:lumina/core/number_formatting.dart';
 
 import '../../domain/entities/investment.dart';
 import '../../domain/entities/asset_type.dart';
@@ -73,7 +77,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       final fx = context.read<CurrencyProvider>();
       // Convertimos el precio USD a moneda local
       final local = widget.initialOperation!.price * fx.exchangeRate;
-      _priceController.text = local.toStringAsFixed(2);
+      final locStr = Localizations.localeOf(context).toString();
+      _priceController.text = NumberFormat('0.00', locStr).format(local);
     }
   }
 
@@ -138,8 +143,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       return;
     }
 
-    final quantity = double.tryParse(_quantityController.text.trim());
-    final priceLocal = double.tryParse(_priceController.text.trim());
+    final quantity   = parseFlexibleDouble(_quantityController.text);
+    final priceLocal = parseFlexibleDouble(_priceController.text);
     if (quantity == null || priceLocal == null) return;
 
     // Guardar referencias antes del await
@@ -433,12 +438,14 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 // ─── Cantidad ────────────────────────────────────────
                 TextFormField(
                   controller: _quantityController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.,\- ]')),
+                  ],
                   enabled: !_isSaving,
                   decoration: InputDecoration(
                     labelText: loc.quantity,
+                    hintText: 'Ej: 0${decimalSeparatorOf(context)}01',
                     labelStyle: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
@@ -457,6 +464,14 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                       setState(() => _quantityTouched = true);
                     }
                   },
+                  autovalidateMode: _quantityTouched || _formSubmitted ? AutovalidateMode.always : AutovalidateMode.disabled,
+                  validator: (val) {
+                    if (!_quantityTouched && !_formSubmitted) return null;
+                    if (val == null || val.isEmpty) return loc.fieldRequired;
+                    final n = parseFlexibleDouble(val);
+                    if (n == null || n <= 0) return loc.invalidQuantity;
+                    return null;
+                  },
                 ),
 
                 const SizedBox(height: 16),
@@ -464,11 +479,13 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 // ─── Precio ──────────────────────────────────────────
                 TextFormField(
                   controller: _priceController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.,\- ]')),
+                  ],
                   decoration: InputDecoration(
                     labelText: loc.unitPrice,
+                    hintText: 'Ej: 0${decimalSeparatorOf(context)}01',
                     labelStyle: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
@@ -491,7 +508,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                     if (val == null || val.isEmpty) {
                       return loc.fieldRequired;
                     }
-                    final n = double.tryParse(val);
+                    final n = parseFlexibleDouble(val);
                     if (n == null || n <= 0) {
                       return loc.invalidPrice;
                     }
