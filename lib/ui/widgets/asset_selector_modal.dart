@@ -219,12 +219,6 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                                     ],
                                   ),
                                 ),
-                                // Icono de flecha para indicar que es seleccionable
-                                Icon(
-                                  Icons.chevron_right,
-                                  size: 20,
-                                  color: Theme.of(context).iconTheme.color?.withOpacity(0.6),
-                                ),
                               ],
                             ),
                           ),
