@@ -51,6 +51,9 @@ dependencies:
   flutter_svg: ^2.2.0
   url_launcher: ^6.2.4
 
+  # Información del paquete
+  package_info_plus: ^8.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

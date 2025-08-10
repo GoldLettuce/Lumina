@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'package:lumina/ui/providers/settings_provider.dart';
 import 'package:lumina/ui/providers/investment_provider.dart';
@@ -19,8 +20,29 @@ import '../widgets/confirm_reset_dialog.dart';
 import '../../core/theme.dart';
 import '../../core/colors.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  String? _appVersion;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+    setState(() {
+      _appVersion = info.version;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +55,24 @@ class SettingsScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(t.settings)),
+      appBar: AppBar(
+        title: Text(t.settings),
+        actions: [
+          if (_appVersion != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 12.0),
+              child: Center(
+                child: Text(
+                  'v$_appVersion',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
       body: ListView(
         children: [
           const LanguageSelector(),
