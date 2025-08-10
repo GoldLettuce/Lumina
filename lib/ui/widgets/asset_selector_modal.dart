@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import 'package:lumina/ui/providers/asset_list_provider.dart';
 import '../../domain/entities/asset_type.dart';
+import 'package:lumina/ui/providers/settings_provider.dart';
 
 class Debouncer {
   final Duration delay;
@@ -140,11 +141,17 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                       return Center(child: Text(loc.noSymbolsFound));
                     }
                     
+                    // Obtener la preferencia de iconos una sola vez fuera del itemBuilder
+                    final showIcons = context.select<SettingsProvider, bool>((s) => s.showAssetIcons);
+                    
                     return ListView.separated(
                       controller: _scrollController,
                       itemCount: prov.filteredSymbols.length + (prov.isLoadingMore ? 1 : 0),
-                      separatorBuilder:
-                          (_, __) => Divider(color: Theme.of(context).dividerColor),
+                      separatorBuilder: (_, __) => Divider(
+                        color: Theme.of(context).dividerColor,
+                        height: 1,
+                        thickness: 0.5,
+                      ),
                       itemBuilder: (context, index) {
                         // Mostrar loading indicator al final si está cargando más
                         if (index == prov.filteredSymbols.length && prov.isLoadingMore) {
@@ -157,26 +164,8 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                         }
                         
                         final coin = prov.filteredSymbols[index];
-                        return ListTile(
-                          title: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                coin.symbol,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              Text(
-                                coin.name,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Theme.of(context).textTheme.bodyMedium?.color,
-                                ),
-                              ),
-                            ],
-                          ),
+                        
+                        return InkWell(
                           onTap: () {
                             // Devuelve un Map<String,String> para no romper la lógica existente
                             Navigator.of(context).pop(<String, String>{
@@ -186,6 +175,59 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                               'imageUrl': coin.imageUrl ?? '',
                             });
                           },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            child: Row(
+                              children: [
+                                // Icono del activo (opcional)
+                                if (showIcons && coin.imageUrl != null && coin.imageUrl!.isNotEmpty) ...[
+                                  CircleAvatar(
+                                    backgroundImage: NetworkImage(coin.imageUrl!),
+                                    backgroundColor: Colors.transparent,
+                                    radius: 14,
+                                  ),
+                                  const SizedBox(width: 12),
+                                ],
+                                // Contenido principal
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // Símbolo (ticker) - mantener tamaño y peso actual
+                                      Text(
+                                        coin.symbol,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      // Nombre completo - reducir tamaño y opacidad
+                                      Text(
+                                        coin.name,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Theme.of(context).brightness == Brightness.light
+                                              ? Colors.grey[600]
+                                              : Colors.grey[400],
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Icono de flecha para indicar que es seleccionable
+                                Icon(
+                                  Icons.chevron_right,
+                                  size: 20,
+                                  color: Theme.of(context).iconTheme.color?.withOpacity(0.6),
+                                ),
+                              ],
+                            ),
+                          ),
                         );
                       },
                     );
