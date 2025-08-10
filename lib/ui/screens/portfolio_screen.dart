@@ -256,15 +256,9 @@ class AssetListTile extends StatelessWidget {
   const AssetListTile({
     super.key,
     required this.asset,
-    required this.fx,
-    required this.currency,
   });
 
   final Investment asset;
-  final double fx;
-  final String currency;
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -272,9 +266,14 @@ class AssetListTile extends StatelessWidget {
           (p) => p.spotPrices[asset.symbol],
     );
 
+    // Obtener datos de moneda desde CurrencyProvider
+    final fx = context.select<CurrencyProvider, ({String code, double rate})>(
+      (p) => (code: p.currency, rate: p.exchangeRate),
+    );
+
     final t = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final valorActual = priceUsd != null ? asset.totalQuantity * priceUsd * fx : null;
+    final valorActual = priceUsd != null ? asset.totalQuantity * priceUsd * fx.rate : null;
 
     // Calcular rentabilidad individual del activo
     double rentabilidad = 0.0;
@@ -293,12 +292,12 @@ class AssetListTile extends StatelessWidget {
         : Consumer<ProfitDisplayModeNotifier>(
             builder: (context, displayMode, child) {
               final valorGanado = priceUsd != null 
-                  ? (asset.totalQuantity * priceUsd * fx) - (asset.operations.fold(0.0, (s, op) => s + op.quantity * op.price) * fx)
+                  ? (asset.totalQuantity * priceUsd * fx.rate) - (asset.operations.fold(0.0, (s, op) => s + op.quantity * op.price) * fx.rate)
                   : 0.0;
               
               final displayText = displayMode.showPercentage
                   ? '${rentabilidad >= 0 ? '+' : ''}${formatPercentLabel(rentabilidad.abs(), context, decimals: 2)}'
-                  : '${valorGanado >= 0 ? '+' : ''}${formatMoney(valorGanado, currency, context)}';
+                  : '${valorGanado >= 0 ? '+' : ''}${formatMoney(valorGanado, fx.code, context)}';
               
               return GestureDetector(
                 behavior: HitTestBehavior.opaque,
@@ -310,7 +309,7 @@ class AssetListTile extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      formatMoney(valorActual, currency, context),
+                      formatMoney(valorActual, fx.code, context),
                       key: ValueKey(valorActual),
                       style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
                     ),
@@ -699,8 +698,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                                     (context, index) => AssetListTile(
                                       key: ValueKey(investments[index].symbol),
                                       asset: investments[index],
-                                      fx: context.read<CurrencyProvider>().exchangeRate,
-                                      currency: context.read<CurrencyProvider>().currency,
                                     ),
                                     childCount: investments.length,
                                   ),
