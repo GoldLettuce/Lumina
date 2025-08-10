@@ -271,7 +271,6 @@ class AssetListTile extends StatelessWidget {
       (p) => (code: p.currency, rate: p.exchangeRate),
     );
 
-    final t = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final valorActual = priceUsd != null ? asset.totalQuantity * priceUsd * fx.rate : null;
 

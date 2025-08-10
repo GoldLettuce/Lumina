@@ -7,7 +7,6 @@ import 'package:uuid/uuid.dart';
 import 'package:lumina/services/portfolio_sync_service.dart';
 import 'package:intl/intl.dart';
 import 'package:lumina/core/num_parser.dart';
-import 'package:lumina/core/number_formatting.dart';
 
 import '../../domain/entities/investment.dart';
 import '../../domain/entities/asset_type.dart';
@@ -445,7 +444,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   enabled: !_isSaving,
                   decoration: InputDecoration(
                     labelText: loc.quantity,
-                    hintText: 'Ej: 0${decimalSeparatorOf(context)}01',
+                    hintText: null,
                     labelStyle: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
@@ -485,7 +484,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   ],
                   decoration: InputDecoration(
                     labelText: loc.unitPrice,
-                    hintText: 'Ej: 0${decimalSeparatorOf(context)}01',
+                    hintText: null,
                     labelStyle: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
