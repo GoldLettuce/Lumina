@@ -361,7 +361,7 @@ class AssetListTile extends StatelessWidget {
                       style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      '${t.quantity}: ${formatQuantity(asset.totalQuantity, context, maxDecimals: 8)}',
+                      formatQuantity(asset.totalQuantity, context, maxDecimals: 8),
                       style: theme.textTheme.bodyMedium,
                     ),
                   ],
