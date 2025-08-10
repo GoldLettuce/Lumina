@@ -59,11 +59,6 @@ class HiveService {
   /// Método interno que contiene la lógica de apertura de cajas
   static Future<void> _openAllBoxesInternal() async {
     final startTime = DateTime.now();
-    if (kDebugMode) {
-      debugPrint(
-        '[HIVE][${startTime.toIso8601String()}] 📦 Iniciando apertura de cajas',
-      );
-    }
 
     // Crear cipher AES-256 antes de abrir las cajas
     final key = await HiveKeyService.getOrCreateKey();
@@ -74,19 +69,8 @@ class HiveService {
     _settingsBox = await _openEncryptedBoxOrReset('settingsBox', cipher);
     await Future.delayed(Duration.zero);
     final settingsEnd = DateTime.now();
-    if (kDebugMode) {
-      debugPrint(
-        '[HIVE][${settingsEnd.toIso8601String()}] ⚙️ Settings abierta en ${settingsEnd.difference(settingsStart).inMilliseconds}ms',
-      );
-    }
 
     // Fase 2: Abre el resto de cajas y espera a que terminen
-    if (kDebugMode) {
-      debugPrint(
-        '[HIVE][${DateTime.now().toIso8601String()}] 🔄 Abriendo cajas pesadas (esperando a que terminen)',
-      );
-    }
-    
     final heavyStart = DateTime.now();
     await _openInvestmentsBox(cipher);
     await _openChartCacheBox(cipher);
@@ -94,11 +78,6 @@ class HiveService {
     await _openFxRatesBox(cipher);
     await _openMetaBox(cipher);
     final heavyEnd = DateTime.now();
-    if (kDebugMode) {
-      debugPrint(
-        '[HIVE][${heavyEnd.toIso8601String()}] ✅ Cajas pesadas abiertas en ${heavyEnd.difference(heavyStart).inMilliseconds}ms',
-      );
-    }
     _isInitialized = true;
   }
 
@@ -107,17 +86,9 @@ class HiveService {
   /// Este método debe llamarse una sola vez al inicio de la aplicación,
   /// antes de usar cualquier funcionalidad que requiera acceso a Hive.
   static Future<void> init() async {
-    if (kDebugMode) {
-      debugPrint(
-        '[ARRANQUE][${DateTime.now().toIso8601String()}] 📦 HiveService.init() START',
-      );
-    }
     await initFlutterLight();
     await openAllBoxes();
     _isInitialized = true;
-    print(
-      '[ARRANQUE][${DateTime.now().toIso8601String()}] �� HiveService.init() END',
-    );
   }
 
   /// Registra todos los adapters de Hive necesarios
