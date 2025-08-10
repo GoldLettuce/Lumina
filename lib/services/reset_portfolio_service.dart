@@ -8,6 +8,7 @@ import 'package:lumina/ui/providers/history_provider.dart';
 import 'package:lumina/ui/providers/fx_notifier.dart';
 import '../data/repositories_impl/investment_repository_impl.dart';
 import '../core/hive_service.dart';
+import '../core/hive_key_service.dart';
 
 class ResetPortfolioService {
   /// Borra todas las inversiones de Hive y limpia los tres providers:
@@ -23,13 +24,15 @@ class ResetPortfolioService {
     await HiveService.investments.close();
     await Hive.deleteBoxFromDisk(InvestmentRepositoryImpl.boxName);
     // Reabrir la caja y actualizar la referencia en HiveService
-    await HiveService.reopenInvestmentsBox();
+    final key = await HiveKeyService.getOrCreateKey();
+    final cipher = HiveAesCipher(key);
+    await HiveService.reopenInvestmentsBox(cipher);
 
     // 2) Cerrar y borrar la caja de cache de la gráfica
     await HiveService.chartCache.close();
     await Hive.deleteBoxFromDisk('chart_cache');
     // Reabrir la caja y actualizar la referencia en HiveService
-    await HiveService.reopenChartCacheBox();
+    await HiveService.reopenChartCacheBox(cipher);
 
     // 3) Limpiar datos en memoria
     invProv.clearAll();
