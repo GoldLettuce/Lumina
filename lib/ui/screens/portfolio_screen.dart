@@ -347,9 +347,9 @@ class AssetListTile extends StatelessWidget {
                 CircleAvatar(
                   backgroundImage: NetworkImage(asset.imageUrl!),
                   backgroundColor: Colors.transparent,
-                  radius: 20,
+                  radius: 16,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
               ],
               Expanded(
                 child: Column(
