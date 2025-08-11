@@ -192,47 +192,19 @@ class PortfolioSummaryMinimal extends StatelessWidget {
             )..layout())
                 : null;
 
-            const gap = 12.0;
-            final centerX = constraints.maxWidth / 2;
-            final pctLeft = centerX + valuePainter.width / 2 + gap;
-            final fitsRight =
-                hasPct && (pctLeft + (pctPainter?.width ?? 0)) <= constraints.maxWidth;
-
-            if (fitsRight) {
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  Center(
-                    child: Text(
-                      valorText,
-                      style: valorStyle,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Positioned(
-                    left: pctLeft,
-                    top: valuePainter.computeDistanceToActualBaseline(TextBaseline.alphabetic) -
-                        (pctPainter?.computeDistanceToActualBaseline(TextBaseline.alphabetic) ?? 0),
-                    child: Text(percentText, style: percentStyle),
-                  ),
-                ],
-              );
-            } else {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    valorText,
-                    style: valorStyle,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                  ),
-                  if (hasPct) const SizedBox(height: 4),
-                  if (hasPct) Text(percentText, style: percentStyle),
-                ],
-              );
-            }
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  valorText,
+                  style: valorStyle,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+                if (hasPct) const SizedBox(height: 4),
+                if (hasPct) Text(percentText, style: percentStyle),
+              ],
+            );
           },
         ),
         const SizedBox(height: 4),
