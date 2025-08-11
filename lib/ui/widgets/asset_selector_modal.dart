@@ -91,43 +91,51 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(
             children: [
-              SizedBox(
-                height: 48,
-                child: Center(
-                  child: Text(
-                    loc.selectSymbol,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 48,
+                      child: Center(
+                        child: Text(
+                          loc.selectSymbol,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 4),
+                    TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.search, size: 20, color: Theme.of(context).iconTheme.color),
+                        border: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                        ),
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                        ),
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                      ),
+                      style: TextStyle(fontSize: 14),
+                      onChanged: (value) {
+                        _debouncer.run(() {
+                          context.read<AssetListProvider>().searchRemote(value);
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                 ),
               ),
-              const SizedBox(height: 4),
-              TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.search, size: 20, color: Theme.of(context).iconTheme.color),
-                  border: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Theme.of(context).dividerColor),
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Theme.of(context).dividerColor),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
-                  ),
-                  isDense: true,
-                  contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                ),
-                style: TextStyle(fontSize: 14),
-                onChanged: (value) {
-                  _debouncer.run(() {
-                    context.read<AssetListProvider>().searchRemote(value);
-                  });
-                },
-              ),
-              const SizedBox(height: 12),
               Expanded(
                 child: Consumer<AssetListProvider>(
                   builder: (context, prov, _) {
@@ -146,6 +154,7 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                     
                     return ListView.separated(
                       controller: _scrollController,
+                      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                       itemCount: prov.filteredSymbols.length + (prov.isLoadingMore ? 1 : 0),
                       separatorBuilder: (_, __) => Divider(
                         color: Theme.of(context).dividerColor,
