@@ -57,8 +57,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(t.settings),
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
         actions: [
           if (_appVersion != null)
             Padding(
@@ -75,79 +73,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
         ],
       ),
-      body: Container(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: CustomScrollView(
-            physics: const ClampingScrollPhysics(),
-            slivers: [
-              SliverList(
-                delegate: SliverChildListDelegate.fixed([
-                  // === contenido original, en el mismo orden ===
-                  const LanguageSelector(),
-                  const SizedBox(height: 24),
-                  const CurrencySelector(),
-                  const SizedBox(height: 24),
-                  const AssetIconVisibilitySelector(),
-                  const SizedBox(height: 24),
-                  _buildThemeSelector(context, themeModeProvider),
-                  const SizedBox(height: 32),
+      body: ListView(
+        children: [
+          const LanguageSelector(),
+          const SizedBox(height: 24),
+          const CurrencySelector(),
+          const SizedBox(height: 24),
+          const AssetIconVisibilitySelector(),
+          const SizedBox(height: 24),
+          _buildThemeSelector(context, themeModeProvider),
+          const SizedBox(height: 32),
 
-                  // Export CSV
-                  ListTile(
-                    leading: const Icon(Icons.download),
-                    title: Text(t.exportOperationsToCsv),
-                    onTap: () => ExportController.handleCsvExport(context),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // Reset portfolio
-                  ListTile(
-                    leading: Icon(
-                      Icons.delete_forever,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    title: Text(
-                      t.deleteAllPortfolioData,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                    onTap: () async {
-                      final confirm = await ConfirmResetDialog.show(
-                        context: context,
-                        title: t.confirmResetTitle,
-                        content: t.confirmResetMessage,
-                        cancelText: t.cancel,
-                        confirmText: t.delete,
-                      );
-                      if (!context.mounted) return;
-
-                      if (confirm) {
-                        final invProv = context.read<InvestmentProvider>();
-                        final modelProv = context.read<InvestmentProvider>();
-                        final spotProv = context.read<SpotPriceProvider>();
-                        final histProv = context.read<HistoryProvider>();
-                        final fxProv = context.read<FxNotifier>();
-
-                        await ResetPortfolioService.resetAllData(
-                          invProv, modelProv, spotProv, histProv, fxProv,
-                        );
-
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(t.portfolioDeletedSuccess)),
-                        );
-                      }
-                    },
-                  ),
-                ]),
-              ),
-            ],
+          // Export CSV
+          ListTile(
+            leading: const Icon(Icons.download),
+            title: Text(t.exportOperationsToCsv),
+            onTap: () => ExportController.handleCsvExport(context),
           ),
-        ),
+
+          const SizedBox(height: 32),
+
+          // Reset portfolio
+          ListTile(
+            leading: Icon(
+              Icons.delete_forever,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            title: Text(
+              t.deleteAllPortfolioData,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+            onTap: () async {
+              final confirm = await ConfirmResetDialog.show(
+                context: context,
+                title: t.confirmResetTitle,
+                content: t.confirmResetMessage,
+                cancelText: t.cancel,
+                confirmText: t.delete,
+              );
+
+              if (!context.mounted) return;
+
+              if (confirm) {
+                final invProv = context.read<InvestmentProvider>();
+                final modelProv = context.read<InvestmentProvider>();
+                final spotProv = context.read<SpotPriceProvider>();
+                final histProv = context.read<HistoryProvider>();
+                final fxProv = context.read<FxNotifier>();
+
+                await ResetPortfolioService.resetAllData(
+                  invProv,
+                  modelProv,
+                  spotProv,
+                  histProv,
+                  fxProv,
+                );
+
+                if (!context.mounted) return;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(t.portfolioDeletedSuccess)),
+                );
+              }
+            },
+          ),
+        ],
       ),
     );
   }
