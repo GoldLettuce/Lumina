@@ -421,7 +421,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
     for (final inv in investments) {
       final qty = inv.operations
           .where((op) => !op.date.isAfter(today))
-          .fold<double>(0, (s, op) => s + (op.type == OperationType.buy ? op.quantity : -op.quantity));
+          .fold<double>(0, (s, op) => s + op.quantity);
       final price = prices[inv.symbol];
       if (qty > 0 && price != null) total += price * qty;
     }
@@ -570,7 +570,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                               for (final asset in investments) {
                                 final qty = asset.operations
                                     .where((op) => !op.date.isAfter(startDate))
-                                    .fold<double>(0, (s, op) => s + (op.type == OperationType.buy ? op.quantity : -op.quantity));
+                                    .fold<double>(0, (s, op) => s + op.quantity);
                                 final precio = chartCache?.spotPrices[asset.symbol];
                                 if (precio != null && qty > 0) total += qty * precio;
                               }

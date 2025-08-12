@@ -245,7 +245,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     for (final inv in investments) {
       final qty = inv.operations
           .where((op) => !op.date.isAfter(today))
-          .fold<double>(0, (s, op) => s + (op.type == OperationType.buy ? op.quantity : -op.quantity));
+          .fold<double>(0, (s, op) => s + op.quantity);
       final price = prices[inv.symbol];
       if (qty > 0 && price != null) total += price * qty;
     }
