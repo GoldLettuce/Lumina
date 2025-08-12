@@ -36,7 +36,7 @@ List<Point> buildPortfolioHistory(Map<String, dynamic> args) {
     for (final inv in investments) {
       final qty = inv.operations
           .where((op) => !op.date.isAfter(day))
-          .fold<double>(0, (s, op) => s + op.quantity);
+          .fold<double>(0, (s, op) => s + (op.type == OperationType.buy ? op.quantity : -op.quantity));
       if (qty == 0) continue;
 
       final hist = histories[inv.symbol];

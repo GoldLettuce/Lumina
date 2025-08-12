@@ -248,7 +248,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
     for (final inv in investments) {
       final qty = inv.operations
           .where((op) => !op.date.isAfter(now))
-          .fold<double>(0, (s, op) => s + op.quantity);
+          .fold<double>(0, (s, op) => s + (op.type == OperationType.buy ? op.quantity : -op.quantity));
       final price = spotPrices[inv.symbol];
       if (qty > 0 && price != null) total += price * qty;
     }
