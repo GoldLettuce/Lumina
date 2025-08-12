@@ -172,47 +172,42 @@ class PortfolioSummaryMinimal extends StatelessWidget {
                   : AppColors.textNegative(context),
     );
 
+    final double sublineHeight =
+        (percentStyle.fontSize ?? 18) * (percentStyle.height ?? 1.2);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final valuePainter = TextPainter(
-              text: TextSpan(text: valorText, style: valorStyle),
-              textDirection: ui.TextDirection.ltr,
-            )..layout(maxWidth: constraints.maxWidth);
-
-            // Con 2 decimales, todo valor con |rentabilidad| < 0.005 redondea a 0.00%
-            // rentabilidad es un porcentaje (12.34 = 12,34%)
-            final hasPct = rentabilidad.abs() >= 0.005;
-            final pctPainter = hasPct
-                ? (TextPainter(
-              text: TextSpan(text: percentText, style: percentStyle),
-              textDirection: ui.TextDirection.ltr,
-            )..layout())
-                : null;
-
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  valorText,
-                  style: valorStyle,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                ),
-                if (hasPct) const SizedBox(height: 4),
-                if (hasPct) Text(percentText, style: percentStyle),
-              ],
-            );
-          },
+        Text(
+          valorText,
+          style: valorStyle,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 4),
+        SizedBox(
+          height: sublineHeight,
+          child: Align(
+            alignment: Alignment.center,
+            child: Text(
+              percentText,
+              style: percentStyle,
+              textAlign: TextAlign.center,
+            ),
+          ),
         ),
         const SizedBox(height: 4),
         Opacity(
           opacity: hasSelection ? 1.0 : 0.0,
           child: Text(
             dateText,
-            style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Theme.of(context).colorScheme.onSurface.withAlpha(153)),
+            style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withAlpha(153),
+                ),
+            textAlign: TextAlign.center,
           ),
         ),
       ],
