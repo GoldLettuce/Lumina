@@ -136,7 +136,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                 itemBuilder: (context, index) {
                   final op = currentAsset.operations[index];
                   final isBuy = op.type == OperationType.buy;
-                  final fecha = DateFormat('d MMM y – HH:mm').format(op.date);
+                  final fecha = DateFormat('d MMM y', Localizations.localeOf(context).toString()).format(op.date);
                   final color = isBuy 
                       ? Theme.of(context).colorScheme.tertiary
                       : AppColors.textNegative(context);
