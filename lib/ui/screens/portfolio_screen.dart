@@ -646,15 +646,50 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                           shouldRebuild: (prev, next) => !listEquals(prev, next),
                           builder: (_, investments, __) {
                             if (investments.isEmpty) {
-                              return Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                                  child: Text(
-                                    t.emptyPortfolioMessage,
-                                    style: theme.textTheme.bodyLarge,
-                                    textAlign: TextAlign.center,
+                              return CustomScrollView(
+                                slivers: [
+                                  // Estado vacío + enlace persistente a "Activos sin posiciones"
+                                  SliverFillRemaining(
+                                    hasScrollBody: false,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 30),
+                                      child: Column(
+                                        children: [
+                                          // Mensaje vacío centrado verticalmente
+                                          Expanded(
+                                            child: Center(
+                                              child: Text(
+                                                t.emptyPortfolioMessage,
+                                                style: theme.textTheme.bodyLarge,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          ),
+                                          // Enlace a ArchivedAssetsScreen (mismo estilo que ya usamos)
+                                          GestureDetector(
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) => const ArchivedAssetsScreen(),
+                                                ),
+                                              );
+                                            },
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(bottom: 12),
+                                              child: Text(
+                                                t.archivedAssetsTitle, // "Activos sin posiciones"
+                                                style: theme.textTheme.bodySmall?.copyWith(
+                                                  color: Theme.of(context).colorScheme.onSurface.withAlpha(153),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ],
                               );
                             }
                             return CustomScrollView(
