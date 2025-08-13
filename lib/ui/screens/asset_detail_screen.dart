@@ -10,6 +10,7 @@ import 'package:lumina/ui/providers/currency_provider.dart'; // Import CurrencyP
 import 'package:lumina/ui/providers/theme_mode_provider.dart';
 import 'package:lumina/ui/providers/spot_price_provider.dart';
 import 'package:lumina/ui/providers/profit_display_mode_notifier.dart';
+
 import '../../l10n/app_localizations.dart';
 import 'package:lumina/core/colors.dart';
 import 'package:lumina/core/theme.dart';
@@ -247,7 +248,11 @@ class _TopSummaryLine extends StatelessWidget {
       (sp) => sp.spotPrices[symbol],
     );
 
-    final currency = context.select<CurrencyProvider, String>((c) => c.currency);
+    // Moneda objetivo (la que el usuario selecciona en Settings)
+    final targetCode = context.select<CurrencyProvider, String>((c) => c.currency);
+
+    // Convertidor FX para rebuild cuando cambien las tasas
+    final fxRate = context.select<CurrencyProvider, double>((c) => c.exchangeRate);
 
     // Dependencia del modo global de visualización de beneficio
     final mode = context.select<ProfitDisplayModeNotifier, bool>(
@@ -255,13 +260,24 @@ class _TopSummaryLine extends StatelessWidget {
     );
 
     final qty = holdings.qty;
-    final avg = holdings.avg;
-    final invested = (avg > 0 && qty > 0) ? avg * qty : 0.0;
-    final current  = (spot ?? 0) * qty;
+    final avgBase = holdings.avg; // avgBase ya lo calculas con compras (cost / bought)
+
+    // Convertir a la moneda objetivo
+    final avgConv = (avgBase > 0)
+        ? avgBase * fxRate
+        : 0.0;
+
+    // Si el spot viene en baseCode (USD), conviértelo
+    final spotBaseOrTarget = spot ?? 0.0;
+    final spotConv = spotBaseOrTarget * fxRate;
+
+    // Valor actual e invertido (ambos en targetCode)
+    final current = spotConv * qty;
+    final invested = avgConv * (qty > 0 ? qty : 0);
     
     // Calcula ambos valores de beneficio
     final double profitAbs = current - invested; // absoluto en moneda
-    final double profitPct = (invested > 0) ? ((current - invested) / invested) * 100.0 : 0.0;
+    final double profitPct = invested > 0 ? (profitAbs / invested) * 100.0 : 0.0;
 
     // Color por signo (usa el absoluto para coherencia)
     final Color profitColor = profitAbs > 0
@@ -279,7 +295,7 @@ class _TopSummaryLine extends StatelessWidget {
     // Construye el texto de beneficio según el modo
     final String profitText = mode
         ? '${profitPct.isNaN ? '0.00' : profitPct.toStringAsFixed(2)}%'
-        : formatMoney(profitAbs, currency, context);
+        : formatMoney(profitAbs, targetCode, context);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
@@ -302,7 +318,7 @@ class _TopSummaryLine extends StatelessWidget {
               ),
             ])),
             // $10,000.00
-            Text(formatMoney(avg, currency, context)),
+            Text(formatMoney(avgConv, targetCode, context)),
             // Beneficio (tap para alternar entre % y moneda)
             if (invested > 0 && (spot ?? 0) > 0) ...[
               GestureDetector(
