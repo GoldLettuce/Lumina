@@ -15,6 +15,22 @@ import '../../l10n/app_localizations.dart';
 import 'package:lumina/core/colors.dart';
 import 'package:lumina/core/theme.dart';
 
+/// Devuelve el color apropiado para valores positivos según el modo de tema
+/// En modo monoclaro, usa el color de texto primario en lugar del verde
+Color getTextPositiveColor(BuildContext context) {
+  // Obtener el provider usando Provider.of
+  final themeModeProvider = Provider.of<ThemeModeProvider>(context, listen: false);
+  final themeMode = themeModeProvider.mode;
+  
+  // Si el modo es monoclaro, usar el color de texto primario
+  if (themeMode == AppThemeMode.lightMono || themeMode == AppThemeMode.darkMono) {
+    return Theme.of(context).colorScheme.onSurface;
+  }
+  
+  // En cualquier otro caso, usar el color verde estándar
+  return AppColors.positive;
+}
+
 class AssetDetailScreen extends StatefulWidget {
   final Investment asset;
 
@@ -110,6 +126,8 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
           : (isDark ? selectedTileDark     : selectedTileLight);
     }
 
+
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -146,8 +164,8 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                 final op = currentAsset.operations[index];
                 final isBuy = op.type == OperationType.buy;
                 final fecha = DateFormat('d MMM y', Localizations.localeOf(context).toString()).format(op.date);
-                final color = isBuy 
-                    ? Theme.of(context).colorScheme.tertiary
+                final color = isBuy
+                    ? getTextPositiveColor(context)
                     : AppColors.textNegative(context);
                 final selected = _selectedIds.contains(op.id);
 
@@ -281,9 +299,9 @@ class _TopSummaryLine extends StatelessWidget {
 
     // Color por signo (usa el absoluto para coherencia)
     final Color profitColor = profitAbs > 0
-        ? const Color(0xFF4CAF50)
+        ? getTextPositiveColor(context)
         : profitAbs < 0
-            ? const Color(0xFFE53935)
+            ? AppColors.textNegative(context)
             : theme.colorScheme.onSurface.withValues(alpha: 0.78);
 
     // Estilo muy sutil (caption), centrado, con espaciado limpio
@@ -345,4 +363,6 @@ class _TopSummaryLine extends StatelessWidget {
     final trimmed = s.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
     return trimmed.isEmpty ? '0' : trimmed;
   }
+
+
 }
