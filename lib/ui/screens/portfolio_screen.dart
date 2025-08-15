@@ -1,4 +1,4 @@
-import 'dart:ui' as ui;
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -25,6 +25,9 @@ import 'package:lumina/ui/providers/settings_provider.dart';
 import '../../data/repositories_impl/history_repository_impl.dart';
 import '../../core/chart_range.dart';
 import '../../core/hive_service.dart';
+import '../../core/pl_calculator.dart';
+import '../../core/pnl_total.dart';
+
 
 // ======================
 // SummaryVM
@@ -135,27 +138,25 @@ class PortfolioSummaryMinimal extends StatelessWidget {
         : (history.isNotEmpty ? history.last.value : 0.0);
     final currentValue = currentValueUsd * exchangeRate;
 
-    // OPT: valor inicial ya precalculado y memoizado en el Selector
-    final initialValueUsd = this.initialValueUsd;
-
-    final rentabilidad = hasSelection
-        ? selectedPct!
-        : (initialValueUsd == 0.0
-        ? 0.0
-        : (currentValueUsd - initialValueUsd) /
-        initialValueUsd *
-        100);
+    // Use chart data for P/L TOTAL (no recalculation needed)
+    final unit = context.watch<ProfitDisplayModeNotifier>().unit;
+    
+    // Get P/L TOTAL from chart data: selected point or last point (today)
+    final displayValue = hasSelection ? currentValue : (history.isNotEmpty ? history.last.value * exchangeRate : 0.0);
+    final displayGainUsd = hasSelection ? history[selectedIndex!].gainUsd : (history.isNotEmpty ? history.last.gainUsd : 0.0);
+    final displayGainPct = hasSelection ? history[selectedIndex!].gainPct : (history.isNotEmpty ? history.last.gainPct : 0.0);
+    
+    final valorText = formatMoney(displayValue, currency, context);
+    final sign = displayGainPct >= 0 ? '+' : '-';
+    final percentText = unit == PnlUnit.percent
+        ? '$sign${formatPercentLabel(displayGainPct.abs(), context, decimals: 2)}'
+        : formatMoney(displayGainUsd * exchangeRate, currency, context);
 
     final dateText = hasSelection && selectedDate != null
         ? DateFormat(
         'd MMM yyyy', Localizations.localeOf(context).toString())
         .format(selectedDate!)
         : '';
-
-    final valorText =
-    formatMoney(currentValue, currency, context);
-    final sign = rentabilidad >= 0 ? '+' : '-';
-    final percentText = '$sign${formatPercentLabel(rentabilidad.abs(), context, decimals: 2)}';
 
     final valorStyle = TextStyle(
       fontSize: 32,
@@ -167,7 +168,7 @@ class PortfolioSummaryMinimal extends StatelessWidget {
     final percentStyle = TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.w600,
-              color: rentabilidad >= 0 
+              color: displayGainPct >= 0 
                   ? Theme.of(context).colorScheme.tertiary
                   : AppColors.textNegative(context),
     );
@@ -189,10 +190,14 @@ class PortfolioSummaryMinimal extends StatelessWidget {
           height: sublineHeight,
           child: Align(
             alignment: Alignment.center,
-            child: Text(
-              percentText,
-              style: percentStyle,
-              textAlign: TextAlign.center,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => context.read<ProfitDisplayModeNotifier>().toggle(),
+              child: Text(
+                percentText,
+                style: percentStyle,
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
         ),
@@ -229,7 +234,7 @@ class AssetListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final priceUsd = context.select<SpotPriceProvider, double?>(
+    final spotUsd = context.select<SpotPriceProvider, double?>(
           (p) => p.spotPrices[asset.symbol],
     );
 
@@ -239,17 +244,14 @@ class AssetListTile extends StatelessWidget {
     );
 
     final theme = Theme.of(context);
-    final valorActual = priceUsd != null ? asset.totalQuantity * priceUsd * fx.rate : null;
-
-    // Calcular rentabilidad individual del activo
-    double rentabilidad = 0.0;
-    if (priceUsd != null) {
-      final valorActualUsd = asset.totalQuantity * priceUsd;
-      final costeTotal = asset.operations.fold(0.0, (s, op) => s + op.quantity * op.price);
-      rentabilidad = costeTotal == 0 ? 0 : (valorActualUsd - costeTotal) / costeTotal * 100;
-    }
-
-    final colorRentabilidad = rentabilidad >= 0
+    
+    // Calculate P/L using new system
+    final pl = calculatePL(asset: asset, marketPriceUsd: spotUsd);
+    final pnl = PnlTotal.from(asset, pl);
+    final unit = context.watch<ProfitDisplayModeNotifier>().unit;
+    
+    final valorActual = spotUsd != null ? pl.currentValue * fx.rate : null;
+    final colorRentabilidad = pnl.amountUsd >= 0
         ? Theme.of(context).colorScheme.tertiary
         : AppColors.textNegative(context);
 
@@ -257,13 +259,9 @@ class AssetListTile extends StatelessWidget {
         ? const SizedBox(width: 60)
         : Consumer<ProfitDisplayModeNotifier>(
             builder: (context, displayMode, child) {
-              final valorGanado = priceUsd != null 
-                  ? (asset.totalQuantity * priceUsd * fx.rate) - (asset.operations.fold(0.0, (s, op) => s + op.quantity * op.price) * fx.rate)
-                  : 0.0;
-              
-              final displayText = displayMode.showPercentage
-                  ? '${rentabilidad >= 0 ? '+' : ''}${formatPercentLabel(rentabilidad.abs(), context, decimals: 2)}'
-                  : '${valorGanado >= 0 ? '+' : ''}${formatMoney(valorGanado, fx.code, context)}';
+              final displayText = unit == PnlUnit.percent
+                  ? '${pnl.percent.toStringAsFixed(2)}%'
+                  : formatMoney(pnl.amountUsd * fx.rate, fx.code, context);
               
               return GestureDetector(
                 behavior: HitTestBehavior.opaque,
@@ -416,16 +414,57 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
     );
     histProv.updateHistory(history);
 
+    // Calcular P/L TOTAL para hoy usando la misma lógica que el gráfico
     final today = DateTime.now();
-    double total = 0;
+    double totalValue = 0;
+    double totalCost = 0;
+    double totalRealized = 0;
+    double totalNetContrib = 0;
+    
     for (final inv in investments) {
       final qty = inv.operations
           .where((op) => !op.date.isAfter(today))
           .fold<double>(0, (s, op) => s + op.quantity);
       final price = prices[inv.symbol];
-      if (qty > 0 && price != null) total += price * qty;
+      
+      if (qty > 0 && price != null) {
+        totalValue += price * qty;
+        
+        // Calcular coste acumulado y P/L realizado
+        double cost = 0;
+        double realized = 0;
+        double netContrib = 0;
+        
+        for (final op in inv.operations.where((op) => !op.date.isAfter(today))) {
+          if (op.type.toString().toLowerCase().contains('sell')) {
+            // Para ventas, calcular P/L realizado
+            realized += op.quantity * (op.price - (cost / (cost > 0 ? cost : 1)));
+            netContrib -= op.price * op.quantity;
+          } else {
+            // Para compras, acumular coste
+            cost += op.price * op.quantity;
+            netContrib += op.price * op.quantity;
+          }
+        }
+        
+        totalCost += cost;
+        totalRealized += realized;
+        totalNetContrib += netContrib;
+      }
     }
-    histProv.updateToday(Point(time: today, value: total));
+    
+    // Calcular P/L TOTAL del día
+    final pnlTotalUsd = totalRealized + (totalValue - totalCost);
+    final pctTotal = (totalNetContrib.abs() > 0)
+        ? (pnlTotalUsd / totalNetContrib.abs()) * 100.0
+        : 0.0;
+    
+    histProv.updateToday(Point(
+      time: today, 
+      value: totalValue,
+      gainUsd: pnlTotalUsd,
+      gainPct: pctTotal,
+    ));
   }
 
   @override

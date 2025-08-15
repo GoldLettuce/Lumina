@@ -240,17 +240,58 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       spotPrices: prices,
     );
 
+    // Calcular P/L TOTAL para hoy usando la misma lógica que el gráfico
     final today = DateTime.now();
-    double total = 0;
+    double totalValue = 0;
+    double totalCost = 0;
+    double totalRealized = 0;
+    double totalNetContrib = 0;
+    
     for (final inv in investments) {
       final qty = inv.operations
           .where((op) => !op.date.isAfter(today))
           .fold<double>(0, (s, op) => s + op.quantity);
       final price = prices[inv.symbol];
-      if (qty > 0 && price != null) total += price * qty;
+      
+      if (qty > 0 && price != null) {
+        totalValue += price * qty;
+        
+        // Calcular coste acumulado y P/L realizado
+        double cost = 0;
+        double realized = 0;
+        double netContrib = 0;
+        
+        for (final op in inv.operations.where((op) => !op.date.isAfter(today))) {
+          if (op.type.toString().toLowerCase().contains('sell')) {
+            // Para ventas, calcular P/L realizado
+            realized += op.quantity * (op.price - (cost / (cost > 0 ? cost : 1)));
+            netContrib -= op.price * op.quantity;
+          } else {
+            // Para compras, acumular coste
+            cost += op.price * op.quantity;
+            netContrib += op.price * op.quantity;
+          }
+        }
+        
+        totalCost += cost;
+        totalRealized += realized;
+        totalNetContrib += netContrib;
+      }
     }
+    
+    // Calcular P/L TOTAL del día
+    final pnlTotalUsd = totalRealized + (totalValue - totalCost);
+    final pctTotal = (totalNetContrib.abs() > 0)
+        ? (pnlTotalUsd / totalNetContrib.abs()) * 100.0
+        : 0.0;
+    
     histProv.updateHistory(history);
-    histProv.updateToday(Point(time: today, value: total));
+    histProv.updateToday(Point(
+      time: today, 
+      value: totalValue,
+      gainUsd: pnlTotalUsd,
+      gainPct: pctTotal,
+    ));
   }
 
   // ────────────────────────────────────────────────────────────────────────

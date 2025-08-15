@@ -1,10 +1,13 @@
 import 'package:flutter/foundation.dart';
 
+enum PnlUnit { percent, amount }
+
 class ProfitDisplayModeNotifier extends ChangeNotifier {
-  bool showPercentage = true;
+  PnlUnit _unit = PnlUnit.percent;
+  PnlUnit get unit => _unit;
 
   void toggle() {
-    showPercentage = !showPercentage;
+    _unit = _unit == PnlUnit.percent ? PnlUnit.amount : PnlUnit.percent;
     notifyListeners();
   }
 } 

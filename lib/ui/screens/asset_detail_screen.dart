@@ -10,6 +10,8 @@ import 'package:lumina/ui/providers/currency_provider.dart'; // Import CurrencyP
 import 'package:lumina/ui/providers/theme_mode_provider.dart';
 import 'package:lumina/ui/providers/spot_price_provider.dart';
 import 'package:lumina/ui/providers/profit_display_mode_notifier.dart';
+import 'package:lumina/core/pnl_total.dart';
+import 'package:lumina/core/pl_calculator.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'package:lumina/core/colors.dart';
@@ -242,78 +244,35 @@ class _TopSummaryLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Holdings (qty + avg) sólo del activo actual, minimizando rebuilds
-    final holdings = context.select<InvestmentProvider, ({double qty, double avg})>((inv) {
-      double qty = 0, cost = 0, bought = 0;
-      for (final op in inv.investments
-          .where((inv) => inv.symbol == assetId)
-          .expand((inv) => inv.operations)) {
-        final ts = op.type.toString().toLowerCase();
-        final isSell = ts.contains('sell');
-        if (isSell) {
-          qty -= op.quantity;
-        } else { // buy/otros => tratamos como compra positiva
-          qty  += op.quantity;
-          cost += op.price * op.quantity;
-          bought += op.quantity;
-        }
-      }
-      final avg = bought > 0 ? (cost / bought) : 0.0;
-      return (qty: qty, avg: avg);
+    // Get current asset data
+    final asset = context.select<InvestmentProvider, Investment?>((inv) {
+      return inv.investments.where((inv) => inv.symbol == assetId).firstOrNull;
     });
 
-    final spot = context.select<SpotPriceProvider, double?>(
+    if (asset == null) return const SizedBox.shrink();
+
+    final spotUsd = context.select<SpotPriceProvider, double?>(
       (sp) => sp.spotPrices[symbol],
     );
 
-    // Moneda objetivo (la que el usuario selecciona en Settings)
-    final targetCode = context.select<CurrencyProvider, String>((c) => c.currency);
-
-    // Convertidor FX para rebuild cuando cambien las tasas
-    final fxRate = context.select<CurrencyProvider, double>((c) => c.exchangeRate);
-
-    // Dependencia del modo global de visualización de beneficio
-    final mode = context.select<ProfitDisplayModeNotifier, bool>(
-      (m) => m.showPercentage,
-    );
-
-    final qty = holdings.qty;
-    final avgBase = holdings.avg; // avgBase ya lo calculas con compras (cost / bought)
-
-    // Convertir a la moneda objetivo
-    final avgConv = (avgBase > 0)
-        ? avgBase * fxRate
-        : 0.0;
-
-    // Si el spot viene en baseCode (USD), conviértelo
-    final spotBaseOrTarget = spot ?? 0.0;
-    final spotConv = spotBaseOrTarget * fxRate;
-
-    // Valor actual e invertido (ambos en targetCode)
-    final current = spotConv * qty;
-    final invested = avgConv * (qty > 0 ? qty : 0);
+    // Calculate P/L using new system
+    final pl = calculatePL(asset: asset, marketPriceUsd: spotUsd);
+    final pnl = PnlTotal.from(asset, pl);
+    final unit = context.watch<ProfitDisplayModeNotifier>().unit;
+    final currency = context.read<CurrencyProvider>();
     
-    // Calcula ambos valores de beneficio
-    final double profitAbs = current - invested; // absoluto en moneda
-    final double profitPct = invested > 0 ? (profitAbs / invested) * 100.0 : 0.0;
-
-    // Color por signo (usa el absoluto para coherencia)
-    final Color profitColor = profitAbs > 0
-        ? getTextPositiveColor(context)
-        : profitAbs < 0
-            ? AppColors.textNegative(context)
-            : theme.colorScheme.onSurface.withValues(alpha: 0.78);
+    final qty = asset.totalQuantity;
+    final avgStr = formatMoney(pl.averageBuyPrice * currency.exchangeRate, currency.currency, context);
+    final displayStr = unit == PnlUnit.percent
+        ? '${pnl.percent.toStringAsFixed(2)}%'
+        : formatMoney(pnl.amountUsd * currency.exchangeRate, currency.currency, context);
+    final color = pnl.amountUsd >= 0 ? AppColors.positive : AppColors.negative;
 
     // Estilo muy sutil (caption), centrado, con espaciado limpio
     final base = theme.textTheme.labelLarge?.copyWith(
       color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
       fontWeight: FontWeight.w500,
     );
-
-    // Construye el texto de beneficio según el modo
-    final String profitText = mode
-        ? '${profitPct.isNaN ? '0.00' : profitPct.toStringAsFixed(2)}%'
-        : formatMoney(profitAbs, targetCode, context);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
@@ -335,18 +294,18 @@ class _TopSummaryLine extends StatelessWidget {
                 ),
               ),
             ])),
-            // $10,000.00
-            Text(formatMoney(avgConv, targetCode, context)),
-            // Beneficio (tap para alternar entre % y moneda)
-            if (invested > 0 && (spot ?? 0) > 0) ...[
+            // $10,000.00 (WAC)
+            Text(avgStr),
+            // P/L TOTAL (tap para alternar entre % y moneda)
+            if (qty > 0 && spotUsd != null && spotUsd > 0) ...[
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => context.read<ProfitDisplayModeNotifier>().toggle(),
                 child: Text(
-                  profitText,
+                  displayStr,
                   style: (base ?? const TextStyle()).copyWith(
                     fontWeight: FontWeight.w600,
-                    color: profitColor,
+                    color: color,
                   ),
                 ),
               ),

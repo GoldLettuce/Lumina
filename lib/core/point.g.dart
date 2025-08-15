@@ -19,17 +19,23 @@ class PointAdapter extends TypeAdapter<Point> {
     return Point(
       time: fields[0] as DateTime,
       value: fields[1] as double,
+      gainUsd: fields[2] as double,
+      gainPct: fields[3] as double,
     );
   }
 
   @override
   void write(BinaryWriter writer, Point obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.time)
       ..writeByte(1)
-      ..write(obj.value);
+      ..write(obj.value)
+      ..writeByte(2)
+      ..write(obj.gainUsd)
+      ..writeByte(3)
+      ..write(obj.gainPct);
   }
 
   @override

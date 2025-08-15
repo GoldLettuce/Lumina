@@ -10,6 +10,7 @@ import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/ui/providers/fx_notifier.dart';
 import 'package:lumina/ui/providers/history_provider.dart';
 
+
 /// Contenedor general: inicializa símbolos y fuerza la recarga.
 class PortfolioSummaryWithChart extends StatefulWidget {
   final List<Investment> investments;

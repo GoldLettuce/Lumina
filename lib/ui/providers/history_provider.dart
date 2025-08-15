@@ -9,21 +9,25 @@ class HistoryProvider extends ChangeNotifier {
   List<Point> get history => _history;
   Point? get todayPoint => _todayPoint;
   int? get selectedIndex => _selectedIndex;
+  
   double? get selectedValue =>
       (_selectedIndex != null && _history.isNotEmpty)
           ? _history[_selectedIndex!].value
           : null;
+          
   DateTime? get selectedDate =>
       (_selectedIndex != null && _history.isNotEmpty)
           ? _history[_selectedIndex!].time
           : null;
+          
   double? get selectedPct =>
-      (_selectedIndex != null &&
-              _history.length > 1 &&
-              _history.first.value != 0)
-          ? (_history[_selectedIndex!].value - _history.first.value) /
-              _history.first.value *
-              100
+      (_selectedIndex != null && _history.isNotEmpty)
+          ? _history[_selectedIndex!].gainPct
+          : null;
+          
+  double? get selectedGainUsd =>
+      (_selectedIndex != null && _history.isNotEmpty)
+          ? _history[_selectedIndex!].gainUsd
           : null;
 
   void updateHistory(List<Point> newHistory) {
