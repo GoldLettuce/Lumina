@@ -16,7 +16,7 @@ void showAppSnack(
 
   switch (kind) {
     case AppSnackKind.error:
-      bg = scheme.surfaceVariant;
+      bg = scheme.surfaceContainerHighest;
       fg = scheme.onSurfaceVariant;
       break;
     case AppSnackKind.success:
@@ -24,7 +24,6 @@ void showAppSnack(
       fg = scheme.onSecondaryContainer;
       break;
     case AppSnackKind.info:
-    default:
       bg = scheme.surfaceContainerHighest;
       fg = scheme.onSurface;
       break;

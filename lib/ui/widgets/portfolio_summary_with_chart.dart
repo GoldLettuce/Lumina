@@ -118,7 +118,7 @@ class _PortfolioChartState extends State<_PortfolioChart> {
               radius: 4,                         // punto central (ligeramente mayor)
               color: lineColor,                  // mismo color que la curva
               strokeWidth: 4,                    // halo fino y proporcionado
-              strokeColor: lineColor.withOpacity(0.18), // opacidad baja 0.15–0.2
+              strokeColor: lineColor.withValues(alpha: 0.18), // opacidad baja 0.15–0.2
             );
           },
         ),
@@ -181,7 +181,7 @@ class _PortfolioChartState extends State<_PortfolioChart> {
                     touchSpotThreshold: 28, // engancha mejor el dedo, sin coste
                     getTouchedSpotIndicator: (barData, spotIndexes) {
                       // Si es la barra ofuscada → no pintes nada
-                      if (barData.color?.value == fadedColor.value) {
+                      if (barData.color == fadedColor) {
                         return _invisibleIndicatorsFor(spotIndexes);
                       }
                       // Serie principal → halo del mismo color, sin línea vertical
@@ -265,7 +265,7 @@ class _PortfolioChartState extends State<_PortfolioChart> {
                       touchSpotThreshold: 28, // engancha mejor el dedo, sin coste
                       getTouchedSpotIndicator: (barData, spotIndexes) {
                         // Si es la barra ofuscada → no pintes nada
-                        if (barData.color?.value == fadedColor.value) {
+                        if (barData.color == fadedColor) {
                           return _invisibleIndicatorsFor(spotIndexes);
                         }
                         // Serie principal → halo del mismo color, sin línea vertical

@@ -56,7 +56,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   bool _isSaving = false;
 
   // Variables para el botón Sell all
-  Investment? _selectedAsset;
   bool _isSell = false;
   double _availableQty = 0;
 
@@ -169,7 +168,6 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       );
       
       setState(() {
-        _selectedAsset = asset;
         // Usar la cantidad actual en posesión del modelo
         final q = asset.totalQuantity;
         _availableQty = q < 0 ? 0 : q;
