@@ -4,31 +4,41 @@ import 'package:lumina/core/point.dart';
 class HistoryProvider extends ChangeNotifier {
   List<Point> _history = [];
   Point? _todayPoint;
-  int? _selectedIndex;
+
+  // NUEVO: selección reactiva sin rebuild global
+  final ValueNotifier<int?> selectedIndexVN = ValueNotifier<int?>(null);
 
   List<Point> get history => _history;
   Point? get todayPoint => _todayPoint;
-  int? get selectedIndex => _selectedIndex;
+  
+  // Getter compatibles
+  int? get selectedIndex => selectedIndexVN.value;
   
   double? get selectedValue =>
-      (_selectedIndex != null && _history.isNotEmpty)
-          ? _history[_selectedIndex!].value
+      (selectedIndexVN.value != null && _history.isNotEmpty)
+          ? _history[selectedIndexVN.value!].value
           : null;
           
   DateTime? get selectedDate =>
-      (_selectedIndex != null && _history.isNotEmpty)
-          ? _history[_selectedIndex!].time
+      (selectedIndexVN.value != null && _history.isNotEmpty)
+          ? _history[selectedIndexVN.value!].time
           : null;
           
   double? get selectedPct =>
-      (_selectedIndex != null && _history.isNotEmpty)
-          ? _history[_selectedIndex!].gainPct
+      (selectedIndexVN.value != null && _history.isNotEmpty)
+          ? _history[selectedIndexVN.value!].gainPct
           : null;
           
   double? get selectedGainUsd =>
-      (_selectedIndex != null && _history.isNotEmpty)
-          ? _history[_selectedIndex!].gainUsd
+      (selectedIndexVN.value != null && _history.isNotEmpty)
+          ? _history[selectedIndexVN.value!].gainUsd
           : null;
+
+  // NUEVO: setter sin notificar a todos los listeners
+  void setSelectedIndex(int? i) {
+    if (selectedIndexVN.value == i) return;
+    selectedIndexVN.value = i;
+  }
 
   void updateHistory(List<Point> newHistory) {
     _history = newHistory;
@@ -46,19 +56,11 @@ class HistoryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void selectSpot(int index) {
-    if (_selectedIndex != index) {
-      _selectedIndex = index;
-      notifyListeners();
-    }
-  }
+  @Deprecated('Usa setSelectedIndex para evitar rebuilds globales')
+  void selectSpot(int index) => setSelectedIndex(index);
 
-  void clearSelection() {
-    if (_selectedIndex != null) {
-      _selectedIndex = null;
-      notifyListeners();
-    }
-  }
+  @Deprecated('Usa setSelectedIndex para evitar rebuilds globales')
+  void clearSelection() => setSelectedIndex(null);
 
   static Future<List<dynamic>> preload() async {
     // Implementa la carga real de historial aquí

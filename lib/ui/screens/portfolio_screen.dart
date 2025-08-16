@@ -633,26 +633,38 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                         },
                         shouldRebuild: (prev, next) => prev != next,
                         builder: (_, vm, __) {
-                          return RepaintBoundary(
-                            child: PortfolioSummaryMinimal(
-                              history: vm.history,
-                              selectedIndex: vm.selectedIndex,
-                              selectedValue: vm.selectedValue,
-                              selectedPct: vm.selectedPct,
-                              selectedDate: vm.selectedDate,
-                              exchangeRate: vm.exchangeRate,
-                              currency: vm.currency,
-                              investments: vm.investments,
-                              initialValueUsd: vm.initialValueUsd, // OPT: precálculo
-                            ),
+                          // Donde haces: return RepaintBoundary(child: PortfolioSummaryMinimal(...));
+                          final hprov = context.read<HistoryProvider>();
+                          return ValueListenableBuilder<int?>(
+                            valueListenable: hprov.selectedIndexVN,
+                            builder: (_, sel, __) {
+                              final hasSel = sel != null && vm.history.isNotEmpty && sel >= 0 && sel < vm.history.length;
+                              final selectedValue = hasSel ? vm.history[sel].value : null;
+                              final selectedPct   = hasSel ? vm.history[sel].gainPct : null;
+                              final selectedDate  = hasSel ? vm.history[sel].time : null;
+
+                              return RepaintBoundary(
+                                child: PortfolioSummaryMinimal(
+                                  history: vm.history,
+                                  selectedIndex: hasSel ? sel : null,
+                                  selectedValue: selectedValue,
+                                  selectedPct: selectedPct,
+                                  selectedDate: selectedDate,
+                                  exchangeRate: vm.exchangeRate,
+                                  currency: vm.currency,
+                                  investments: vm.investments,
+                                  initialValueUsd: vm.initialValueUsd,
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
                       const SizedBox(height: 12),
-                      // Chart with isolated rebuilds
+                      // Chart with isolated rebuilds (solo cambia con el history)
                       Selector<HistoryProvider, _ChartState>(
-                        selector: (_, h) => _ChartState(h.history, h.selectedIndex),
-                        shouldRebuild: (a, b) => !identical(a.history, b.history) || a.selectedIndex != b.selectedIndex,
+                        selector: (_, h) => _ChartState(h.history, null), // ignoramos selectedIndex
+                        shouldRebuild: (a, b) => !identical(a.history, b.history),
                         builder: (_, chartState, __) {
                           return RepaintBoundary(
                             child: Selector<InvestmentProvider, List<Investment>>(
