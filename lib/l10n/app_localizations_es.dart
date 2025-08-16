@@ -27,8 +27,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noInvestments => 'No hay inversiones';
 
   @override
-  String get emptyPortfolioMessage =>
-      'No tienes inversiones aún.\n¡Comienza añ,adiendo la primera!';
+  String get emptyPortfolioMessage => 'No tienes inversiones aún.\n¡Comienza añ,adiendo la primera!';
 
   @override
   String get newOperation => 'Nueva operación';
@@ -85,8 +84,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get searchAsset => 'Buscar activo';
 
   @override
-  String get notEnoughChartData =>
-      'No hay suficientes datos para mostrar el gráfico';
+  String get notEnoughChartData => 'No hay suficientes datos para mostrar el gráfico';
 
   @override
   String get archivedAssetsTitle => 'Activos sin posiciones';
@@ -101,7 +99,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get theme => 'Tema';
 
   @override
-  String get themeOptions => 'Opciones de los temas';
+  String get themeOptions => 'Tema';
 
   @override
   String get themeLight => 'Claro';
@@ -128,8 +126,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get deleteOperations => 'Eliminar operaciones';
 
   @override
-  String get deleteOperationsMessage =>
-      '¿Estás seguro de que quieres eliminar las operaciones seleccionadas? Esta acción no se puede deshacer.';
+  String get deleteOperationsMessage => '¿Estás seguro de que quieres eliminar las operaciones seleccionadas? Esta acción no se puede deshacer.';
 
   @override
   String get delete => 'Eliminar';
@@ -156,8 +153,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get confirmResetTitle => '¿Estás seguro?';
 
   @override
-  String get confirmResetMessage =>
-      'Esta acción eliminará todas tus inversiones.';
+  String get confirmResetMessage => 'Esta acción eliminará todas tus inversiones.';
 
   @override
   String get baseCurrency => 'Moneda base';
@@ -172,8 +168,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exportOperationsToCsv => 'Exportar operaciones a CSV';
 
   @override
-  String get deleteAllPortfolioData =>
-      'Eliminar todos los datos del portafolio';
+  String get deleteAllPortfolioData => 'Eliminar todos los datos del portafolio';
 
   @override
   String get portfolioDeletedSuccess => '✅ Portafolio eliminado';
@@ -185,12 +180,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get operationQuantitySeparator => ' de ';
 
   @override
-  String get permissionRequiredForFile =>
-      '❌ Debes conceder permiso para guardar el archivo.';
+  String get permissionRequiredForFile => '❌ Debes conceder permiso para guardar el archivo.';
 
   @override
-  String get permissionPermanentlyDenied =>
-      '⚠️ El permiso fue denegado permanentemente.';
+  String get permissionPermanentlyDenied => '⚠️ El permiso fue denegado permanentemente.';
 
   @override
   String get openSettings => 'Abrir ajustes';
