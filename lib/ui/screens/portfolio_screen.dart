@@ -649,8 +649,9 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                             for (final asset in investments) {
                               for (final op in asset.operations) {
                                 if (minDate == null ||
-                                    op.date.isBefore(minDate))
+                                    op.date.isBefore(minDate)) {
                                   minDate = op.date;
+                                }
                               }
                             }
                             firstDate = minDate;
@@ -688,8 +689,9 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                                     );
                                 final precio =
                                     chartCache?.spotPrices[asset.symbol];
-                                if (precio != null && qty > 0)
+                                if (precio != null && qty > 0) {
                                   total += qty * precio;
+                                }
                               }
                               initialValueUsd = total;
                             }

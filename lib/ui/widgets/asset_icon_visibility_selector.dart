@@ -24,9 +24,9 @@ class AssetIconVisibilitySelector extends StatelessWidget {
     final trackColor = WidgetStateProperty.resolveWith<Color?>((states) {
       if (states.contains(WidgetState.selected)) {
         // Track ligeramente translúcido para que no resulte chillón en ningún tema
-        return cs.primary.withOpacity(isDark ? 0.55 : 0.6);
+        return cs.primary.withValues(alpha: isDark ? 0.55 : 0.6);
       }
-      return cs.onSurfaceVariant.withOpacity(isDark ? 0.25 : 0.3);
+      return cs.onSurfaceVariant.withValues(alpha: isDark ? 0.25 : 0.3);
     });
 
     // Switch compacto

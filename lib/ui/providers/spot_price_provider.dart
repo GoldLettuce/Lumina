@@ -141,8 +141,9 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
     // 🔑 No borres lo que ya teníamos; solo actualiza/añade lo nuevo
     bool changed = false;
     for (final entry in newPrices.entries) {
-      if (!_symbols.contains(entry.key))
+      if (!_symbols.contains(entry.key)) {
         continue; // OPT: ignorar símbolos no visibles
+      }
       if (_spotPrices[entry.key] != entry.value) {
         _spotPrices[entry.key] = entry.value;
         changed = true;

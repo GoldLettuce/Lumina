@@ -105,9 +105,6 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     // Calcular color de selección según tema y modo mono
     final themeMode = context.watch<ThemeModeProvider>().mode;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isMono =
-        themeMode == AppThemeMode.lightMono ||
-        themeMode == AppThemeMode.darkMono;
 
     Color getTileColor(bool selected) {
       if (!selected) return Colors.transparent;
