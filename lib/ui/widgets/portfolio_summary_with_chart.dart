@@ -71,22 +71,46 @@ class _PortfolioChartState extends State<_PortfolioChart> {
     return src.sublist(start);
   }
 
-  List<TouchedSpotIndicatorData> _invisibleIndicators(
-    LineChartBarData barData,
-    List<int> spotIndexes,
-  ) {
+
+
+  // Indicadores invisibles para la serie ofuscada (mismo tamaño que spotIndexes)
+  List<TouchedSpotIndicatorData> _invisibleIndicatorsFor(List<int> idxs) {
     return List.generate(
-      spotIndexes.length,
-      (_) => TouchedSpotIndicatorData(
+      idxs.length,
+      (_) => const TouchedSpotIndicatorData(
         FlLine(color: Colors.transparent, strokeWidth: 0),
         FlDotData(show: false),
       ),
     );
   }
 
-  // Devuelve una lista del mismo tamaño que touchedSpots, pero sin tooltip (null).
-  List<LineTooltipItem?> _noTooltip(List<LineBarSpot> touchedSpots) {
-    return List<LineTooltipItem?>.filled(touchedSpots.length, null, growable: false);
+  // Halo sutil sin línea vertical, usando el MISMO color de la curva
+  List<TouchedSpotIndicatorData> _haloIndicatorsFor(
+    List<int> idxs,
+    Color lineColor,
+  ) {
+    return List.generate(
+      idxs.length,
+      (_) => TouchedSpotIndicatorData(
+        const FlLine(color: Colors.transparent, strokeWidth: 0), // sin línea vertical
+        FlDotData(
+          show: true,
+          getDotPainter: (spot, percent, bar, index) {
+            return FlDotCirclePainter(
+              radius: 4,                         // punto central (ligeramente mayor)
+              color: lineColor,                  // mismo color que la curva
+              strokeWidth: 4,                    // halo fino y proporcionado
+              strokeColor: lineColor.withOpacity(0.18), // opacidad baja 0.15–0.2
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // 3) Sin tooltip, pero con longitud correcta (evita crash)
+  List<LineTooltipItem?> _noTooltip(List<LineBarSpot> spots) {
+    return List<LineTooltipItem?>.filled(spots.length, null, growable: false);
   }
 
   @override
@@ -135,12 +159,19 @@ class _PortfolioChartState extends State<_PortfolioChart> {
                   borderData: FlBorderData(show: false),
                   lineTouchData: LineTouchData(
                     enabled: true,
-                    handleBuiltInTouches: true,     // mantiene el scrub fluido
-                    touchSpotThreshold: 24,
-                    getTouchedSpotIndicator: _invisibleIndicators,
-                    touchTooltipData: LineTouchTooltipData(
-                      getTooltipItems: _noTooltip,  // <<< evita el crash de tamaños
-                    ),
+                    handleBuiltInTouches: true,
+                    touchSpotThreshold: 28, // engancha mejor el dedo, sin coste
+                    getTouchedSpotIndicator: (barData, spotIndexes) {
+                      // Si es la barra ofuscada → no pintes nada
+                      if (barData.color?.value == fadedColor.value) {
+                        return _invisibleIndicatorsFor(spotIndexes);
+                      }
+                      // Serie principal → halo del mismo color, sin línea vertical
+                      return _haloIndicatorsFor(spotIndexes, lineColor);
+                    },
+                      touchTooltipData: LineTouchTooltipData(
+                        getTooltipItems: _noTooltip, // sin tooltip pero con longitud correcta
+                      ),
                   ),
                   lineBarsData: [
                     LineChartBarData(
@@ -212,11 +243,18 @@ class _PortfolioChartState extends State<_PortfolioChart> {
                     lineBarsData: series,
                     lineTouchData: LineTouchData(
                       enabled: true,
-                      handleBuiltInTouches: true,     // mantiene el scrub fluido
-                      touchSpotThreshold: 24,
-                      getTouchedSpotIndicator: _invisibleIndicators,
+                      handleBuiltInTouches: true,
+                      touchSpotThreshold: 28, // engancha mejor el dedo, sin coste
+                      getTouchedSpotIndicator: (barData, spotIndexes) {
+                        // Si es la barra ofuscada → no pintes nada
+                        if (barData.color?.value == fadedColor.value) {
+                          return _invisibleIndicatorsFor(spotIndexes);
+                        }
+                        // Serie principal → halo del mismo color, sin línea vertical
+                        return _haloIndicatorsFor(spotIndexes, lineColor);
+                      },
                       touchTooltipData: LineTouchTooltipData(
-                        getTooltipItems: _noTooltip,  // <<< evita el crash de tamaños
+                        getTooltipItems: _noTooltip, // sin tooltip pero con longitud correcta
                       ),
                       touchCallback: (event, resp) {
                         final isEnd = event is FlTapUpEvent ||
