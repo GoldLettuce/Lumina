@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'csv_export_service.dart';
 import 'package:lumina/ui/providers/investment_provider.dart';
 import '../l10n/app_localizations.dart';
+import '../ui/widgets/app_snack.dart';
 
 class ExportController {
   static Future<void> handleCsvExport(BuildContext context) async {
@@ -15,24 +16,20 @@ class ExportController {
       final result = await Permission.manageExternalStorage.request();
       if (!result.isGranted) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(t.permissionRequiredForFile),
-            ),
+          showAppSnack(
+            context,
+            message: t.permissionRequiredForFile,
+            kind: AppSnackKind.error,
           );
         }
         return;
       }
     } else if (status.isPermanentlyDenied) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(t.permissionPermanentlyDenied),
-            action: SnackBarAction(
-              label: t.openSettings,
-              onPressed: openAppSettings,
-            ),
-          ),
+        showAppSnack(
+          context,
+          message: t.permissionPermanentlyDenied,
+          kind: AppSnackKind.error,
         );
       }
       return;
@@ -46,15 +43,19 @@ class ExportController {
       );
       final path = await CsvExportService().export(investments);
       if (context.mounted) {
-        ScaffoldMessenger.of(
+        showAppSnack(
           context,
-        ).showSnackBar(SnackBar(content: Text(t.fileSavedSuccess(path))));
+          message: t.fileSavedSuccess(path),
+          kind: AppSnackKind.success,
+        );
       }
     } catch (e) {
       debugPrint('❌ Error al exportar archivo CSV: $e');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.exportFileError)),
+        showAppSnack(
+          context,
+          message: t.exportFileError,
+          kind: AppSnackKind.error,
         );
       }
     }

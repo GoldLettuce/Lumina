@@ -29,6 +29,14 @@ class AppTheme {
         bodyMedium: TextStyle(fontSize: 14, color: AppColors.lightTextSecondary, fontFamily: 'Roboto'),
       ),
       dividerColor: AppColors.lightDivider,
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        elevation: 0,
+        backgroundColor: AppColors.lightBackground,
+        contentTextStyle: TextStyle(color: AppColors.lightOnBackground),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        showCloseIcon: false,
+      ),
     );
   }
 
@@ -71,6 +79,14 @@ class AppTheme {
           fontFamily: 'Roboto',
         ),
       ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        elevation: 0,
+        backgroundColor: AppColors.darkBackground,
+        contentTextStyle: TextStyle(color: AppColors.darkOnBackground),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        showCloseIcon: false,
+      ),
     );
   }
 
@@ -95,6 +111,14 @@ class AppTheme {
         bodyLarge: TextStyle(fontSize: 16, color: AppColors.lightTextPrimary),
         bodyMedium: TextStyle(fontSize: 14, color: AppColors.lightTextSecondary),
       ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        elevation: 0,
+        backgroundColor: AppColors.lightBackground,
+        contentTextStyle: TextStyle(color: AppColors.lightTextPrimary),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        showCloseIcon: false,
+      ),
     );
   }
 
@@ -103,7 +127,7 @@ class AppTheme {
       useMaterial3: true,
     ).copyWith(
       scaffoldBackgroundColor: AppColors.darkBackground,
-      colorScheme: const ColorScheme.dark(
+      colorScheme: const ColorScheme.light(
         primary: AppColors.darkOnBackground,
         secondary: AppColors.darkOnBackground,
         onPrimary: AppColors.darkBackground,
@@ -118,6 +142,14 @@ class AppTheme {
         ),
         bodyLarge: TextStyle(fontSize: 16, color: AppColors.darkOnBackground),
         bodyMedium: TextStyle(fontSize: 14, color: AppColors.darkOnSurface),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        elevation: 0,
+        backgroundColor: AppColors.darkBackground,
+        contentTextStyle: TextStyle(color: AppColors.darkOnBackground),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        showCloseIcon: false,
       ),
     );
   }

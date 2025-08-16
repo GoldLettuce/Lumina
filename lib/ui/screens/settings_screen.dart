@@ -17,6 +17,7 @@ import '../../l10n/app_localizations.dart';
 import '../../services/export_controller.dart';
 import '../../services/reset_portfolio_service.dart';
 import '../widgets/confirm_reset_dialog.dart';
+import '../widgets/app_snack.dart';
 import '../../core/theme.dart';
 import '../../core/colors.dart';
 
@@ -133,8 +134,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 if (!context.mounted) return;
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(t.portfolioDeletedSuccess)),
+                showAppSnack(
+                  context,
+                  message: t.portfolioDeletedSuccess,
+                  kind: AppSnackKind.success,
                 );
               }
             },
