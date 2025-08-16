@@ -53,7 +53,7 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
 
   void _setupScrollListener() {
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= 
+      if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 100) {
         final provider = context.read<AssetListProvider>();
         if (provider.isFiltering) return;
@@ -112,18 +112,31 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                     TextField(
                       controller: _searchController,
                       decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.search, size: 20, color: Theme.of(context).iconTheme.color),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          size: 20,
+                          color: Theme.of(context).iconTheme.color,
+                        ),
                         border: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).dividerColor,
+                          ),
                         ),
                         enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).dividerColor,
+                          ),
                         ),
                         focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
                         ),
                         isDense: true,
-                        contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 4,
+                        ),
                       ),
                       style: TextStyle(fontSize: 14),
                       onChanged: (value) {
@@ -148,32 +161,37 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                     if (prov.filteredSymbols.isEmpty) {
                       return Center(child: Text(loc.noSymbolsFound));
                     }
-                    
+
                     // Obtener la preferencia de iconos una sola vez fuera del itemBuilder
-                    final showIcons = context.select<SettingsProvider, bool>((s) => s.showAssetIcons);
-                    
+                    final showIcons = context.select<SettingsProvider, bool>(
+                      (s) => s.showAssetIcons,
+                    );
+
                     return ListView.separated(
                       controller: _scrollController,
-                      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-                      itemCount: prov.filteredSymbols.length + (prov.isLoadingMore ? 1 : 0),
-                      separatorBuilder: (_, __) => Divider(
-                        color: Theme.of(context).dividerColor,
-                        height: 1,
-                        thickness: 0.5,
-                      ),
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      itemCount:
+                          prov.filteredSymbols.length +
+                          (prov.isLoadingMore ? 1 : 0),
+                      separatorBuilder:
+                          (_, __) => Divider(
+                            color: Theme.of(context).dividerColor,
+                            height: 1,
+                            thickness: 0.5,
+                          ),
                       itemBuilder: (context, index) {
                         // Mostrar loading indicator al final si está cargando más
-                        if (index == prov.filteredSymbols.length && prov.isLoadingMore) {
+                        if (index == prov.filteredSymbols.length &&
+                            prov.isLoadingMore) {
                           return const Padding(
                             padding: EdgeInsets.all(16.0),
-                            child: Center(
-                              child: CircularProgressIndicator(),
-                            ),
+                            child: Center(child: CircularProgressIndicator()),
                           );
                         }
-                        
+
                         final coin = prov.filteredSymbols[index];
-                        
+
                         return InkWell(
                           onTap: () {
                             // Devuelve un Map<String,String> para no romper la lógica existente
@@ -186,13 +204,20 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                           },
                           borderRadius: BorderRadius.circular(8),
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
                             child: Row(
                               children: [
                                 // Icono del activo (opcional)
-                                if (showIcons && coin.imageUrl != null && coin.imageUrl!.isNotEmpty) ...[
+                                if (showIcons &&
+                                    coin.imageUrl != null &&
+                                    coin.imageUrl!.isNotEmpty) ...[
                                   CircleAvatar(
-                                    backgroundImage: NetworkImage(coin.imageUrl!),
+                                    backgroundImage: NetworkImage(
+                                      coin.imageUrl!,
+                                    ),
                                     backgroundColor: Colors.transparent,
                                     radius: 14,
                                   ),
@@ -201,7 +226,8 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                                 // Contenido principal
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       // Símbolo (ticker) - mantener tamaño y peso actual
@@ -218,9 +244,11 @@ class _AssetSelectorModalState extends State<AssetSelectorModal> {
                                         coin.name,
                                         style: TextStyle(
                                           fontSize: 13,
-                                          color: Theme.of(context).brightness == Brightness.light
-                                              ? Colors.grey[600]
-                                              : Colors.grey[400],
+                                          color:
+                                              Theme.of(context).brightness ==
+                                                      Brightness.light
+                                                  ? Colors.grey[600]
+                                                  : Colors.grey[400],
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,

@@ -7,4 +7,3 @@ double netContributionUsd(Investment asset) {
     return isSell ? (sum - cash) : (sum + cash);
   });
 }
-

@@ -10,4 +10,4 @@ class ProfitDisplayModeNotifier extends ChangeNotifier {
     _unit = _unit == PnlUnit.percent ? PnlUnit.amount : PnlUnit.percent;
     notifyListeners();
   }
-} 
+}

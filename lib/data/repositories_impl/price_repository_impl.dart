@@ -37,7 +37,9 @@ class PriceRepositoryImpl implements PriceRepository {
     Set<String> symbols, {
     String currency = 'USD',
   }) async {
-    print('[TRACE][getPrices()] Iniciado → ${DateTime.now().toIso8601String()}');
+    print(
+      '[TRACE][getPrices()] Iniciado → ${DateTime.now().toIso8601String()}',
+    );
     print('[TRACE][getPrices()] Solicita precios para: ${symbols.join(', ')}');
     if (symbols.isEmpty) return {};
 
@@ -89,7 +91,9 @@ class PriceRepositoryImpl implements PriceRepository {
           final cached = _cache[symbol];
           if (cached != null) {
             fresh[symbol] = cached.value;
-            print('[INFO][PriceRepositoryImpl] Using cached price for $symbol: ${cached.value}');
+            print(
+              '[INFO][PriceRepositoryImpl] Using cached price for $symbol: ${cached.value}',
+            );
           }
         }
       }
@@ -97,8 +101,6 @@ class PriceRepositoryImpl implements PriceRepository {
 
     return fresh;
   }
-
-
 
   @override
   Future<double?> getCurrentPrice(

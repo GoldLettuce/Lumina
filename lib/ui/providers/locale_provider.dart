@@ -15,10 +15,10 @@ class LocaleProvider extends ChangeNotifier {
   Future<void> _loadLocale() async {
     // Asegurar que Hive esté inicializado
     await HiveService.init();
-    
+
     // Cargar desde Hive
     final langCode = HiveService.settings.get('locale') as String?;
-    
+
     if (langCode != null && ['es', 'en'].contains(langCode)) {
       _locale = Locale(langCode);
       notifyListeners();

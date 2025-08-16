@@ -78,10 +78,10 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       _selectedDate = op.date;
       _displaySymbol = widget.initialSymbol;
       _coingeckoId = op.id;
-      
+
       // Inicializar _isSell basado en el tipo de operación
       _isSell = op.type == OperationType.sell;
-      
+
       // Si es una edición, también necesitamos obtener la cantidad disponible
       if (_coingeckoId != null) {
         // Usar Future.microtask para evitar llamar context.read en initState
@@ -148,7 +148,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
         _coingeckoId = result['id'];
         _imageUrl = result['imageUrl'] ?? '';
       });
-      
+
       // Obtener el asset seleccionado y calcular cantidad disponible
       _onAssetSelected();
     }
@@ -159,14 +159,15 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       final model = context.read<InvestmentProvider>();
       final asset = model.investments.firstWhere(
         (inv) => inv.coingeckoId == _coingeckoId,
-        orElse: () => Investment(
-          symbol: _displaySymbol ?? '',
-          name: _displaySymbol ?? '',
-          type: AssetType.crypto,
-          coingeckoId: _coingeckoId!,
-        ),
+        orElse:
+            () => Investment(
+              symbol: _displaySymbol ?? '',
+              name: _displaySymbol ?? '',
+              type: AssetType.crypto,
+              coingeckoId: _coingeckoId!,
+            ),
       );
-      
+
       setState(() {
         // Usar la cantidad actual en posesión del modelo
         final q = asset.totalQuantity;
@@ -196,7 +197,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       return;
     }
 
-    final quantity   = parseFlexibleDouble(_quantityController.text);
+    final quantity = parseFlexibleDouble(_quantityController.text);
     final priceLocal = parseFlexibleDouble(_priceController.text);
     if (quantity == null || priceLocal == null) return;
 
@@ -291,25 +292,28 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     double totalCost = 0;
     double totalRealized = 0;
     double totalNetContrib = 0;
-    
+
     for (final inv in investments) {
       final qty = inv.operations
           .where((op) => !op.date.isAfter(today))
           .fold<double>(0, (s, op) => s + op.quantity);
       final price = prices[inv.symbol];
-      
+
       if (qty > 0 && price != null) {
         totalValue += price * qty;
-        
+
         // Calcular coste acumulado y P/L realizado
         double cost = 0;
         double realized = 0;
         double netContrib = 0;
-        
-        for (final op in inv.operations.where((op) => !op.date.isAfter(today))) {
+
+        for (final op in inv.operations.where(
+          (op) => !op.date.isAfter(today),
+        )) {
           if (op.type.toString().toLowerCase().contains('sell')) {
             // Para ventas, calcular P/L realizado
-            realized += op.quantity * (op.price - (cost / (cost > 0 ? cost : 1)));
+            realized +=
+                op.quantity * (op.price - (cost / (cost > 0 ? cost : 1)));
             netContrib -= op.price * op.quantity;
           } else {
             // Para compras, acumular coste
@@ -317,26 +321,29 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
             netContrib += op.price * op.quantity;
           }
         }
-        
+
         totalCost += cost;
         totalRealized += realized;
         totalNetContrib += netContrib;
       }
     }
-    
+
     // Calcular P/L TOTAL del día
     final pnlTotalUsd = totalRealized + (totalValue - totalCost);
-    final pctTotal = (totalNetContrib.abs() > 0)
-        ? (pnlTotalUsd / totalNetContrib.abs()) * 100.0
-        : 0.0;
-    
+    final pctTotal =
+        (totalNetContrib.abs() > 0)
+            ? (pnlTotalUsd / totalNetContrib.abs()) * 100.0
+            : 0.0;
+
     histProv.updateHistory(history);
-    histProv.updateToday(Point(
-      time: today, 
-      value: totalValue,
-      gainUsd: pnlTotalUsd,
-      gainPct: pctTotal,
-    ));
+    histProv.updateToday(
+      Point(
+        time: today,
+        value: totalValue,
+        gainUsd: pnlTotalUsd,
+        gainPct: pctTotal,
+      ),
+    );
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -393,10 +400,16 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               _operationType == OperationType.buy
-                                  ? Theme.of(context).colorScheme.tertiary.withAlpha(77)
-                                  : Theme.of(context).colorScheme.tertiary.withAlpha(26),
-                          foregroundColor: Theme.of(context).colorScheme.tertiary,
-                          elevation: _operationType == OperationType.buy ? 2 : 0,
+                                  ? Theme.of(
+                                    context,
+                                  ).colorScheme.tertiary.withAlpha(77)
+                                  : Theme.of(
+                                    context,
+                                  ).colorScheme.tertiary.withAlpha(26),
+                          foregroundColor:
+                              Theme.of(context).colorScheme.tertiary,
+                          elevation:
+                              _operationType == OperationType.buy ? 2 : 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -407,22 +420,31 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: () {
-                        final isDark = Theme.of(context).brightness == Brightness.dark;
-                        final sellColor = _operationType == OperationType.sell
-                            ? (isDark ? sellButtonSelectedDark : sellButtonSelectedLight)
-                            : (isDark ? sellButtonNeutralDark : sellButtonNeutralLight);
-                        
+                        final isDark =
+                            Theme.of(context).brightness == Brightness.dark;
+                        final sellColor =
+                            _operationType == OperationType.sell
+                                ? (isDark
+                                    ? sellButtonSelectedDark
+                                    : sellButtonSelectedLight)
+                                : (isDark
+                                    ? sellButtonNeutralDark
+                                    : sellButtonNeutralLight);
+
                         return ElevatedButton(
-                          onPressed: _isSaving
-                              ? null
-                              : () => setState(() {
-                                _operationType = OperationType.sell;
-                                _isSell = true;
-                              }),
+                          onPressed:
+                              _isSaving
+                                  ? null
+                                  : () => setState(() {
+                                    _operationType = OperationType.sell;
+                                    _isSell = true;
+                                  }),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: sellColor,
-                            foregroundColor: isDark ? Colors.white : Colors.black,
-                            elevation: _operationType == OperationType.sell ? 2 : 0,
+                            foregroundColor:
+                                isDark ? Colors.white : Colors.black,
+                            elevation:
+                                _operationType == OperationType.sell ? 2 : 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -456,7 +478,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                               _selectSymbol();
                             },
                     borderRadius: BorderRadius.circular(12),
-                    highlightColor: Theme.of(context).colorScheme.surface.withAlpha(26),
+                    highlightColor: Theme.of(
+                      context,
+                    ).colorScheme.surface.withAlpha(26),
                     splashColor: AppColors.transparent,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -484,7 +508,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                                         (_displaySymbol == null ||
                                             _displaySymbol!.isEmpty))
                                     ? Theme.of(context).colorScheme.error
-                                    : Theme.of(context).colorScheme.onSurface.withAlpha(153),
+                                    : Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface.withAlpha(153),
                           ),
                         ],
                       ),
@@ -515,7 +541,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         Icon(
                           Icons.calendar_today,
                           size: 18,
-                          color: Theme.of(context).colorScheme.onSurface.withAlpha(153),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withAlpha(153),
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -536,7 +564,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 // ─── Cantidad ────────────────────────────────────────
                 TextFormField(
                   controller: _quantityController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9.,\- ]')),
                   ],
@@ -555,42 +585,51 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                       horizontal: 12,
                       vertical: 14,
                     ),
-                    suffixIcon: (_isSell && _availableQty > 0)
-                        ? TextButton(
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              minimumSize: const Size(64, 36), // compacto y minimalista
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            onPressed: () {
-                              // Rellena con toda la posición disponible, recortando ceros finales
-                              final txt = _formatQuantity(_availableQty);
-                              _quantityController.text = txt;
-                              // si hay validación onChanged, dispara un setState ligero
-                              setState(() {});
-                            },
-                            child: Text(loc.sellAll),
-                          )
-                        : null,
+                    suffixIcon:
+                        (_isSell && _availableQty > 0)
+                            ? TextButton(
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: const Size(
+                                  64,
+                                  36,
+                                ), // compacto y minimalista
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              onPressed: () {
+                                // Rellena con toda la posición disponible, recortando ceros finales
+                                final txt = _formatQuantity(_availableQty);
+                                _quantityController.text = txt;
+                                // si hay validación onChanged, dispara un setState ligero
+                                setState(() {});
+                              },
+                              child: Text(loc.sellAll),
+                            )
+                            : null,
                   ),
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                   onChanged: (_) {
                     if (!_quantityTouched) {
                       setState(() => _quantityTouched = true);
                     }
                   },
-                  autovalidateMode: _quantityTouched || _formSubmitted ? AutovalidateMode.always : AutovalidateMode.disabled,
+                  autovalidateMode:
+                      _quantityTouched || _formSubmitted
+                          ? AutovalidateMode.always
+                          : AutovalidateMode.disabled,
                   validator: (val) {
                     if (!_quantityTouched && !_formSubmitted) return null;
                     if (val == null || val.isEmpty) return loc.fieldRequired;
                     final n = parseFlexibleDouble(val);
                     if (n == null || n <= 0) return loc.invalidQuantity;
-                    
+
                     // Validación adicional para modo venta: verificar que no se exceda la cantidad disponible
                     if (_isSell && n > _availableQty) {
                       return '${loc.holdingsLabel}: ${_formatQuantity(_availableQty)}';
                     }
-                    
+
                     return null;
                   },
                 ),
@@ -600,7 +639,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 // ─── Precio ──────────────────────────────────────────
                 TextFormField(
                   controller: _priceController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9.,\- ]')),
                   ],
@@ -619,7 +660,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                       vertical: 14,
                     ),
                   ),
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                   autovalidateMode:
                       _priceTouched || _formSubmitted
                           ? AutovalidateMode.always
@@ -647,17 +690,27 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                   children: [
                     Expanded(
                       child: () {
-                        final isDark = Theme.of(context).brightness == Brightness.dark;
-                        final cancelColor = isDark ? cancelButtonDark : cancelButtonLight;
-                        final cancelTextColor = isDark ? cancelButtonTextDark : cancelButtonTextLight;
+                        final isDark =
+                            Theme.of(context).brightness == Brightness.dark;
+                        final cancelColor =
+                            isDark ? cancelButtonDark : cancelButtonLight;
+                        final cancelTextColor =
+                            isDark
+                                ? cancelButtonTextDark
+                                : cancelButtonTextLight;
 
                         return ElevatedButton(
-                          onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
+                          onPressed:
+                              _isSaving
+                                  ? null
+                                  : () => Navigator.of(context).pop(),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: cancelColor,
                             foregroundColor: cancelTextColor,
                             elevation: 0,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                           child: Text(loc.cancel),
                         );
@@ -669,20 +722,30 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         onPressed: _submit,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: () {
-                            final isDark = Theme.of(context).brightness == Brightness.dark;
+                            final isDark =
+                                Theme.of(context).brightness == Brightness.dark;
                             return _operationType == OperationType.buy
-                                ? Theme.of(context).colorScheme.tertiary.withAlpha(77)
+                                ? Theme.of(
+                                  context,
+                                ).colorScheme.tertiary.withAlpha(77)
                                 : _operationType == OperationType.sell
-                                    ? (isDark ? sellButtonSelectedDark : sellButtonSelectedLight)
-                                    : Theme.of(context).colorScheme.surface.withAlpha(128);
+                                ? (isDark
+                                    ? sellButtonSelectedDark
+                                    : sellButtonSelectedLight)
+                                : Theme.of(
+                                  context,
+                                ).colorScheme.surface.withAlpha(128);
                           }(),
                           foregroundColor: () {
-                            final isDark = Theme.of(context).brightness == Brightness.dark;
+                            final isDark =
+                                Theme.of(context).brightness == Brightness.dark;
                             return _operationType == OperationType.buy
                                 ? Theme.of(context).colorScheme.tertiary
                                 : _operationType == OperationType.sell
-                                    ? (isDark ? Colors.white : Colors.black)
-                                    : Theme.of(context).colorScheme.onSurface.withAlpha(153);
+                                ? (isDark ? Colors.white : Colors.black)
+                                : Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withAlpha(153);
                           }(),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: const StadiumBorder(),

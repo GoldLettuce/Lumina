@@ -21,9 +21,7 @@ class LanguageSelector extends StatelessWidget {
       onTap: () async {
         final selected = await showModalBottomSheet<String>(
           context: context,
-          builder: (_) => LanguageSelectorModal(
-            selected: currentLang,
-          ),
+          builder: (_) => LanguageSelectorModal(selected: currentLang),
         );
 
         if (selected != null && selected != currentLang) {
@@ -37,10 +35,7 @@ class LanguageSelector extends StatelessWidget {
 class LanguageSelectorModal extends StatelessWidget {
   final String selected;
 
-  const LanguageSelectorModal({
-    super.key,
-    required this.selected,
-  });
+  const LanguageSelectorModal({super.key, required this.selected});
 
   @override
   Widget build(BuildContext context) {

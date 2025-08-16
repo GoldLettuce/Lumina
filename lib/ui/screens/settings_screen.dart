@@ -67,7 +67,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'v$_appVersion',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
               ),
@@ -102,9 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             title: Text(
               t.deleteAllPortfolioData,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.error,
-              ),
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
             onTap: () async {
               final confirm = await ConfirmResetDialog.show(
@@ -147,12 +147,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildThemeSelector(BuildContext context, ThemeModeProvider themeModeProvider) {
+  Widget _buildThemeSelector(
+    BuildContext context,
+    ThemeModeProvider themeModeProvider,
+  ) {
     final t = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -163,7 +166,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Forzar color que garantice visibilidad en todos los temas
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: isDark ? cs.onSurface : cs.onSurface, // Siempre usar onSurface para contraste
+              color:
+                  isDark
+                      ? cs.onSurface
+                      : cs.onSurface, // Siempre usar onSurface para contraste
             ),
           ),
         ),
@@ -183,7 +189,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 AppThemeMode.light,
                 t.themeLight,
                 Icons.wb_sunny,
-                Theme.of(context).iconTheme.color ?? Theme.of(context).colorScheme.onSurface,
+                Theme.of(context).iconTheme.color ??
+                    Theme.of(context).colorScheme.onSurface,
               ),
               _buildThemeCard(
                 context,
@@ -191,7 +198,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 AppThemeMode.dark,
                 t.themeDark,
                 Icons.nightlight_round,
-                Theme.of(context).iconTheme.color ?? Theme.of(context).colorScheme.onSurface,
+                Theme.of(context).iconTheme.color ??
+                    Theme.of(context).colorScheme.onSurface,
               ),
               _buildThemeCard(
                 context,
@@ -199,7 +207,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 AppThemeMode.lightMono,
                 t.themeLightMono,
                 Icons.circle_outlined,
-                Theme.of(context).iconTheme.color ?? Theme.of(context).colorScheme.onSurface,
+                Theme.of(context).iconTheme.color ??
+                    Theme.of(context).colorScheme.onSurface,
               ),
               _buildThemeCard(
                 context,
@@ -207,7 +216,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 AppThemeMode.darkMono,
                 t.themeDarkMono,
                 Icons.circle,
-                Theme.of(context).iconTheme.color ?? Theme.of(context).colorScheme.onSurface,
+                Theme.of(context).iconTheme.color ??
+                    Theme.of(context).colorScheme.onSurface,
               ),
             ],
           ),
@@ -234,7 +244,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isSelected ? Theme.of(context).colorScheme.primary : AppColors.transparent,
+          color:
+              isSelected
+                  ? Theme.of(context).colorScheme.primary
+                  : AppColors.transparent,
           width: isSelected ? 2 : 0,
         ),
       ),
@@ -246,11 +259,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 32,
-                color: iconColor,
-              ),
+              Icon(icon, size: 32, color: iconColor),
               const SizedBox(height: 8),
               Text(
                 title,
@@ -258,7 +267,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // Forzar color que garantice visibilidad en todos los temas
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: isDark ? cs.onSurface : cs.onSurface, // Siempre usar onSurface para contraste
+                  color:
+                      isDark
+                          ? cs.onSurface
+                          : cs.onSurface, // Siempre usar onSurface para contraste
                 ),
               ),
             ],

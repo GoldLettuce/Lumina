@@ -48,8 +48,14 @@ class PortfolioApp extends StatelessWidget {
           return MaterialApp(
             title: 'Lumina',
             debugShowCheckedModeBanner: false,
-            theme: themeMode == AppThemeMode.lightMono ? AppTheme.lightMonoTheme : AppTheme.lightTheme,
-            darkTheme: themeMode == AppThemeMode.darkMono ? AppTheme.darkMonoTheme : AppTheme.darkTheme,
+            theme:
+                themeMode == AppThemeMode.lightMono
+                    ? AppTheme.lightMonoTheme
+                    : AppTheme.lightTheme,
+            darkTheme:
+                themeMode == AppThemeMode.darkMono
+                    ? AppTheme.darkMonoTheme
+                    : AppTheme.darkTheme,
             themeMode: themeModeProvider.flutterThemeMode,
             themeAnimationDuration: Duration.zero,
             themeAnimationCurve: Curves.linear,
@@ -125,18 +131,23 @@ class SkeletonView extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     return Scaffold(
-              backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).colorScheme.primary,
+              ),
             ),
             const SizedBox(height: 16),
             Text(
               t.loading,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 16),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontSize: 16,
+              ),
             ),
           ],
         ),

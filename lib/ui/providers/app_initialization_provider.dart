@@ -24,7 +24,7 @@ class AppInitializationProvider extends ChangeNotifier {
     _hasStartedInitialization = true;
 
     await HiveService.initFlutterLight();
-    
+
     debugPrint('[INIT] Iniciando Hive...');
     await HiveService.init();
 
@@ -62,7 +62,9 @@ class AppInitializationProvider extends ChangeNotifier {
   }
 
   /// Inicializa el ThemeModeProvider después de que Hive esté listo
-  static Future<void> initializeThemeMode(ThemeModeProvider themeModeProvider) async {
+  static Future<void> initializeThemeMode(
+    ThemeModeProvider themeModeProvider,
+  ) async {
     await themeModeProvider.initialize();
   }
 

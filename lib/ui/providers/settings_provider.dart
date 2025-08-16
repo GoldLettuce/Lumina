@@ -6,7 +6,7 @@ enum AssetIconVisibility { show, hide }
 class SettingsProvider extends ChangeNotifier {
   bool _initialized = false;
   bool get isInitialized => _initialized;
-  
+
   AssetIconVisibility _assetIconVisibility = AssetIconVisibility.show;
   AssetIconVisibility get assetIconVisibility => _assetIconVisibility;
 

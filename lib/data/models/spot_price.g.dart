@@ -16,10 +16,7 @@ class SpotPriceAdapter extends TypeAdapter<SpotPrice> {
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return SpotPrice(
-      symbol: fields[0] as String,
-      price: fields[1] as double,
-    );
+    return SpotPrice(symbol: fields[0] as String, price: fields[1] as double);
   }
 
   @override

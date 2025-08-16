@@ -39,7 +39,8 @@ class ArchivedAssetsScreen extends StatelessWidget {
                   vertical: 20,
                 ),
                 itemCount: archived.length,
-                separatorBuilder: (_, __) => Divider(color: Theme.of(context).dividerColor),
+                separatorBuilder:
+                    (_, __) => Divider(color: Theme.of(context).dividerColor),
                 itemBuilder: (context, index) {
                   final asset = archived[index];
                   return ListTile(

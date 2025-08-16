@@ -16,13 +16,13 @@ class AssetIconVisibilitySelector extends StatelessWidget {
 
     // Definimos colores del switch en función del estado y del tema,
     // usando MaterialStateProperty para que se apliquen correctamente.
-    final thumbColor = MaterialStateProperty.resolveWith<Color?>((states) {
-      if (states.contains(MaterialState.selected)) return cs.onPrimary;
+    final thumbColor = WidgetStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(WidgetState.selected)) return cs.onPrimary;
       return cs.onSurface;
     });
 
-    final trackColor = MaterialStateProperty.resolveWith<Color?>((states) {
-      if (states.contains(MaterialState.selected)) {
+    final trackColor = WidgetStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(WidgetState.selected)) {
         // Track ligeramente translúcido para que no resulte chillón en ningún tema
         return cs.primary.withOpacity(isDark ? 0.55 : 0.6);
       }
@@ -36,7 +36,8 @@ class AssetIconVisibilitySelector extends StatelessWidget {
         value: settings.showAssetIcons,
         onChanged: (v) {
           if (v != settings.showAssetIcons) {
-            settings.assetIconVisibility = v ? AssetIconVisibility.show : AssetIconVisibility.hide;
+            settings.assetIconVisibility =
+                v ? AssetIconVisibility.show : AssetIconVisibility.hide;
           }
         },
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -45,28 +46,31 @@ class AssetIconVisibilitySelector extends StatelessWidget {
 
     return MergeSemantics(
       child: SwitchTheme(
-        data: SwitchThemeData(
-          thumbColor: thumbColor,
-          trackColor: trackColor,
-        ),
+        data: SwitchThemeData(thumbColor: thumbColor, trackColor: trackColor),
         child: ListTile(
           title: Text(
             t.assetIconVisibilityTitle,
             // Forzar color que garantice visibilidad en todos los temas
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w500,
-              color: isDark ? cs.onSurface : cs.onSurface, // Siempre usar onSurface para contraste
+              color:
+                  isDark
+                      ? cs.onSurface
+                      : cs.onSurface, // Siempre usar onSurface para contraste
             ),
           ),
           trailing: compactSwitch,
           dense: true,
           visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          onTap: () => settings.assetIconVisibility = settings.showAssetIcons 
-            ? AssetIconVisibility.hide 
-            : AssetIconVisibility.show,
+          onTap:
+              () =>
+                  settings.assetIconVisibility =
+                      settings.showAssetIcons
+                          ? AssetIconVisibility.hide
+                          : AssetIconVisibility.show,
         ),
       ),
     );
   }
-} 
+}

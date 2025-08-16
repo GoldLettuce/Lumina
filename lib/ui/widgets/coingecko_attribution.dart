@@ -18,14 +18,14 @@ class CoinGeckoAttribution extends StatelessWidget {
 
     /// Selecciona el logo (único SVG o combinación) según el modo elegido
     final Widget logo = switch (mode) {
-    // ──────────────────── MODO LIGHT MONO ────────────────────
+      // ──────────────────── MODO LIGHT MONO ────────────────────
       AppThemeMode.lightMono => SvgPicture.asset(
         'assets/images/coingecko_mono.svg',
         height: 24,
       ),
 
-    // ──────────────────── MODO DARK MONO ─────────────────────
-    // Símbolo gris + texto blanco (provisional)
+      // ──────────────────── MODO DARK MONO ─────────────────────
+      // Símbolo gris + texto blanco (provisional)
       AppThemeMode.darkMono => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -35,25 +35,25 @@ class CoinGeckoAttribution extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           SvgPicture.asset(
-            'assets/images/white_text_only.svg',      // letras blancas
+            'assets/images/white_text_only.svg', // letras blancas
             height: 16,
           ),
         ],
       ),
 
-    // ──────────────────── MODO LIGHT (color) ─────────────────
+      // ──────────────────── MODO LIGHT (color) ─────────────────
       AppThemeMode.light => SvgPicture.asset(
         'assets/images/coingecko_full_black.svg',
         height: 24,
       ),
 
-    // ──────────────────── MODO DARK (color) ──────────────────
+      // ──────────────────── MODO DARK (color) ──────────────────
       AppThemeMode.dark => SvgPicture.asset(
         'assets/images/coingecko_full_white.svg',
         height: 24,
       ),
 
-    // ──────────────────── MODO SYSTEM ────────────────────────
+      // ──────────────────── MODO SYSTEM ────────────────────────
       AppThemeMode.system => SvgPicture.asset(
         Theme.of(context).brightness == Brightness.dark
             ? 'assets/images/coingecko_full_white.svg'
@@ -69,12 +69,12 @@ class CoinGeckoAttribution extends StatelessWidget {
           await launchUrl(uri, mode: LaunchMode.externalApplication);
         }
       },
-             child: Container(
-         width: double.infinity,
-         padding: const EdgeInsets.only(right: 16, top: 16, bottom: 16),
-         alignment: Alignment.centerRight,
-         child: logo,
-       ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.only(right: 16, top: 16, bottom: 16),
+        alignment: Alignment.centerRight,
+        child: logo,
+      ),
     );
   }
 }

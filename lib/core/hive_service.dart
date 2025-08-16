@@ -86,7 +86,7 @@ class HiveService {
         '[HIVE][${DateTime.now().toIso8601String()}] 🔄 Abriendo cajas pesadas (esperando a que terminen)',
       );
     }
-    
+
     final heavyStart = DateTime.now();
     await _openInvestmentsBox(cipher);
     await _openChartCacheBox(cipher);
@@ -134,21 +134,31 @@ class HiveService {
   }
 
   /// Helper para abrir cajas cifradas con reset-on-failure policy
-  static Future<Box<T>> _openEncryptedBoxOrReset<T>(String name, HiveAesCipher cipher) async {
+  static Future<Box<T>> _openEncryptedBoxOrReset<T>(
+    String name,
+    HiveAesCipher cipher,
+  ) async {
     try {
       return await Hive.openBox<T>(name, encryptionCipher: cipher);
     } catch (_) {
-      try { await Hive.deleteBoxFromDisk(name); } catch (_) {}
+      try {
+        await Hive.deleteBoxFromDisk(name);
+      } catch (_) {}
       return await Hive.openBox<T>(name, encryptionCipher: cipher);
     }
   }
 
   /// Helper para abrir LazyBox cifradas con reset-on-failure policy
-  static Future<LazyBox<T>> _openEncryptedLazyBoxOrReset<T>(String name, HiveAesCipher cipher) async {
+  static Future<LazyBox<T>> _openEncryptedLazyBoxOrReset<T>(
+    String name,
+    HiveAesCipher cipher,
+  ) async {
     try {
       return await Hive.openLazyBox<T>(name, encryptionCipher: cipher);
     } catch (_) {
-      try { await Hive.deleteBoxFromDisk(name); } catch (_) {}
+      try {
+        await Hive.deleteBoxFromDisk(name);
+      } catch (_) {}
       return await Hive.openLazyBox<T>(name, encryptionCipher: cipher);
     }
   }
@@ -156,23 +166,29 @@ class HiveService {
   /// Abre la caja de inversiones como LazyBox
   static Future<void> _openInvestmentsBox(HiveAesCipher cipher) async {
     _investmentsBox = await _openEncryptedLazyBoxOrReset<Investment>(
-      InvestmentRepositoryImpl.boxName, cipher);
+      InvestmentRepositoryImpl.boxName,
+      cipher,
+    );
     await Future.delayed(Duration.zero);
   }
 
   /// Abre la caja de caché de gráficos
   static Future<void> _openChartCacheBox(HiveAesCipher cipher) async {
-    _chartCacheBox = await _openEncryptedBoxOrReset<ChartCache>('chart_cache', cipher);
+    _chartCacheBox = await _openEncryptedBoxOrReset<ChartCache>(
+      'chart_cache',
+      cipher,
+    );
     await Future.delayed(Duration.zero);
   }
 
   /// Abre la caja de historial local
   static Future<void> _openHistoryBox(HiveAesCipher cipher) async {
-    _historyBox = await _openEncryptedBoxOrReset<LocalHistory>('history', cipher);
+    _historyBox = await _openEncryptedBoxOrReset<LocalHistory>(
+      'history',
+      cipher,
+    );
     await Future.delayed(Duration.zero);
   }
-
-
 
   /// Abre la caja de tasas de cambio
   static Future<void> _openFxRatesBox(HiveAesCipher cipher) async {
@@ -215,13 +231,18 @@ class HiveService {
   /// Reabre la caja de inversiones (útil después de reset)
   static Future<void> reopenInvestmentsBox(HiveAesCipher cipher) async {
     _investmentsBox = await _openEncryptedLazyBoxOrReset<Investment>(
-      InvestmentRepositoryImpl.boxName, cipher);
+      InvestmentRepositoryImpl.boxName,
+      cipher,
+    );
     await Future.delayed(Duration.zero);
   }
 
   /// Reabre la caja de caché de gráficos (útil después de reset)
   static Future<void> reopenChartCacheBox(HiveAesCipher cipher) async {
-    _chartCacheBox = await _openEncryptedBoxOrReset<ChartCache>('chart_cache', cipher);
+    _chartCacheBox = await _openEncryptedBoxOrReset<ChartCache>(
+      'chart_cache',
+      cipher,
+    );
     await Future.delayed(Duration.zero);
   }
 }

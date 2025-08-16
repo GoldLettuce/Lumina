@@ -6,9 +6,7 @@ class HiveKeyService {
   static const _keyName = 'hive_aes_key_v1';
 
   static final FlutterSecureStorage _storage = FlutterSecureStorage(
-    aOptions: const AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
+    aOptions: const AndroidOptions(encryptedSharedPreferences: true),
     iOptions: const IOSOptions(
       // No setear 'accessibility' para compatibilidad amplia
       synchronizable: false,

@@ -11,14 +11,14 @@ import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/ui/providers/fx_notifier.dart';
 import 'package:lumina/ui/providers/history_provider.dart';
 
-
 /// Contenedor general: inicializa símbolos y fuerza la recarga.
 class PortfolioSummaryWithChart extends StatefulWidget {
   final List<Investment> investments;
   const PortfolioSummaryWithChart({super.key, required this.investments});
 
   @override
-  PortfolioSummaryWithChartState createState() => PortfolioSummaryWithChartState();
+  PortfolioSummaryWithChartState createState() =>
+      PortfolioSummaryWithChartState();
 }
 
 class PortfolioSummaryWithChartState extends State<PortfolioSummaryWithChart> {
@@ -89,8 +89,6 @@ class _PortfolioChartState extends State<_PortfolioChart> {
     return src.sublist(start);
   }
 
-
-
   // Indicadores invisibles para la serie ofuscada (mismo tamaño que spotIndexes)
   List<TouchedSpotIndicatorData> _invisibleIndicatorsFor(List<int> idxs) {
     return List.generate(
@@ -110,15 +108,20 @@ class _PortfolioChartState extends State<_PortfolioChart> {
     return List.generate(
       idxs.length,
       (_) => TouchedSpotIndicatorData(
-        const FlLine(color: Colors.transparent, strokeWidth: 0), // sin línea vertical
+        const FlLine(
+          color: Colors.transparent,
+          strokeWidth: 0,
+        ), // sin línea vertical
         FlDotData(
           show: true,
           getDotPainter: (spot, percent, bar, index) {
             return FlDotCirclePainter(
-              radius: 4,                         // punto central (ligeramente mayor)
-              color: lineColor,                  // mismo color que la curva
-              strokeWidth: 4,                    // halo fino y proporcionado
-              strokeColor: lineColor.withValues(alpha: 0.18), // opacidad baja 0.15–0.2
+              radius: 4, // punto central (ligeramente mayor)
+              color: lineColor, // mismo color que la curva
+              strokeWidth: 4, // halo fino y proporcionado
+              strokeColor: lineColor.withValues(
+                alpha: 0.18,
+              ), // opacidad baja 0.15–0.2
             );
           },
         ),
@@ -159,9 +162,10 @@ class _PortfolioChartState extends State<_PortfolioChart> {
         }
 
         final isPositive = spots.first.y <= spots.last.y;
-        final lineColor = isPositive
-            ? Theme.of(context).colorScheme.tertiary
-            : AppColors.textNegative(context);
+        final lineColor =
+            isPositive
+                ? Theme.of(context).colorScheme.tertiary
+                : AppColors.textNegative(context);
         final fadedColor = lineColor.withValues(alpha: 0.22);
 
         // Edge case: <=1 punto → sin split/ofuscado
@@ -171,7 +175,12 @@ class _PortfolioChartState extends State<_PortfolioChart> {
             child: RepaintBoundary(
               child: LineChart(
                 LineChartData(
-                  clipData: const FlClipData(top: false, bottom: false, left: false, right: false),
+                  clipData: const FlClipData(
+                    top: false,
+                    bottom: false,
+                    left: false,
+                    right: false,
+                  ),
                   gridData: const FlGridData(show: false),
                   titlesData: const FlTitlesData(show: false),
                   borderData: FlBorderData(show: false),
@@ -187,9 +196,10 @@ class _PortfolioChartState extends State<_PortfolioChart> {
                       // Serie principal → halo del mismo color, sin línea vertical
                       return _haloIndicatorsFor(spotIndexes, lineColor);
                     },
-                      touchTooltipData: LineTouchTooltipData(
-                        getTooltipItems: _noTooltip, // sin tooltip pero con longitud correcta
-                      ),
+                    touchTooltipData: LineTouchTooltipData(
+                      getTooltipItems:
+                          _noTooltip, // sin tooltip pero con longitud correcta
+                    ),
                   ),
                   lineBarsData: [
                     LineChartBarData(
@@ -215,7 +225,10 @@ class _PortfolioChartState extends State<_PortfolioChart> {
             child: ValueListenableBuilder<int?>(
               valueListenable: _selectedIndex,
               builder: (context, selIndex, _) {
-                final hasSelection = selIndex != null && selIndex >= 0 && selIndex < spots.length;
+                final hasSelection =
+                    selIndex != null &&
+                    selIndex >= 0 &&
+                    selIndex < spots.length;
 
                 final List<LineChartBarData> series;
                 if (!hasSelection) {
@@ -254,7 +267,12 @@ class _PortfolioChartState extends State<_PortfolioChart> {
 
                 return LineChart(
                   LineChartData(
-                    clipData: const FlClipData(top: false, bottom: false, left: false, right: false),
+                    clipData: const FlClipData(
+                      top: false,
+                      bottom: false,
+                      left: false,
+                      right: false,
+                    ),
                     gridData: const FlGridData(show: false),
                     titlesData: const FlTitlesData(show: false),
                     borderData: FlBorderData(show: false),
@@ -262,7 +280,8 @@ class _PortfolioChartState extends State<_PortfolioChart> {
                     lineTouchData: LineTouchData(
                       enabled: true,
                       handleBuiltInTouches: true,
-                      touchSpotThreshold: 28, // engancha mejor el dedo, sin coste
+                      touchSpotThreshold:
+                          28, // engancha mejor el dedo, sin coste
                       getTouchedSpotIndicator: (barData, spotIndexes) {
                         // Si es la barra ofuscada → no pintes nada
                         if (barData.color == fadedColor) {
@@ -272,28 +291,36 @@ class _PortfolioChartState extends State<_PortfolioChart> {
                         return _haloIndicatorsFor(spotIndexes, lineColor);
                       },
                       touchTooltipData: LineTouchTooltipData(
-                        getTooltipItems: _noTooltip, // sin tooltip pero con longitud correcta
+                        getTooltipItems:
+                            _noTooltip, // sin tooltip pero con longitud correcta
                       ),
                       touchCallback: (event, resp) {
                         final prov = context.read<HistoryProvider>();
-                        final isEnd = event is FlTapUpEvent ||
-                                      event is FlTapCancelEvent ||
-                                      event is FlLongPressEnd ||
-                                      event is FlPanEndEvent;
+                        final isEnd =
+                            event is FlTapUpEvent ||
+                            event is FlTapCancelEvent ||
+                            event is FlLongPressEnd ||
+                            event is FlPanEndEvent;
 
                         if (!isEnd) {
                           final spot = resp?.lineBarSpots?.first;
                           if (spot != null) {
-                            final idx = spots.indexWhere((s) => s.x == spot.x && s.y == spot.y);
+                            final idx = spots.indexWhere(
+                              (s) => s.x == spot.x && s.y == spot.y,
+                            );
                             if (_selectedIndex.value != idx) {
-                              _hapticOnIndexChange(idx);     // <<<< vibración sutil al cambiar
-                              _selectedIndex.value = idx;    // ofuscado local
-                              prov.setSelectedIndex(idx);    // publica sin rebuild global
+                              _hapticOnIndexChange(
+                                idx,
+                              ); // <<<< vibración sutil al cambiar
+                              _selectedIndex.value = idx; // ofuscado local
+                              prov.setSelectedIndex(
+                                idx,
+                              ); // publica sin rebuild global
                             }
                           }
                         } else {
                           _selectedIndex.value = null;
-                          _lastHapticIndex = null;           // resetea estado háptico
+                          _lastHapticIndex = null; // resetea estado háptico
                           prov.setSelectedIndex(null);
                         }
                       },

@@ -105,11 +105,13 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     // Calcular color de selección según tema y modo mono
     final themeMode = context.watch<ThemeModeProvider>().mode;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isMono = themeMode == AppThemeMode.lightMono || themeMode == AppThemeMode.darkMono;
+    final isMono =
+        themeMode == AppThemeMode.lightMono ||
+        themeMode == AppThemeMode.darkMono;
 
     Color getTileColor(bool selected) {
       if (!selected) return Colors.transparent;
-      
+
       // Usar el modo de tema específico para mayor precisión
       if (themeMode == AppThemeMode.lightMono) {
         return selectedTileMonoLight;
@@ -122,12 +124,14 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
       }
     }
 
-
-
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(currentAsset.symbol, maxLines: 1, overflow: TextOverflow.ellipsis),
+        title: Text(
+          currentAsset.symbol,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(22),
           child: _TopSummaryLine(
@@ -142,89 +146,99 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                 _selectedIds.isNotEmpty
                     ? () => _confirmDelete(context, currentAsset)
                     : null,
-            color: _selectedIds.isNotEmpty 
-                ? AppColors.textNegative(context)
-                : Theme.of(context).iconTheme.color,
+            color:
+                _selectedIds.isNotEmpty
+                    ? AppColors.textNegative(context)
+                    : Theme.of(context).iconTheme.color,
           ),
         ],
       ),
-      body: currentAsset.operations.isEmpty
-          ? Center(
-            child: Text(t.noOperations, style: theme.textTheme.bodyLarge),
-          )
-          : ListView.separated(
-              padding: const EdgeInsets.all(16),
-              separatorBuilder: (_, __) => const Divider(),
-              itemCount: currentAsset.operations.length,
-              itemBuilder: (context, index) {
-                final op = currentAsset.operations[index];
-                final isBuy = op.type == OperationType.buy;
-                final fecha = DateFormat('d MMM y', Localizations.localeOf(context).toString()).format(op.date);
-                final color = isBuy
-                    ? AppColors.textPositive(context)
-                    : AppColors.textNegative(context);
-                final selected = _selectedIds.contains(op.id);
+      body:
+          currentAsset.operations.isEmpty
+              ? Center(
+                child: Text(t.noOperations, style: theme.textTheme.bodyLarge),
+              )
+              : ListView.separated(
+                padding: const EdgeInsets.all(16),
+                separatorBuilder: (_, __) => const Divider(),
+                itemCount: currentAsset.operations.length,
+                itemBuilder: (context, index) {
+                  final op = currentAsset.operations[index];
+                  final isBuy = op.type == OperationType.buy;
+                  final fecha = DateFormat(
+                    'd MMM y',
+                    Localizations.localeOf(context).toString(),
+                  ).format(op.date);
+                  final color =
+                      isBuy
+                          ? AppColors.textPositive(context)
+                          : AppColors.textNegative(context);
+                  final selected = _selectedIds.contains(op.id);
 
-                // Convertir precio USD a moneda seleccionada
-                final convertedPrice = op.price * fx.exchangeRate;
-                final priceText = formatMoney(convertedPrice, fx.currency, context);
+                  // Convertir precio USD a moneda seleccionada
+                  final convertedPrice = op.price * fx.exchangeRate;
+                  final priceText = formatMoney(
+                    convertedPrice,
+                    fx.currency,
+                    context,
+                  );
 
-                return GestureDetector(
-                  onLongPress: () => _toggleSelection(op.id),
-                  onTap: () {
-                    if (_selectedIds.isNotEmpty) {
-                      _toggleSelection(op.id);
-                    }
-                  },
-                  child: Container(
-                    color: getTileColor(selected),
-                    child: ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(
-                        isBuy ? Icons.arrow_upward : Icons.arrow_downward,
-                        color: color,
-                      ),
-                      title: Text(
-                        '${isBuy ? t.buy : t.sell}${t.operationQuantitySeparator}${formatQuantity(op.quantity, context, maxDecimals: 8)}',
-                        style: theme.textTheme.bodyLarge,
-                      ),
-                      subtitle: Text(fecha),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            priceText,
-                            style: theme.textTheme.bodyMedium!.copyWith(
-                              color: color,
-                              fontWeight: FontWeight.w600,
+                  return GestureDetector(
+                    onLongPress: () => _toggleSelection(op.id),
+                    onTap: () {
+                      if (_selectedIds.isNotEmpty) {
+                        _toggleSelection(op.id);
+                      }
+                    },
+                    child: Container(
+                      color: getTileColor(selected),
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
+                          isBuy ? Icons.arrow_upward : Icons.arrow_downward,
+                          color: color,
+                        ),
+                        title: Text(
+                          '${isBuy ? t.buy : t.sell}${t.operationQuantitySeparator}${formatQuantity(op.quantity, context, maxDecimals: 8)}',
+                          style: theme.textTheme.bodyLarge,
+                        ),
+                        subtitle: Text(fecha),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              priceText,
+                              style: theme.textTheme.bodyMedium!.copyWith(
+                                color: color,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          IconButton(
-                            icon: const Icon(Icons.edit, size: 20),
-                            onPressed: () async {
-                              final result = await showDialog<bool>(
-                                context: context,
-                                builder:
-                                    (_) => AddInvestmentDialog(
-                                      initialOperation: op,
-                                      initialSymbol: currentAsset.symbol,
-                                    ),
-                              );
+                            const SizedBox(width: 8),
+                            IconButton(
+                              icon: const Icon(Icons.edit, size: 20),
+                              onPressed: () async {
+                                final result = await showDialog<bool>(
+                                  context: context,
+                                  builder:
+                                      (_) => AddInvestmentDialog(
+                                        initialOperation: op,
+                                        initialSymbol: currentAsset.symbol,
+                                      ),
+                                );
 
-                              if (result == true) {
-                                // Se editó con éxito; los cambios ya están sincronizados desde el diálogo
-                                // Puedes añadir aquí lógica extra si se desea refrescar algo manualmente
-                              }
-                            },
-                          ),
-                        ],
+                                if (result == true) {
+                                  // Se editó con éxito; los cambios ya están sincronizados desde el diálogo
+                                  // Puedes añadir aquí lógica extra si se desea refrescar algo manualmente
+                                }
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
     );
   }
 }
@@ -254,13 +268,22 @@ class _TopSummaryLine extends StatelessWidget {
     final pnl = PnlTotal.from(asset, pl);
     final unit = context.watch<ProfitDisplayModeNotifier>().unit;
     final currency = context.read<CurrencyProvider>();
-    
+
     final qty = asset.totalQuantity;
-    final avgStr = formatMoney(pl.averageBuyPrice * currency.exchangeRate, currency.currency, context);
-    final displayStr = unit == PnlUnit.percent
-        ? '${pnl.percent.toStringAsFixed(2)}%'
-        : formatMoney(pnl.amountUsd * currency.exchangeRate, currency.currency, context);
-    
+    final avgStr = formatMoney(
+      pl.averageBuyPrice * currency.exchangeRate,
+      currency.currency,
+      context,
+    );
+    final displayStr =
+        unit == PnlUnit.percent
+            ? '${pnl.percent.toStringAsFixed(2)}%'
+            : formatMoney(
+              pnl.amountUsd * currency.exchangeRate,
+              currency.currency,
+              context,
+            );
+
     // Determine color based on P/L value - use theme colors for consistency
     Color color;
     if (asset.operations.isEmpty) {
@@ -286,16 +309,22 @@ class _TopSummaryLine extends StatelessWidget {
           spacing: 12,
           children: [
             // 0.8 BTC
-            Text.rich(TextSpan(children: [
-              TextSpan(text: _fmtQty(qty)),
+            Text.rich(
               TextSpan(
-                text: ' ${symbol.toUpperCase()}',
-                style: (base ?? const TextStyle()).copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.56),
-                  fontWeight: FontWeight.w500,
-                ),
+                children: [
+                  TextSpan(text: _fmtQty(qty)),
+                  TextSpan(
+                    text: ' ${symbol.toUpperCase()}',
+                    style: (base ?? const TextStyle()).copyWith(
+                      color: theme.colorScheme.onSurface.withValues(
+                        alpha: 0.56,
+                      ),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
-            ])),
+            ),
             // $10,000.00 (WAC)
             Text(avgStr),
             // P/L TOTAL (tap para alternar entre % y moneda) - ALWAYS show, even for archived assets
@@ -319,9 +348,9 @@ class _TopSummaryLine extends StatelessWidget {
   String _fmtQty(double q) {
     if (q == q.truncateToDouble()) return q.toStringAsFixed(0);
     final s = q.toStringAsFixed(6);
-    final trimmed = s.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    final trimmed = s
+        .replaceAll(RegExp(r'0+$'), '')
+        .replaceAll(RegExp(r'\.$'), '');
     return trimmed.isEmpty ? '0' : trimmed;
   }
-
-
 }

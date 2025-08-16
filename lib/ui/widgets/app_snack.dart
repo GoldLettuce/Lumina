@@ -36,10 +36,7 @@ void showAppSnack(
     backgroundColor: bg,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     showCloseIcon: false,
-    content: Text(
-      message,
-      style: TextStyle(color: fg),
-    ),
+    content: Text(message, style: TextStyle(color: fg)),
   );
 
   ScaffoldMessenger.of(context)

@@ -11,11 +11,11 @@ class AssetListProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool _isLoadingMore = false;
   String? _error;
-  
+
   // Paginación
   int _currentPage = 0;
   bool _hasMorePages = true;
-  
+
   // Búsqueda
   String _lastQuery = '';
 
@@ -65,12 +65,12 @@ class AssetListProvider extends ChangeNotifier {
   /// Obtiene una página específica de activos
   Future<void> _fetchMarketsPage(int page) async {
     final newAssets = await _datasource.fetchMarketsPage(page);
-    
+
     // Si recibimos menos de 250 activos, no hay más páginas
     if (newAssets.length < 250) {
       _hasMorePages = false;
     }
-    
+
     // Añadir nuevos activos a la lista
     _allAssets.addAll(newAssets);
     _filteredAssets = List.of(_allAssets);
@@ -80,15 +80,16 @@ class AssetListProvider extends ChangeNotifier {
   /// Filtra los activos por símbolo o nombre
   void filter(String query) {
     _lastQuery = query;
-    
+
     if (query.isEmpty) {
       _filteredAssets = List.of(_allAssets);
     } else {
       final q = query.toLowerCase();
-      _filteredAssets = _allAssets.where((c) {
-        return c.symbol.toLowerCase().contains(q) ||
-            c.name.toLowerCase().contains(q);
-      }).toList();
+      _filteredAssets =
+          _allAssets.where((c) {
+            return c.symbol.toLowerCase().contains(q) ||
+                c.name.toLowerCase().contains(q);
+          }).toList();
     }
     notifyListeners();
   }

@@ -11,4 +11,4 @@ class SpotPrice extends HiveObject {
   final double price;
 
   SpotPrice({required this.symbol, required this.price});
-} 
+}

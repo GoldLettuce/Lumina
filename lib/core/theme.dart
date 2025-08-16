@@ -4,9 +4,7 @@ import 'colors.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
-    return ThemeData.light(
-      useMaterial3: true,
-    ).copyWith(
+    return ThemeData.light(useMaterial3: true).copyWith(
       scaffoldBackgroundColor: AppColors.lightBackground,
       primaryColor: AppColors.lightPrimary,
       colorScheme: ColorScheme.light(
@@ -25,8 +23,16 @@ class AppTheme {
           color: AppColors.lightTextPrimary,
           fontFamily: 'Roboto',
         ),
-        bodyLarge: TextStyle(fontSize: 16, color: AppColors.lightTextPrimary, fontFamily: 'Roboto'),
-        bodyMedium: TextStyle(fontSize: 14, color: AppColors.lightTextSecondary, fontFamily: 'Roboto'),
+        bodyLarge: TextStyle(
+          fontSize: 16,
+          color: AppColors.lightTextPrimary,
+          fontFamily: 'Roboto',
+        ),
+        bodyMedium: TextStyle(
+          fontSize: 14,
+          color: AppColors.lightTextSecondary,
+          fontFamily: 'Roboto',
+        ),
       ),
       dividerColor: AppColors.lightDivider,
       snackBarTheme: SnackBarThemeData(
@@ -91,9 +97,7 @@ class AppTheme {
   }
 
   static ThemeData get lightMonoTheme {
-    return ThemeData.light(
-      useMaterial3: true,
-    ).copyWith(
+    return ThemeData.light(useMaterial3: true).copyWith(
       scaffoldBackgroundColor: AppColors.lightBackground,
       colorScheme: const ColorScheme.light(
         primary: AppColors.lightTextPrimary,
@@ -109,7 +113,10 @@ class AppTheme {
           color: AppColors.lightTextPrimary,
         ),
         bodyLarge: TextStyle(fontSize: 16, color: AppColors.lightTextPrimary),
-        bodyMedium: TextStyle(fontSize: 14, color: AppColors.lightTextSecondary),
+        bodyMedium: TextStyle(
+          fontSize: 14,
+          color: AppColors.lightTextSecondary,
+        ),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
@@ -123,9 +130,7 @@ class AppTheme {
   }
 
   static ThemeData get darkMonoTheme {
-    return ThemeData.dark(
-      useMaterial3: true,
-    ).copyWith(
+    return ThemeData.dark(useMaterial3: true).copyWith(
       scaffoldBackgroundColor: AppColors.darkBackground,
       colorScheme: const ColorScheme.light(
         primary: AppColors.darkOnBackground,

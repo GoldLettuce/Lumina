@@ -11,7 +11,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
   final Map<String, String> _symbolToId = {};
   Timer? _refreshTimer;
   bool _isLoading = false;
-  
+
   // OPT: versión/timestamp para gatillar UI de forma barata y fiable
   int _pricesVersion = 0;
   int get pricesVersion => _pricesVersion;
@@ -31,7 +31,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
   void setSymbols(Set<String> symbols, {Map<String, String>? symbolToId}) {
     final added = symbols.difference(_symbols); // Nuevos símbolos añadidos
     _symbols = symbols;
-    
+
     // Guardar el mapeo de símbolos a IDs
     if (symbolToId != null) {
       _symbolToId.addAll(symbolToId);
@@ -44,7 +44,8 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
     );
 
     // ✅ Hacer una carga inicial si no hay precios o si hay símbolos nuevos no cargados
-    final needInitialLoad = _spotPrices.isEmpty ||
+    final needInitialLoad =
+        _spotPrices.isEmpty ||
         added.any((symbol) => !_spotPrices.containsKey(symbol));
 
     if (needInitialLoad && symbols.isNotEmpty) {
@@ -65,7 +66,9 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
           _spotPrices[p.symbol] = p.price;
         }
       }
-      print('[SpotPriceProvider] Precios cargados desde Hive: ${_spotPrices.length} activos');
+      print(
+        '[SpotPriceProvider] Precios cargados desde Hive: ${_spotPrices.length} activos',
+      );
       // OPT: sube versión al cargar desde cache
       _pricesVersion++;
       _lastUpdated = DateTime.now();
@@ -76,36 +79,43 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
   /// Carga precios desde la red (si no se está cargando ya)
   Future<void> loadPrices() async {
     if (_isLoading || _symbols.isEmpty) return;
-    
-    _isLoading = true; // OPT: Evitamos notificar aquí para no reconstruir a mitad de carga
-    
+
+    _isLoading =
+        true; // OPT: Evitamos notificar aquí para no reconstruir a mitad de carga
+
     try {
       // Actualizar el mapeo en el repositorio de precios usando el mapeo almacenado
       final priceRepo = PriceRepositoryImpl();
       if (_symbolToId.isNotEmpty) {
         priceRepo.updateSymbolMapping(_symbolToId);
       }
-      
+
       // Usar los símbolos directamente - el PriceRepositoryImpl ahora maneja la conversión
       final prices = await priceRepo.getPrices(_symbols);
       updatePrices(prices);
-      
+
       // Guardar precios en Hive cache
       final box = HiveService.metaBox;
-      final toStore = prices.entries
-          .map((e) => SpotPrice(symbol: e.key, price: e.value))
-          .toList();
+      final toStore =
+          prices.entries
+              .map((e) => SpotPrice(symbol: e.key, price: e.value))
+              .toList();
       await box.put('spot_prices', toStore);
-      print('[SpotPriceProvider] Precios guardados en Hive: ${toStore.length} activos');
+      print(
+        '[SpotPriceProvider] Precios guardados en Hive: ${toStore.length} activos',
+      );
     } catch (e) {
       print('[ERROR][SpotPriceProvider] $e');
     } finally {
       _isLoading = false;
       // OPT: eliminado notifyListeners() final porque la UI no observa isLoading
-      
+
       // Reiniciar el timer para evitar llamadas dobles tras una carga manual
       _refreshTimer?.cancel();
-      _refreshTimer = Timer.periodic(const Duration(seconds: 60), (_) => loadPrices());
+      _refreshTimer = Timer.periodic(
+        const Duration(seconds: 60),
+        (_) => loadPrices(),
+      );
     }
   }
 
@@ -113,7 +123,10 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
   void startAutoRefresh() {
     _refreshTimer?.cancel();
     // La primera carga vendrá desde PortfolioScreen, no desde aquí
-    _refreshTimer = Timer.periodic(const Duration(seconds: 60), (_) => loadPrices());
+    _refreshTimer = Timer.periodic(
+      const Duration(seconds: 60),
+      (_) => loadPrices(),
+    );
   }
 
   /// Detiene el refresco automático
@@ -124,11 +137,12 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
   void updatePrices(Map<String, double> newPrices) {
     // Evitar que una respuesta vacía borre los precios actuales
     if (newPrices.isEmpty) return;
-    
+
     // 🔑 No borres lo que ya teníamos; solo actualiza/añade lo nuevo
     bool changed = false;
     for (final entry in newPrices.entries) {
-      if (!_symbols.contains(entry.key)) continue; // OPT: ignorar símbolos no visibles
+      if (!_symbols.contains(entry.key))
+        continue; // OPT: ignorar símbolos no visibles
       if (_spotPrices[entry.key] != entry.value) {
         _spotPrices[entry.key] = entry.value;
         changed = true;
@@ -140,7 +154,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
     _pricesVersion++;
     // OPT: timestamp (útil para debug/UX)
     _lastUpdated = DateTime.now();
-    
+
     notifyListeners();
   }
 

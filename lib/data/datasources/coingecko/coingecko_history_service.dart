@@ -24,7 +24,7 @@ class CoinGeckoHistoryService {
       final ts = DateTime.fromMillisecondsSinceEpoch(p[0]);
       final price = (p[1] as num).toDouble();
       return Point(
-        time: ts, 
+        time: ts,
         value: price,
         gainUsd: 0.0, // No P/L data available from CoinGecko
         gainPct: 0.0, // No P/L data available from CoinGecko

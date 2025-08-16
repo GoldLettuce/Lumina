@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -27,7 +26,6 @@ import '../../core/chart_range.dart';
 import '../../core/hive_service.dart';
 import '../../core/pl_calculator.dart';
 import '../../core/pnl_total.dart';
-
 
 // ======================
 // SummaryVM
@@ -59,22 +57,33 @@ class SummaryVM {
 
   @override
   bool operator ==(Object other) {
-    return other is SummaryVM
-      && identical(history, other.history) // asumimos misma lista por ref en provider
-      && selectedIndex == other.selectedIndex
-      && selectedValue == other.selectedValue
-      && selectedPct == other.selectedPct
-      && selectedDate == other.selectedDate
-      && exchangeRate == other.exchangeRate
-      && currency == other.currency
-      && listEquals(investments, other.investments)
-      && initialValueUsd == other.initialValueUsd;
+    return other is SummaryVM &&
+        identical(
+          history,
+          other.history,
+        ) // asumimos misma lista por ref en provider
+        &&
+        selectedIndex == other.selectedIndex &&
+        selectedValue == other.selectedValue &&
+        selectedPct == other.selectedPct &&
+        selectedDate == other.selectedDate &&
+        exchangeRate == other.exchangeRate &&
+        currency == other.currency &&
+        listEquals(investments, other.investments) &&
+        initialValueUsd == other.initialValueUsd;
   }
 
   @override
   int get hashCode => Object.hash(
-    history, selectedIndex, selectedValue, selectedPct, selectedDate,
-    exchangeRate, currency, Object.hashAll(investments), initialValueUsd,
+    history,
+    selectedIndex,
+    selectedValue,
+    selectedPct,
+    selectedDate,
+    exchangeRate,
+    currency,
+    Object.hashAll(investments),
+    initialValueUsd,
   );
 }
 
@@ -91,9 +100,9 @@ class _ChartState {
 
   @override
   bool operator ==(Object other) {
-    return other is _ChartState
-        && identical(history, other.history)
-        && selectedIndex == other.selectedIndex;
+    return other is _ChartState &&
+        identical(history, other.history) &&
+        selectedIndex == other.selectedIndex;
   }
 
   @override
@@ -133,44 +142,58 @@ class PortfolioSummaryMinimal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasSelection = selectedIndex != null;
-    final currentValueUsd = hasSelection
-        ? selectedValue!
-        : (history.isNotEmpty ? history.last.value : 0.0);
+    final currentValueUsd =
+        hasSelection
+            ? selectedValue!
+            : (history.isNotEmpty ? history.last.value : 0.0);
     final currentValue = currentValueUsd * exchangeRate;
 
     // Use chart data for P/L TOTAL (no recalculation needed)
     final unit = context.watch<ProfitDisplayModeNotifier>().unit;
-    
+
     // Get P/L TOTAL from chart data: selected point or last point (today)
-    final displayValue = hasSelection ? currentValue : (history.isNotEmpty ? history.last.value * exchangeRate : 0.0);
-    final displayGainUsd = hasSelection ? history[selectedIndex!].gainUsd : (history.isNotEmpty ? history.last.gainUsd : 0.0);
-    final displayGainPct = hasSelection ? history[selectedIndex!].gainPct : (history.isNotEmpty ? history.last.gainPct : 0.0);
-    
+    final displayValue =
+        hasSelection
+            ? currentValue
+            : (history.isNotEmpty ? history.last.value * exchangeRate : 0.0);
+    final displayGainUsd =
+        hasSelection
+            ? history[selectedIndex!].gainUsd
+            : (history.isNotEmpty ? history.last.gainUsd : 0.0);
+    final displayGainPct =
+        hasSelection
+            ? history[selectedIndex!].gainPct
+            : (history.isNotEmpty ? history.last.gainPct : 0.0);
+
     final valorText = formatMoney(displayValue, currency, context);
     final sign = displayGainPct >= 0 ? '+' : '-';
-    final percentText = unit == PnlUnit.percent
-        ? '$sign${formatPercentLabel(displayGainPct.abs(), context, decimals: 2)}'
-        : formatMoney(displayGainUsd * exchangeRate, currency, context);
+    final percentText =
+        unit == PnlUnit.percent
+            ? '$sign${formatPercentLabel(displayGainPct.abs(), context, decimals: 2)}'
+            : formatMoney(displayGainUsd * exchangeRate, currency, context);
 
-    final dateText = hasSelection && selectedDate != null
-        ? DateFormat(
-        'd MMM yyyy', Localizations.localeOf(context).toString())
-        .format(selectedDate!)
-        : '';
+    final dateText =
+        hasSelection && selectedDate != null
+            ? DateFormat(
+              'd MMM yyyy',
+              Localizations.localeOf(context).toString(),
+            ).format(selectedDate!)
+            : '';
 
     final valorStyle = TextStyle(
       fontSize: 32,
       fontWeight: FontWeight.bold,
       letterSpacing: -1.5,
-                  color: Theme.of(context).colorScheme.onSurface,
+      color: Theme.of(context).colorScheme.onSurface,
     );
 
     final percentStyle = TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.w600,
-              color: displayGainPct >= 0 
-                  ? Theme.of(context).colorScheme.tertiary
-                  : AppColors.textNegative(context),
+      color:
+          displayGainPct >= 0
+              ? Theme.of(context).colorScheme.tertiary
+              : AppColors.textNegative(context),
     );
 
     final double sublineHeight =
@@ -207,11 +230,8 @@ class PortfolioSummaryMinimal extends StatelessWidget {
           child: Text(
             dateText,
             style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withAlpha(153),
-                ),
+              color: Theme.of(context).colorScheme.onSurface.withAlpha(153),
+            ),
             textAlign: TextAlign.center,
           ),
         ),
@@ -225,17 +245,14 @@ class PortfolioSummaryMinimal extends StatelessWidget {
 // ======================
 
 class AssetListTile extends StatelessWidget {
-  const AssetListTile({
-    super.key,
-    required this.asset,
-  });
+  const AssetListTile({super.key, required this.asset});
 
   final Investment asset;
 
   @override
   Widget build(BuildContext context) {
     final spotUsd = context.select<SpotPriceProvider, double?>(
-          (p) => p.spotPrices[asset.symbol],
+      (p) => p.spotPrices[asset.symbol],
     );
 
     // Obtener datos de moneda desde CurrencyProvider
@@ -244,53 +261,63 @@ class AssetListTile extends StatelessWidget {
     );
 
     final theme = Theme.of(context);
-    
+
     // Calculate P/L using new system
     final pl = calculatePL(asset: asset, marketPriceUsd: spotUsd);
     final pnl = PnlTotal.from(asset, pl);
     final unit = context.watch<ProfitDisplayModeNotifier>().unit;
-    
+
     final valorActual = spotUsd != null ? pl.currentValue * fx.rate : null;
     final colorRentabilidad = AppColors.gainLossColor(context, pnl.amountUsd);
 
-    final trailing = valorActual == null
-        ? const SizedBox(width: 60)
-        : Consumer<ProfitDisplayModeNotifier>(
-            builder: (context, displayMode, child) {
-              final displayText = unit == PnlUnit.percent
-                  ? '${pnl.percent.toStringAsFixed(2)}%'
-                  : formatMoney(pnl.amountUsd * fx.rate, fx.code, context);
-              
-              return GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  context.read<ProfitDisplayModeNotifier>().toggle();
-                },
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      formatMoney(valorActual, fx.code, context),
-                      key: ValueKey(valorActual),
-                      style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
-                    ),
-                    Text(
-                      displayText,
-                      style: TextStyle(
-                        color: colorRentabilidad,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
+    final trailing =
+        valorActual == null
+            ? const SizedBox(width: 60)
+            : Consumer<ProfitDisplayModeNotifier>(
+              builder: (context, displayMode, child) {
+                final displayText =
+                    unit == PnlUnit.percent
+                        ? '${pnl.percent.toStringAsFixed(2)}%'
+                        : formatMoney(
+                          pnl.amountUsd * fx.rate,
+                          fx.code,
+                          context,
+                        );
 
-    final showIcons = context.select<SettingsProvider, bool>((s) => s.showAssetIcons); // OPT: evita rebuilds por otros ajustes
-    
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    context.read<ProfitDisplayModeNotifier>().toggle();
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        formatMoney(valorActual, fx.code, context),
+                        key: ValueKey(valorActual),
+                        style: theme.textTheme.bodyLarge!.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        displayText,
+                        style: TextStyle(
+                          color: colorRentabilidad,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+
+    final showIcons = context.select<SettingsProvider, bool>(
+      (s) => s.showAssetIcons,
+    ); // OPT: evita rebuilds por otros ajustes
+
     return GestureDetector(
       onTap: () async {
         final result = await Navigator.push(
@@ -298,15 +325,20 @@ class AssetListTile extends StatelessWidget {
           MaterialPageRoute(builder: (_) => AssetDetailScreen(asset: asset)),
         );
         if (!context.mounted || result == null) return;
-        context.findAncestorStateOfType<_PortfolioScreenState>()?._maybeReloadHistory();
+        context
+            .findAncestorStateOfType<_PortfolioScreenState>()
+            ?._maybeReloadHistory();
       },
-      child: RepaintBoundary( // OPT: evita repintar vecinas
+      child: RepaintBoundary(
+        // OPT: evita repintar vecinas
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              if (showIcons && asset.imageUrl != null && asset.imageUrl!.isNotEmpty) ...[
+              if (showIcons &&
+                  asset.imageUrl != null &&
+                  asset.imageUrl!.isNotEmpty) ...[
                 CircleAvatar(
                   backgroundImage: NetworkImage(asset.imageUrl!),
                   backgroundColor: Colors.transparent,
@@ -320,10 +352,16 @@ class AssetListTile extends StatelessWidget {
                   children: [
                     Text(
                       asset.symbol,
-                      style: theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.bodyLarge!.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Text(
-                      formatQuantity(asset.totalQuantity, context, maxDecimals: 8),
+                      formatQuantity(
+                        asset.totalQuantity,
+                        context,
+                        maxDecimals: 8,
+                      ),
                       style: theme.textTheme.bodyMedium,
                     ),
                   ],
@@ -341,6 +379,7 @@ class AssetListTile extends StatelessWidget {
     );
   }
 }
+
 class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
 
@@ -348,7 +387,8 @@ class PortfolioScreen extends StatefulWidget {
   State<PortfolioScreen> createState() => _PortfolioScreenState();
 }
 
-class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingObserver {
+class _PortfolioScreenState extends State<PortfolioScreen>
+    with WidgetsBindingObserver {
   bool _hasLoadedHistory = false;
   Timer? _historyReloadDebounce;
 
@@ -391,8 +431,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
     }
   }
 
-
-
   Future<void> _loadHistory(List<Investment> investments) async {
     final histRepo = HistoryRepositoryImpl();
     final spotProv = context.read<SpotPriceProvider>();
@@ -400,7 +438,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
 
     // Configurar símbolos y cargar precios centralizados
     final symbols = investments.map((e) => e.symbol).toSet();
-    final symbolToId = {for (final inv in investments) inv.symbol.toUpperCase(): inv.coingeckoId};
+    final symbolToId = {
+      for (final inv in investments) inv.symbol.toUpperCase(): inv.coingeckoId,
+    };
     spotProv.setSymbols(symbols, symbolToId: symbolToId);
 
     final prices = spotProv.spotPrices;
@@ -418,25 +458,28 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
     double totalCost = 0;
     double totalRealized = 0;
     double totalNetContrib = 0;
-    
+
     for (final inv in investments) {
       final qty = inv.operations
           .where((op) => !op.date.isAfter(today))
           .fold<double>(0, (s, op) => s + op.quantity);
       final price = prices[inv.symbol];
-      
+
       if (qty > 0 && price != null) {
         totalValue += price * qty;
-        
+
         // Calcular coste acumulado y P/L realizado
         double cost = 0;
         double realized = 0;
         double netContrib = 0;
-        
-        for (final op in inv.operations.where((op) => !op.date.isAfter(today))) {
+
+        for (final op in inv.operations.where(
+          (op) => !op.date.isAfter(today),
+        )) {
           if (op.type.toString().toLowerCase().contains('sell')) {
             // Para ventas, calcular P/L realizado
-            realized += op.quantity * (op.price - (cost / (cost > 0 ? cost : 1)));
+            realized +=
+                op.quantity * (op.price - (cost / (cost > 0 ? cost : 1)));
             netContrib -= op.price * op.quantity;
           } else {
             // Para compras, acumular coste
@@ -444,25 +487,28 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
             netContrib += op.price * op.quantity;
           }
         }
-        
+
         totalCost += cost;
         totalRealized += realized;
         totalNetContrib += netContrib;
       }
     }
-    
+
     // Calcular P/L TOTAL del día
     final pnlTotalUsd = totalRealized + (totalValue - totalCost);
-    final pctTotal = (totalNetContrib.abs() > 0)
-        ? (pnlTotalUsd / totalNetContrib.abs()) * 100.0
-        : 0.0;
-    
-    histProv.updateToday(Point(
-      time: today, 
-      value: totalValue,
-      gainUsd: pnlTotalUsd,
-      gainPct: pctTotal,
-    ));
+    final pctTotal =
+        (totalNetContrib.abs() > 0)
+            ? (pnlTotalUsd / totalNetContrib.abs()) * 100.0
+            : 0.0;
+
+    histProv.updateToday(
+      Point(
+        time: today,
+        value: totalValue,
+        gainUsd: pnlTotalUsd,
+        gainPct: pctTotal,
+      ),
+    );
   }
 
   @override
@@ -478,9 +524,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
           selector: (_, fx) => fx.exchangeRate > 0 && fx.currency.isNotEmpty,
           builder: (context, isFXReady, child) {
             final isStillLoading = isLoading || !isFXReady;
-            
+
             if (isStillLoading) return const SkeletonView();
-            
+
             // Trigger initial history load if needed
             if (!_hasLoadedHistory) {
               _hasLoadedHistory = true;
@@ -488,7 +534,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                 if (mounted) _maybeReloadHistory();
               });
             }
-            
+
             return Scaffold(
               appBar: AppBar(
                 elevation: 0,
@@ -505,7 +551,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const SettingsScreen(),
+                          ),
                         );
                       },
                     ),
@@ -514,16 +562,18 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                       onPressed: () {
                         showDialog(
                           context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text(t.donationsTitle),
-                            content: Text(t.donationsMessage),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: Text(t.ok),
+                          builder:
+                              (context) => AlertDialog(
+                                title: Text(t.donationsTitle),
+                                content: Text(t.donationsMessage),
+                                actions: [
+                                  TextButton(
+                                    onPressed:
+                                        () => Navigator.of(context).pop(),
+                                    child: Text(t.ok),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
                         );
                       },
                     ),
@@ -551,13 +601,18 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
               body: Container(
                 color: Theme.of(context).scaffoldBackgroundColor,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 20,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // Throttled history reload trigger
                       Selector<SpotPriceProvider, int>(
-                        selector: (_, p) => p.pricesVersion, // OPT: versión fiable y barata
+                        selector:
+                            (_, p) =>
+                                p.pricesVersion, // OPT: versión fiable y barata
                         builder: (_, __, ___) {
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             if (mounted) _scheduleReloadHistory();
@@ -576,47 +631,75 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                         },
                       ),
                       // Summary with fine-grained Selector
-                      Selector3<HistoryProvider, CurrencyProvider, InvestmentProvider, SummaryVM>(
+                      Selector3<
+                        HistoryProvider,
+                        CurrencyProvider,
+                        InvestmentProvider,
+                        SummaryVM
+                      >(
                         selector: (_, h, fx, inv) {
-                          final investments = inv.investments.where((e) => e.totalQuantity > 0).toList(growable: false);
-                          
+                          final investments = inv.investments
+                              .where((e) => e.totalQuantity > 0)
+                              .toList(growable: false);
+
                           // OPT: fecha más antigua de todas las operaciones
                           DateTime? firstDate;
                           if (investments.isNotEmpty) {
                             DateTime? minDate;
                             for (final asset in investments) {
                               for (final op in asset.operations) {
-                                if (minDate == null || op.date.isBefore(minDate)) minDate = op.date;
+                                if (minDate == null ||
+                                    op.date.isBefore(minDate))
+                                  minDate = op.date;
                               }
                             }
                             firstDate = minDate;
                           }
-                          
+
                           double initialValueUsd;
                           if (firstDate != null) {
-                            final startDate = DateTime(firstDate.year, firstDate.month, firstDate.day);
+                            final startDate = DateTime(
+                              firstDate.year,
+                              firstDate.month,
+                              firstDate.day,
+                            );
                             // OPT: leer caches una vez (evitamos trabajo durante el scrub)
-                            final key = 'history_${startDate.toIso8601String().substring(0, 10)}';
+                            final key =
+                                'history_${startDate.toIso8601String().substring(0, 10)}';
                             final localHistory = HiveService.history.get(key);
                             if (localHistory == null) {
-                              initialValueUsd = h.history.isNotEmpty ? h.history.first.value : 0.0;
+                              initialValueUsd =
+                                  h.history.isNotEmpty
+                                      ? h.history.first.value
+                                      : 0.0;
                             } else {
-                              final cacheKey = 'prices_${startDate.toIso8601String().substring(0, 10)}';
-                              final chartCache = HiveService.chartCache.get(cacheKey);
+                              final cacheKey =
+                                  'prices_${startDate.toIso8601String().substring(0, 10)}';
+                              final chartCache = HiveService.chartCache.get(
+                                cacheKey,
+                              );
                               double total = 0.0;
                               for (final asset in investments) {
                                 final qty = asset.operations
                                     .where((op) => !op.date.isAfter(startDate))
-                                    .fold<double>(0, (s, op) => s + op.quantity);
-                                final precio = chartCache?.spotPrices[asset.symbol];
-                                if (precio != null && qty > 0) total += qty * precio;
+                                    .fold<double>(
+                                      0,
+                                      (s, op) => s + op.quantity,
+                                    );
+                                final precio =
+                                    chartCache?.spotPrices[asset.symbol];
+                                if (precio != null && qty > 0)
+                                  total += qty * precio;
                               }
                               initialValueUsd = total;
                             }
                           } else {
-                            initialValueUsd = h.history.isNotEmpty ? h.history.first.value : 0.0;
+                            initialValueUsd =
+                                h.history.isNotEmpty
+                                    ? h.history.first.value
+                                    : 0.0;
                           }
-                          
+
                           return SummaryVM(
                             history: h.history,
                             selectedIndex: h.selectedIndex,
@@ -636,10 +719,17 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                           return ValueListenableBuilder<int?>(
                             valueListenable: hprov.selectedIndexVN,
                             builder: (_, sel, __) {
-                              final hasSel = sel != null && vm.history.isNotEmpty && sel >= 0 && sel < vm.history.length;
-                              final selectedValue = hasSel ? vm.history[sel].value : null;
-                              final selectedPct   = hasSel ? vm.history[sel].gainPct : null;
-                              final selectedDate  = hasSel ? vm.history[sel].time : null;
+                              final hasSel =
+                                  sel != null &&
+                                  vm.history.isNotEmpty &&
+                                  sel >= 0 &&
+                                  sel < vm.history.length;
+                              final selectedValue =
+                                  hasSel ? vm.history[sel].value : null;
+                              final selectedPct =
+                                  hasSel ? vm.history[sel].gainPct : null;
+                              final selectedDate =
+                                  hasSel ? vm.history[sel].time : null;
 
                               return RepaintBoundary(
                                 child: PortfolioSummaryMinimal(
@@ -661,17 +751,29 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                       const SizedBox(height: 12),
                       // Chart with isolated rebuilds (solo cambia con el history)
                       Selector<HistoryProvider, _ChartState>(
-                        selector: (_, h) => _ChartState(h.history, null), // ignoramos selectedIndex
-                        shouldRebuild: (a, b) => !identical(a.history, b.history),
+                        selector:
+                            (_, h) => _ChartState(
+                              h.history,
+                              null,
+                            ), // ignoramos selectedIndex
+                        shouldRebuild:
+                            (a, b) => !identical(a.history, b.history),
                         builder: (_, chartState, __) {
                           return RepaintBoundary(
-                            child: Selector<InvestmentProvider, List<Investment>>(
-                              selector: (_, p) => p.investments.where((e) => e.totalQuantity > 0).toList(growable: false),
-                              shouldRebuild: (prev, next) => !listEquals(prev, next),
-                              builder: (_, investments, __) {
-                                return PortfolioSummaryWithChart(investments: investments);
-                              },
-                            ),
+                            child:
+                                Selector<InvestmentProvider, List<Investment>>(
+                                  selector:
+                                      (_, p) => p.investments
+                                          .where((e) => e.totalQuantity > 0)
+                                          .toList(growable: false),
+                                  shouldRebuild:
+                                      (prev, next) => !listEquals(prev, next),
+                                  builder: (_, investments, __) {
+                                    return PortfolioSummaryWithChart(
+                                      investments: investments,
+                                    );
+                                  },
+                                ),
                           );
                         },
                       ),
@@ -680,19 +782,28 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                       const SizedBox(height: 12),
                       // Assets list with sorting and isolation
                       Expanded(
-                        child: Selector2<InvestmentProvider, SpotPriceProvider, List<Investment>>(
+                        child: Selector2<
+                          InvestmentProvider,
+                          SpotPriceProvider,
+                          List<Investment>
+                        >(
                           selector: (_, inv, spot) {
                             final prices = spot.spotPrices;
-                            final list = inv.investments.where((e) => e.totalQuantity > 0).toList(growable: false);
+                            final list = inv.investments
+                                .where((e) => e.totalQuantity > 0)
+                                .toList(growable: false);
                             // Ordenar por valor actual (USD) – evita mutar original
                             list.sort((a, b) {
-                              final av = a.totalQuantity * (prices[a.symbol] ?? 0);
-                              final bv = b.totalQuantity * (prices[b.symbol] ?? 0);
+                              final av =
+                                  a.totalQuantity * (prices[a.symbol] ?? 0);
+                              final bv =
+                                  b.totalQuantity * (prices[b.symbol] ?? 0);
                               return bv.compareTo(av);
                             });
                             return list;
                           },
-                          shouldRebuild: (prev, next) => !listEquals(prev, next),
+                          shouldRebuild:
+                              (prev, next) => !listEquals(prev, next),
                           builder: (_, investments, __) {
                             if (investments.isEmpty) {
                               return CustomScrollView(
@@ -701,7 +812,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                                   SliverFillRemaining(
                                     hasScrollBody: false,
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 30),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 30,
+                                      ),
                                       child: Column(
                                         children: [
                                           // Mensaje vacío centrado verticalmente
@@ -709,7 +822,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                                             child: Center(
                                               child: Text(
                                                 t.emptyPortfolioMessage,
-                                                style: theme.textTheme.bodyLarge,
+                                                style:
+                                                    theme.textTheme.bodyLarge,
                                                 textAlign: TextAlign.center,
                                               ),
                                             ),
@@ -720,17 +834,25 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                                               Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                  builder: (_) => const ArchivedAssetsScreen(),
+                                                  builder:
+                                                      (_) =>
+                                                          const ArchivedAssetsScreen(),
                                                 ),
                                               );
                                             },
                                             child: Padding(
-                                              padding: const EdgeInsets.only(bottom: 12),
+                                              padding: const EdgeInsets.only(
+                                                bottom: 12,
+                                              ),
                                               child: Text(
                                                 t.archivedAssetsTitle, // "Activos sin posiciones"
-                                                style: theme.textTheme.bodySmall?.copyWith(
-                                                  color: Theme.of(context).colorScheme.onSurface.withAlpha(153),
-                                                ),
+                                                style: theme.textTheme.bodySmall
+                                                    ?.copyWith(
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurface
+                                                          .withAlpha(153),
+                                                    ),
                                               ),
                                             ),
                                           ),
@@ -764,17 +886,25 @@ class _PortfolioScreenState extends State<PortfolioScreen> with WidgetsBindingOb
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (_) => const ArchivedAssetsScreen(),
+                                              builder:
+                                                  (_) =>
+                                                      const ArchivedAssetsScreen(),
                                             ),
                                           );
                                         },
                                         child: Padding(
-                                          padding: const EdgeInsets.only(bottom: 12),
+                                          padding: const EdgeInsets.only(
+                                            bottom: 12,
+                                          ),
                                           child: Text(
                                             t.archivedAssetsTitle,
-                                            style: theme.textTheme.bodySmall?.copyWith(
-                                              color: Theme.of(context).colorScheme.onSurface.withAlpha(153),
-                                            ),
+                                            style: theme.textTheme.bodySmall
+                                                ?.copyWith(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurface
+                                                      .withAlpha(153),
+                                                ),
                                           ),
                                         ),
                                       ),

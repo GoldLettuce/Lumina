@@ -17,10 +17,10 @@ class Point {
   final double gainPct;
 
   Point({
-    required this.time, 
-    required this.value, 
-    required this.gainUsd, 
-    required this.gainPct
+    required this.time,
+    required this.value,
+    required this.gainUsd,
+    required this.gainPct,
   });
 
   factory Point.fromJson(Map<String, dynamic> json) {
@@ -34,7 +34,7 @@ class Point {
 
   Map<String, dynamic> toJson() {
     return {
-      'time': time.toIso8601String(), 
+      'time': time.toIso8601String(),
       'value': value,
       'gainUsd': gainUsd,
       'gainPct': gainPct,

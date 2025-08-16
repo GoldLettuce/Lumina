@@ -27,7 +27,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noInvestments => 'No investments';
 
   @override
-  String get emptyPortfolioMessage => 'No investments yet.\nStart by adding your first one!';
+  String get emptyPortfolioMessage =>
+      'No investments yet.\nStart by adding your first one!';
 
   @override
   String get newOperation => 'New Operation';
@@ -126,7 +127,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteOperations => 'Delete operations';
 
   @override
-  String get deleteOperationsMessage => 'Are you sure you want to delete the selected operations? This action cannot be undone.';
+  String get deleteOperationsMessage =>
+      'Are you sure you want to delete the selected operations? This action cannot be undone.';
 
   @override
   String get delete => 'Delete';
@@ -153,7 +155,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmResetTitle => 'Are you sure?';
 
   @override
-  String get confirmResetMessage => 'This action will delete all your investments.';
+  String get confirmResetMessage =>
+      'This action will delete all your investments.';
 
   @override
   String get baseCurrency => 'Base currency';
@@ -180,10 +183,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get operationQuantitySeparator => ' of ';
 
   @override
-  String get permissionRequiredForFile => '❌ You must grant permission to save the file.';
+  String get permissionRequiredForFile =>
+      '❌ You must grant permission to save the file.';
 
   @override
-  String get permissionPermanentlyDenied => '⚠️ Permission was permanently denied.';
+  String get permissionPermanentlyDenied =>
+      '⚠️ Permission was permanently denied.';
 
   @override
   String get openSettings => 'Open settings';

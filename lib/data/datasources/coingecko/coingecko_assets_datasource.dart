@@ -10,8 +10,8 @@ class CoinGeckoAsset {
   final String? imageUrl;
 
   CoinGeckoAsset({
-    required this.id, 
-    required this.symbol, 
+    required this.id,
+    required this.symbol,
     required this.name,
     this.imageUrl,
   });
@@ -41,7 +41,7 @@ class CoinGeckoAssetsDatasource {
   /// Obtiene una página específica de activos
   Future<List<CoinGeckoAsset>> fetchMarketsPage(int page) async {
     print('[PAGINATION] Cargando página $page...');
-    
+
     final url = Uri.parse(_getMarketsEndpoint(page));
     final response = await RequestManager().get(url);
 
@@ -66,33 +66,40 @@ class CoinGeckoAssetsDatasource {
 
     // Cache vencida o no existe, obtener desde red
     print('[CACHE][ASSETS] Cache vencida, actualizando desde red…');
-    
+
     final assets = await fetchMarketsPage(1);
-    
+
     // Guardar en cache
     _saveAssetsToCache(assets);
-    
+
     return assets;
   }
 
   /// Búsqueda remota de activos usando la API de CoinGecko
   Future<List<CoinGeckoAsset>> searchAssets(String query) async {
     print('[SEARCH] Buscando: $query');
-    
-    final url = Uri.parse('https://api.coingecko.com/api/v3/search?query=$query');
+
+    final url = Uri.parse(
+      'https://api.coingecko.com/api/v3/search?query=$query',
+    );
     final response = await RequestManager().get(url);
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final coins = data['coins'] as List<dynamic>;
-      
-      final results = coins.map((c) => CoinGeckoAsset(
-        id: c['id'],
-        symbol: c['symbol'].toString().toUpperCase(),
-        name: c['name'],
-        imageUrl: c['large'] ?? c['thumb'],
-      )).toList();
-      
+
+      final results =
+          coins
+              .map(
+                (c) => CoinGeckoAsset(
+                  id: c['id'],
+                  symbol: c['symbol'].toString().toUpperCase(),
+                  name: c['name'],
+                  imageUrl: c['large'] ?? c['thumb'],
+                ),
+              )
+              .toList();
+
       print('[SEARCH] Encontrados ${results.length} resultados para "$query"');
       return results;
     } else {
@@ -105,25 +112,29 @@ class CoinGeckoAssetsDatasource {
     try {
       final metaBox = HiveService.metaBox;
       final cached = metaBox.get('assetsList');
-      
+
       if (cached != null && cached is Map<String, dynamic>) {
         final timestamp = DateTime.parse(cached['timestamp'] as String);
         final now = DateTime.now();
-        
+
         // Verificar si el cache no ha expirado (24 horas)
         if (now.difference(timestamp) < const Duration(hours: 24)) {
-          print('[CACHE][ASSETS] Usando cache local (fecha: ${timestamp.toIso8601String()})');
-          
+          print(
+            '[CACHE][ASSETS] Usando cache local (fecha: ${timestamp.toIso8601String()})',
+          );
+
           final List<dynamic> data = cached['data'] as List<dynamic>;
           return data
-              .map((json) => CoinGeckoAsset.fromJson(json as Map<String, dynamic>))
+              .map(
+                (json) => CoinGeckoAsset.fromJson(json as Map<String, dynamic>),
+              )
               .toList();
         }
       }
     } catch (e) {
       print('[CACHE][ASSETS] Error al leer cache: $e');
     }
-    
+
     return null;
   }
 
@@ -131,18 +142,23 @@ class CoinGeckoAssetsDatasource {
   void _saveAssetsToCache(List<CoinGeckoAsset> assets) {
     try {
       final metaBox = HiveService.metaBox;
-      final data = assets.map((asset) => {
-        'id': asset.id,
-        'symbol': asset.symbol,
-        'name': asset.name,
-        'imageUrl': asset.imageUrl,
-      }).toList();
-      
+      final data =
+          assets
+              .map(
+                (asset) => {
+                  'id': asset.id,
+                  'symbol': asset.symbol,
+                  'name': asset.name,
+                  'imageUrl': asset.imageUrl,
+                },
+              )
+              .toList();
+
       final cacheData = {
         'data': data,
         'timestamp': DateTime.now().toIso8601String(),
       };
-      
+
       metaBox.put('assetsList', cacheData);
       print('[CACHE][ASSETS] Cache actualizada con ${assets.length} assets');
     } catch (e) {

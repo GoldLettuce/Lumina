@@ -84,27 +84,29 @@ class HistoryRepositoryImpl implements HistoryRepository {
       if (todayValue > 0) {
         // 🔑 Si el último punto ya es de hoy → reemplázalo
         final today = DateTime.now();
-        final isSameDay = out.isNotEmpty &&
-            _isSameDay(out.last.time, today);
+        final isSameDay = out.isNotEmpty && _isSameDay(out.last.time, today);
 
         if (isSameDay) {
           out.removeLast();
         }
-        
+
         // Calcular P/L TOTAL para hoy
         double totalCost = 0;
         double totalRealized = 0;
         double totalNetContrib = 0;
-        
+
         for (final inv in investments) {
           double cost = 0;
           double realized = 0;
           double netContrib = 0;
-          
-          for (final op in inv.operations.where((op) => !op.date.isAfter(today))) {
+
+          for (final op in inv.operations.where(
+            (op) => !op.date.isAfter(today),
+          )) {
             if (op.type.toString().toLowerCase().contains('sell')) {
               // Para ventas, calcular P/L realizado
-              realized += op.quantity * (op.price - (cost / (cost > 0 ? cost : 1)));
+              realized +=
+                  op.quantity * (op.price - (cost / (cost > 0 ? cost : 1)));
               netContrib -= op.price * op.quantity;
             } else {
               // Para compras, acumular coste
@@ -112,24 +114,27 @@ class HistoryRepositoryImpl implements HistoryRepository {
               netContrib += op.price * op.quantity;
             }
           }
-          
+
           totalCost += cost;
           totalRealized += realized;
           totalNetContrib += netContrib;
         }
-        
+
         // Calcular P/L TOTAL del día
         final pnlTotalUsd = totalRealized + (todayValue - totalCost);
-        final pctTotal = (totalNetContrib.abs() > 0)
-            ? (pnlTotalUsd / totalNetContrib.abs()) * 100.0
-            : 0.0;
-        
-        out.add(Point(
-          time: today, 
-          value: todayValue,
-          gainUsd: pnlTotalUsd,
-          gainPct: pctTotal,
-        ));
+        final pctTotal =
+            (totalNetContrib.abs() > 0)
+                ? (pnlTotalUsd / totalNetContrib.abs()) * 100.0
+                : 0.0;
+
+        out.add(
+          Point(
+            time: today,
+            value: todayValue,
+            gainUsd: pnlTotalUsd,
+            gainPct: pctTotal,
+          ),
+        );
       }
     }
 
@@ -162,12 +167,14 @@ class HistoryRepositoryImpl implements HistoryRepository {
           );
           pts =
               pts
-                  .map((p) => Point(
-                    time: p.time.toLocal(), 
-                    value: p.value,
-                    gainUsd: p.gainUsd,
-                    gainPct: p.gainPct,
-                  ))
+                  .map(
+                    (p) => Point(
+                      time: p.time.toLocal(),
+                      value: p.value,
+                      gainUsd: p.gainUsd,
+                      gainPct: p.gainPct,
+                    ),
+                  )
                   .toList();
         } catch (_) {
           _log('⚠️  Sin conexión: no se pudo descargar ${inv.symbol}');
@@ -223,12 +230,14 @@ class HistoryRepositoryImpl implements HistoryRepository {
             );
             older =
                 older
-                    .map((p) => Point(
-                      time: p.time.toLocal(), 
-                      value: p.value,
-                      gainUsd: p.gainUsd,
-                      gainPct: p.gainPct,
-                    ))
+                    .map(
+                      (p) => Point(
+                        time: p.time.toLocal(),
+                        value: p.value,
+                        gainUsd: p.gainUsd,
+                        gainPct: p.gainPct,
+                      ),
+                    )
                     .toList();
           } catch (_) {
             _log('⚠️  Sin conexión back-fill ${inv.symbol}');
@@ -264,12 +273,14 @@ class HistoryRepositoryImpl implements HistoryRepository {
           );
           newPts =
               newPts
-                  .map((p) => Point(
-                    time: p.time.toLocal(), 
-                    value: p.value,
-                    gainUsd: p.gainUsd,
-                    gainPct: p.gainPct,
-                  ))
+                  .map(
+                    (p) => Point(
+                      time: p.time.toLocal(),
+                      value: p.value,
+                      gainUsd: p.gainUsd,
+                      gainPct: p.gainPct,
+                    ),
+                  )
                   .toList();
         } catch (_) {
           _log('⚠️  Sin conexión forward ${inv.symbol}');
@@ -303,9 +314,9 @@ class HistoryRepositoryImpl implements HistoryRepository {
       final qty = inv.operations
           .where((op) => !op.date.isAfter(now))
           .fold<double>(0, (s, op) {
-        final isSell = op.type.toString().toLowerCase().contains('sell');
-        return s + (isSell ? -op.quantity : op.quantity);
-      });
+            final isSell = op.type.toString().toLowerCase().contains('sell');
+            return s + (isSell ? -op.quantity : op.quantity);
+          });
       final price = spotPrices[inv.symbol];
       if (qty > 0 && price != null) total += price * qty;
     }

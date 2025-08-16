@@ -63,7 +63,10 @@ class RequestManager {
   }
 
   /// Realiza la petición con reintentos en caso de error 429
-  Future<http.Response> _performRequestWithRetry(Uri url, {int retryCount = 0}) async {
+  Future<http.Response> _performRequestWithRetry(
+    Uri url, {
+    int retryCount = 0,
+  }) async {
     try {
       final response = await _client.get(url);
 
@@ -75,14 +78,19 @@ class RequestManager {
 
       // Si es error 429 (rate limited)
       if (response.statusCode == 429) {
-        print('[HTTP][429] Rate limited. Retrying in 1m (attempt ${retryCount + 1}/${_maxRetries + 1})');
-        
+        print(
+          '[HTTP][429] Rate limited. Retrying in 1m (attempt ${retryCount + 1}/${_maxRetries + 1})',
+        );
+
         // Espera 1 minuto antes de reintentar
         await Future.delayed(const Duration(minutes: 1));
-        
+
         // Reintenta la petición si no hemos excedido el límite
         if (retryCount < _maxRetries) {
-          return await _performRequestWithRetry(url, retryCount: retryCount + 1);
+          return await _performRequestWithRetry(
+            url,
+            retryCount: retryCount + 1,
+          );
         } else {
           print('[HTTP][429] Max retries exceeded. Returning last response');
           return response; // Devuelve la respuesta 429 sin lanzar excepción
@@ -90,8 +98,9 @@ class RequestManager {
       }
 
       // Si es otro error, lanza excepción
-      throw HttpException('HTTP ${response.statusCode}: ${response.reasonPhrase}');
-
+      throw HttpException(
+        'HTTP ${response.statusCode}: ${response.reasonPhrase}',
+      );
     } catch (e) {
       print('[HTTP][ERROR] $e');
       rethrow;
@@ -112,4 +121,4 @@ class HttpException implements Exception {
 
   @override
   String toString() => message;
-} 
+}

@@ -9,7 +9,7 @@ List<Point> buildPortfolioHistory(Map<String, dynamic> args) {
           .toList();
 
   final raw = Map<String, List>.from(args['histories']);
-  final histories = <String, LocalHistory>{}; 
+  final histories = <String, LocalHistory>{};
   for (final entry in raw.entries) {
     histories[entry.key] = LocalHistory.fromJson({
       'from': entry.value.first['time'],
@@ -40,10 +40,10 @@ List<Point> buildPortfolioHistory(Map<String, dynamic> args) {
 
   // init a 0
   for (final a in investments) {
-    qty[a.symbol] = 0; 
-    avg[a.symbol] = 0; 
+    qty[a.symbol] = 0;
+    avg[a.symbol] = 0;
     cost[a.symbol] = 0;
-    realized[a.symbol] = 0; 
+    realized[a.symbol] = 0;
     netContrib[a.symbol] = 0;
   }
 
@@ -60,7 +60,9 @@ List<Point> buildPortfolioHistory(Map<String, dynamic> args) {
     }
     // Ordenar operaciones por hora dentro de cada día
     for (final day in opsByAssetAndDay[inv.symbol]!.keys) {
-      opsByAssetAndDay[inv.symbol]![day]!.sort((a, b) => a.date.compareTo(b.date));
+      opsByAssetAndDay[inv.symbol]![day]!.sort(
+        (a, b) => a.date.compareTo(b.date),
+      );
     }
   }
 
@@ -79,7 +81,11 @@ List<Point> buildPortfolioHistory(Map<String, dynamic> args) {
   final out = <Point>[];
 
   // Recorre día a día desde min(fecha op) hasta hoy (ambos inclusive)
-  for (DateTime d = firstDay; !d.isAfter(today); d = d.add(const Duration(days: 1))) {
+  for (
+    DateTime d = firstDay;
+    !d.isAfter(today);
+    d = d.add(const Duration(days: 1))
+  ) {
     // 1) Aplica las operaciones de este día (ordenadas por hora) con WAC
     for (final a in investments) {
       final opsOfDay = opsByAssetAndDay[a.symbol]?[d] ?? const [];
@@ -99,14 +105,15 @@ List<Point> buildPortfolioHistory(Map<String, dynamic> args) {
           // SELL
           final sellQty = op.quantity.clamp(0, qty[a.symbol]!);
           // P/L realizado contra el avg vigente
-          realized[a.symbol] = (realized[a.symbol]!) + sellQty * (op.price - avg[a.symbol]!);
+          realized[a.symbol] =
+              (realized[a.symbol]!) + sellQty * (op.price - avg[a.symbol]!);
           // Reducir inventario al avg (WAC)
           cost[a.symbol] = (cost[a.symbol]!) - sellQty * avg[a.symbol]!;
           qty[a.symbol] = (qty[a.symbol]!) - sellQty;
           netContrib[a.symbol] = (netContrib[a.symbol]!) - cash; // venta resta
           if (qty[a.symbol]! <= 0) {
-            qty[a.symbol] = 0; 
-            cost[a.symbol] = 0; 
+            qty[a.symbol] = 0;
+            cost[a.symbol] = 0;
             avg[a.symbol] = 0;
           }
         }
@@ -120,27 +127,34 @@ List<Point> buildPortfolioHistory(Map<String, dynamic> args) {
     double netContribUsdDay = 0;
 
     for (final a in investments) {
-      final spot = getDailySpotUsd(a.symbol, d, histories); // función para spot del día
-      valueUsdDay      += qty[a.symbol]! * spot;
-      costUsdDay       += cost[a.symbol]!;
-      realizedUsdDay   += realized[a.symbol]!;
+      final spot = getDailySpotUsd(
+        a.symbol,
+        d,
+        histories,
+      ); // función para spot del día
+      valueUsdDay += qty[a.symbol]! * spot;
+      costUsdDay += cost[a.symbol]!;
+      realizedUsdDay += realized[a.symbol]!;
       netContribUsdDay += netContrib[a.symbol]!;
     }
 
     // 3) P/L TOTAL del día
     final pnlTotalUsdDay = realizedUsdDay + (valueUsdDay - costUsdDay);
-    final pctTotalDay = (netContribUsdDay.abs() > 0)
-        ? (pnlTotalUsdDay / netContribUsdDay.abs()) * 100.0
-        : 0.0;
+    final pctTotalDay =
+        (netContribUsdDay.abs() > 0)
+            ? (pnlTotalUsdDay / netContribUsdDay.abs()) * 100.0
+            : 0.0;
 
     // 4) Guarda el punto — reutilizando los campos existentes
     if (valueUsdDay > 0) {
-      out.add(Point(
-        time: d,
-        value: valueUsdDay,
-        gainUsd: pnlTotalUsdDay,        // ← AHORA ES P/L TOTAL $ del día
-        gainPct: pctTotalDay,           // ← AHORA ES P/L TOTAL % del día
-      ));
+      out.add(
+        Point(
+          time: d,
+          value: valueUsdDay,
+          gainUsd: pnlTotalUsdDay, // ← AHORA ES P/L TOTAL $ del día
+          gainPct: pctTotalDay, // ← AHORA ES P/L TOTAL % del día
+        ),
+      );
     }
   }
 
@@ -148,29 +162,38 @@ List<Point> buildPortfolioHistory(Map<String, dynamic> args) {
 }
 
 // Función auxiliar para obtener el precio spot de un día específico
-double getDailySpotUsd(String symbol, DateTime day, Map<String, LocalHistory> histories) {
+double getDailySpotUsd(
+  String symbol,
+  DateTime day,
+  Map<String, LocalHistory> histories,
+) {
   final hist = histories[symbol];
   if (hist == null) return 0.0;
-  
+
   // Buscar el precio del día exacto
-  final exactMatch = hist.points.where((p) => 
-    DateTime(p.time.year, p.time.month, p.time.day) == day
-  ).toList();
-  
+  final exactMatch =
+      hist.points
+          .where((p) => DateTime(p.time.year, p.time.month, p.time.day) == day)
+          .toList();
+
   if (exactMatch.isNotEmpty) {
     return exactMatch.first.value;
   }
-  
+
   // Si no hay precio para ese día, usar el último disponible anterior
-  final previousPrices = hist.points.where((p) => 
-    DateTime(p.time.year, p.time.month, p.time.day).isBefore(day)
-  ).toList();
-  
+  final previousPrices =
+      hist.points
+          .where(
+            (p) =>
+                DateTime(p.time.year, p.time.month, p.time.day).isBefore(day),
+          )
+          .toList();
+
   if (previousPrices.isNotEmpty) {
     // Ordenar por fecha y tomar el más reciente
     previousPrices.sort((a, b) => a.time.compareTo(b.time));
     return previousPrices.last.value;
   }
-  
+
   return 0.0;
 }

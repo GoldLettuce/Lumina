@@ -8,11 +8,17 @@ String decimalSeparatorOf(BuildContext context) {
 }
 
 // Cantidades (hasta 8 decimales, sin ceros forzados)
-String formatQuantity(num value, BuildContext context, {int minDecimals = 0, int maxDecimals = 8}) {
+String formatQuantity(
+  num value,
+  BuildContext context, {
+  int minDecimals = 0,
+  int maxDecimals = 8,
+}) {
   final locale = Localizations.localeOf(context).toString();
-  final f = NumberFormat.decimalPattern(locale)
-    ..minimumFractionDigits = minDecimals
-    ..maximumFractionDigits = maxDecimals;
+  final f =
+      NumberFormat.decimalPattern(locale)
+        ..minimumFractionDigits = minDecimals
+        ..maximumFractionDigits = maxDecimals;
   return f.format(value);
 }
 
@@ -23,11 +29,16 @@ String formatPercent(num value, BuildContext context, {int decimals = 2}) {
   return NumberFormat(pattern, locale).format(value);
 }
 
-String formatPercentLabel(num percentValue, BuildContext context, {int decimals = 2}) {
+String formatPercentLabel(
+  num percentValue,
+  BuildContext context, {
+  int decimals = 2,
+}) {
   final locale = Localizations.localeOf(context).toString();
-  final f = NumberFormat.percentPattern(locale)
-    ..minimumFractionDigits = decimals
-    ..maximumFractionDigits = decimals;
+  final f =
+      NumberFormat.percentPattern(locale)
+        ..minimumFractionDigits = decimals
+        ..maximumFractionDigits = decimals;
   // percentValue llega como 12.34 para 12,34 % → dividir entre 100
   return f.format(percentValue / 100.0);
 }
@@ -35,5 +46,8 @@ String formatPercentLabel(num percentValue, BuildContext context, {int decimals 
 // Moneda dinámica con código ISO (Frankfurter) y locale activa
 String formatMoney(double amount, String currencyCode, BuildContext context) {
   final locale = Localizations.localeOf(context).toString();
-  return NumberFormat.simpleCurrency(locale: locale, name: currencyCode).format(amount);
+  return NumberFormat.simpleCurrency(
+    locale: locale,
+    name: currencyCode,
+  ).format(amount);
 }

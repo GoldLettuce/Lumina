@@ -27,7 +27,7 @@ class ThemeModeProvider extends ChangeNotifier {
   /// Inicializa el provider después de que Hive esté listo
   Future<void> initialize() async {
     if (_isInitialized) return;
-    
+
     try {
       await _loadThemeMode();
       _isInitialized = true;
@@ -65,4 +65,4 @@ class ThemeModeProvider extends ChangeNotifier {
       // Silently handle save errors
     }
   }
-} 
+}
