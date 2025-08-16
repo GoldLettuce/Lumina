@@ -55,6 +55,11 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
 
   bool _isSaving = false;
 
+  // Variables para el botón Sell all
+  Investment? _selectedAsset;
+  bool _isSell = false;
+  double _availableQty = 0;
+
   @override
   void initState() {
     super.initState();
@@ -66,6 +71,15 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
       _selectedDate = op.date;
       _displaySymbol = widget.initialSymbol;
       _coingeckoId = op.id;
+      
+      // Inicializar _isSell basado en el tipo de operación
+      _isSell = op.type == OperationType.sell;
+      
+      // Si es una edición, también necesitamos obtener la cantidad disponible
+      if (_coingeckoId != null) {
+        // Usar Future.microtask para evitar llamar context.read en initState
+        Future.microtask(() => _onAssetSelected());
+      }
     }
   }
 
@@ -126,6 +140,31 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
         _displaySymbol = result['symbol'];
         _coingeckoId = result['id'];
         _imageUrl = result['imageUrl'] ?? '';
+      });
+      
+      // Obtener el asset seleccionado y calcular cantidad disponible
+      _onAssetSelected();
+    }
+  }
+
+  void _onAssetSelected() {
+    if (_coingeckoId != null) {
+      final model = context.read<InvestmentProvider>();
+      final asset = model.investments.firstWhere(
+        (inv) => inv.coingeckoId == _coingeckoId,
+        orElse: () => Investment(
+          symbol: _displaySymbol ?? '',
+          name: _displaySymbol ?? '',
+          type: AssetType.crypto,
+          coingeckoId: _coingeckoId!,
+        ),
+      );
+      
+      setState(() {
+        _selectedAsset = asset;
+        // Usar la cantidad actual en posesión del modelo
+        final q = asset.totalQuantity;
+        _availableQty = q < 0 ? 0 : q;
       });
     }
   }
@@ -341,9 +380,10 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         onPressed:
                             _isSaving
                                 ? null
-                                : () => setState(
-                                  () => _operationType = OperationType.buy,
-                                ),
+                                : () => setState(() {
+                                  _operationType = OperationType.buy;
+                                  _isSell = false;
+                                }),
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               _operationType == OperationType.buy
@@ -369,7 +409,10 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                         return ElevatedButton(
                           onPressed: _isSaving
                               ? null
-                              : () => setState(() => _operationType = OperationType.sell),
+                              : () => setState(() {
+                                _operationType = OperationType.sell;
+                                _isSell = true;
+                              }),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: sellColor,
                             foregroundColor: isDark ? Colors.white : Colors.black,
@@ -506,6 +549,26 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                       horizontal: 12,
                       vertical: 14,
                     ),
+                    suffixIcon: (_isSell && _availableQty > 0)
+                        ? TextButton(
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: const Size(64, 36), // compacto y minimalista
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: () {
+                              // Rellena con toda la posición disponible, recortando ceros finales
+                              final txt = _availableQty
+                                  .toStringAsFixed(8)
+                                  .replaceFirst(RegExp(r'0+$'), '')
+                                  .replaceFirst(RegExp(r'\.$'), '');
+                              _quantityController.text = txt;
+                              // si hay validación onChanged, dispara un setState ligero
+                              setState(() {});
+                            },
+                            child: Text(loc.sellAll),
+                          )
+                        : null,
                   ),
                   style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                   onChanged: (_) {
