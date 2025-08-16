@@ -98,8 +98,13 @@ flutter_native_splash:
 flutter_launcher_icons:
   android: true
   ios: true
+
+  # ANDROID (unchanged)
   image_path_android: "assets/icons/app_icon_foreground.png"
-  image_path_ios: "assets/icons/app_icon_foreground.png"
   adaptive_icon_background: "#000000"
   adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
   adaptive_icon_monochrome: "assets/icons/ic_launcher_monochrome.svg"
+
+  # IOS (dedicated PNG)
+  image_path_ios: "assets/icons/app_icon_ios_dark.png"
+  remove_alpha_ios: true
