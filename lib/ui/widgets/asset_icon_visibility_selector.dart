@@ -1,109 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:lumina/ui/providers/settings_provider.dart';
 import '../../l10n/app_localizations.dart';
+import '../providers/settings_provider.dart';
 
 class AssetIconVisibilitySelector extends StatelessWidget {
   const AssetIconVisibilitySelector({super.key});
 
-  static Future<void> show(BuildContext context) async {
-    final t = AppLocalizations.of(context)!;
-    final provider = context.read<SettingsProvider>();
-    final current = provider.assetIconVisibility;
-
-    final result = await showModalBottomSheet<AssetIconVisibility>(
-      context: context,
-      builder: (_) {
-        return SafeArea(
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-              color: Theme.of(context).colorScheme.surface,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 16),
-                Text(
-                  t.assetIconVisibilityTitle,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Flexible(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: 2,
-                    itemBuilder: (context, index) {
-                      final options = <Map<String, dynamic>>[
-                        {'value': AssetIconVisibility.show, 'name': t.assetIconVisibilityShow},
-                        {'value': AssetIconVisibility.hide, 'name': t.assetIconVisibilityHide},
-                      ];
-                      final option = options[index];
-                      final isSelected = option['value'] == current;
-                      return InkWell(
-                         onTap: () => Navigator.of(context).pop(option['value'] as AssetIconVisibility),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 14,
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                 child: Text(
-                                   option['name'] as String,
-                                   style: TextStyle(
-                                     fontSize: 16,
-                                     color: Theme.of(context).colorScheme.onSurface,
-                                   ),
-                                 ),
-                               ),
-                              if (isSelected)
-                                Container(
-                                  width: 16,
-                                  height: 16,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Theme.of(context).colorScheme.primary,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-
-    if (result != null) {
-      provider.assetIconVisibility = result;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
-    final current = context.watch<SettingsProvider>().assetIconVisibility;
+    final settings = context.watch<SettingsProvider>();
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
-    final subtitle = {
-      AssetIconVisibility.show: t.assetIconVisibilityShow,
-      AssetIconVisibility.hide: t.assetIconVisibilityHide,
-    }[current]!;
+    // Definimos colores del switch en función del estado y del tema,
+    // usando MaterialStateProperty para que se apliquen correctamente.
+    final thumbColor = MaterialStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(MaterialState.selected)) return cs.onPrimary;
+      return cs.onSurface;
+    });
 
-    return ListTile(
-      title: Text(t.assetIconVisibilityTitle),
-      subtitle: Text(subtitle),
-      onTap: () => show(context),
+    final trackColor = MaterialStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(MaterialState.selected)) {
+        // Track ligeramente translúcido para que no resulte chillón en ningún tema
+        return cs.primary.withOpacity(isDark ? 0.55 : 0.6);
+      }
+      return cs.onSurfaceVariant.withOpacity(isDark ? 0.25 : 0.3);
+    });
+
+    // Switch compacto
+    final compactSwitch = Transform.scale(
+      scale: 0.9,
+      child: Switch.adaptive(
+        value: settings.showAssetIcons,
+        onChanged: (v) {
+          if (v != settings.showAssetIcons) {
+            settings.assetIconVisibility = v ? AssetIconVisibility.show : AssetIconVisibility.hide;
+          }
+        },
+        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+    );
+
+    return MergeSemantics(
+      child: SwitchTheme(
+        data: SwitchThemeData(
+          thumbColor: thumbColor,
+          trackColor: trackColor,
+        ),
+        child: ListTile(
+          title: Text(
+            t.assetIconVisibilityTitle,
+            // Forzar color que garantice visibilidad en todos los temas
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+              color: isDark ? cs.onSurface : cs.onSurface, // Siempre usar onSurface para contraste
+            ),
+          ),
+          trailing: compactSwitch,
+          dense: true,
+          visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          onTap: () => settings.assetIconVisibility = settings.showAssetIcons 
+            ? AssetIconVisibility.hide 
+            : AssetIconVisibility.show,
+        ),
+      ),
     );
   }
 } 

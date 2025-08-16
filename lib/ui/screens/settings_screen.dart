@@ -149,6 +149,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildThemeSelector(BuildContext context, ThemeModeProvider themeModeProvider) {
     final t = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -156,8 +160,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text(
             t.themeOptions,
+            // Forzar color que garantice visibilidad en todos los temas
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
+              color: isDark ? cs.onSurface : cs.onSurface, // Siempre usar onSurface para contraste
             ),
           ),
         ),
@@ -191,18 +197,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 context,
                 themeModeProvider,
                 AppThemeMode.lightMono,
-                                  t.themeLightMono,
-                  Icons.circle_outlined,
-                  Theme.of(context).iconTheme.color ?? Theme.of(context).colorScheme.onSurface,
-                ),
+                t.themeLightMono,
+                Icons.circle_outlined,
+                Theme.of(context).iconTheme.color ?? Theme.of(context).colorScheme.onSurface,
+              ),
               _buildThemeCard(
                 context,
                 themeModeProvider,
                 AppThemeMode.darkMono,
-                                  t.themeDarkMono,
-                  Icons.circle,
-                  Theme.of(context).iconTheme.color ?? Theme.of(context).colorScheme.onSurface,
-                ),
+                t.themeDarkMono,
+                Icons.circle,
+                Theme.of(context).iconTheme.color ?? Theme.of(context).colorScheme.onSurface,
+              ),
             ],
           ),
         ),
@@ -219,6 +225,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Color iconColor,
   ) {
     final isSelected = themeModeProvider.mode == mode;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Card(
       elevation: isSelected ? 4 : 2,
@@ -246,8 +255,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text(
                 title,
                 textAlign: TextAlign.center,
+                // Forzar color que garantice visibilidad en todos los temas
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w500,
+                  color: isDark ? cs.onSurface : cs.onSurface, // Siempre usar onSurface para contraste
                 ),
               ),
             ],
