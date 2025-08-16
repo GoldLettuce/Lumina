@@ -109,9 +109,17 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
 
     Color getTileColor(bool selected) {
       if (!selected) return Colors.transparent;
-      return isMono
-          ? (isDark ? selectedTileMonoDark : selectedTileMonoLight)
-          : (isDark ? selectedTileDark     : selectedTileLight);
+      
+      // Usar el modo de tema específico para mayor precisión
+      if (themeMode == AppThemeMode.lightMono) {
+        return selectedTileMonoLight;
+      } else if (themeMode == AppThemeMode.darkMono) {
+        return selectedTileMonoDark;
+      } else if (isDark) {
+        return selectedTileDark;
+      } else {
+        return selectedTileLight;
+      }
     }
 
 
