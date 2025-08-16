@@ -17,7 +17,7 @@ import 'ui/providers/theme_mode_provider.dart';
 import 'ui/providers/settings_provider.dart';
 
 Future<void> main() async {
-  print('[ARRANQUE][${DateTime.now().toIso8601String()}] main() START');
+
   WidgetsFlutterBinding.ensureInitialized();
 
   assert(() {
@@ -27,7 +27,6 @@ Future<void> main() async {
   }());
 
   // Eliminado: HiveService se inicializa en AppInitializationProvider
-  print('[ARRANQUE][${DateTime.now().toIso8601String()}] Antes de runApp()');
 
   runApp(const PortfolioApp());
 }
