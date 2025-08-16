@@ -2,6 +2,7 @@
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:lumina/core/point.dart';
 import '../../core/colors.dart';
@@ -51,6 +52,23 @@ class _PortfolioChart extends StatefulWidget {
 class _PortfolioChartState extends State<_PortfolioChart> {
   // Estado local: índice seleccionado para ofuscado visual
   final ValueNotifier<int?> _selectedIndex = ValueNotifier<int?>(null);
+
+  // --- Haptics (antirrebote ligero) ---
+  int? _lastHapticIndex;
+  DateTime _lastHapticAt = DateTime.fromMillisecondsSinceEpoch(0);
+  static const Duration _hapticMinGap = Duration(milliseconds: 50);
+
+  void _hapticOnIndexChange(int newIndex) {
+    final now = DateTime.now();
+    if (_lastHapticIndex == newIndex) return;
+    if (now.difference(_lastHapticAt) < _hapticMinGap) return;
+
+    // Vibración sutil tipo "selection click" (muy barata y estándar)
+    HapticFeedback.selectionClick();
+
+    _lastHapticIndex = newIndex;
+    _lastHapticAt = now;
+  }
 
   @override
   void dispose() {
@@ -257,23 +275,26 @@ class _PortfolioChartState extends State<_PortfolioChart> {
                         getTooltipItems: _noTooltip, // sin tooltip pero con longitud correcta
                       ),
                       touchCallback: (event, resp) {
+                        final prov = context.read<HistoryProvider>();
                         final isEnd = event is FlTapUpEvent ||
                                       event is FlTapCancelEvent ||
                                       event is FlLongPressEnd ||
                                       event is FlPanEndEvent;
 
-                        final prov = context.read<HistoryProvider>();
-
                         if (!isEnd) {
                           final spot = resp?.lineBarSpots?.first;
                           if (spot != null) {
                             final idx = spots.indexWhere((s) => s.x == spot.x && s.y == spot.y);
-                            _selectedIndex.value = idx;     // estado local para ofuscado
-                            prov.setSelectedIndex(idx);     // publica sin rebuild global
+                            if (_selectedIndex.value != idx) {
+                              _hapticOnIndexChange(idx);     // <<<< vibración sutil al cambiar
+                              _selectedIndex.value = idx;    // ofuscado local
+                              prov.setSelectedIndex(idx);    // publica sin rebuild global
+                            }
                           }
                         } else {
-                          _selectedIndex.value = null;      // limpia visual
-                          prov.setSelectedIndex(null);      // limpia cabecera
+                          _selectedIndex.value = null;
+                          _lastHapticIndex = null;           // resetea estado háptico
+                          prov.setSelectedIndex(null);
                         }
                       },
                     ),
