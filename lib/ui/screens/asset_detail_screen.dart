@@ -17,21 +17,7 @@ import '../../l10n/app_localizations.dart';
 import 'package:lumina/core/colors.dart';
 import 'package:lumina/core/theme.dart';
 
-/// Devuelve el color apropiado para valores positivos según el modo de tema
-/// En modo monoclaro, usa el color de texto primario en lugar del verde
-Color getTextPositiveColor(BuildContext context) {
-  // Obtener el provider usando Provider.of
-  final themeModeProvider = Provider.of<ThemeModeProvider>(context, listen: false);
-  final themeMode = themeModeProvider.mode;
-  
-  // Si el modo es monoclaro, usar el color de texto primario
-  if (themeMode == AppThemeMode.lightMono || themeMode == AppThemeMode.darkMono) {
-    return Theme.of(context).colorScheme.onSurface;
-  }
-  
-  // En cualquier otro caso, usar el color verde estándar
-  return AppColors.positive;
-}
+// Helper functions removed - now using AppColors helpers
 
 class AssetDetailScreen extends StatefulWidget {
   final Investment asset;
@@ -167,7 +153,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                 final isBuy = op.type == OperationType.buy;
                 final fecha = DateFormat('d MMM y', Localizations.localeOf(context).toString()).format(op.date);
                 final color = isBuy
-                    ? getTextPositiveColor(context)
+                    ? AppColors.textPositive(context)
                     : AppColors.textNegative(context);
                 final selected = _selectedIds.contains(op.id);
 
@@ -273,10 +259,8 @@ class _TopSummaryLine extends StatelessWidget {
       // If asset never had operations, use neutral gray from theme
       color = theme.colorScheme.onSurface.withValues(alpha: 0.56);
     } else {
-      // Use theme colors: tertiary for positive, error for negative
-      color = pnl.amountUsd >= 0 
-          ? theme.colorScheme.tertiary 
-          : theme.colorScheme.error;
+      // Use AppColors helpers for consistent theming
+      color = AppColors.gainLossColor(context, pnl.amountUsd);
     }
 
     // Estilo muy sutil (caption), centrado, con espaciado limpio

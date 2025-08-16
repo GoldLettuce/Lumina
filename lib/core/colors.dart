@@ -88,8 +88,34 @@ class AppColors {
       return Theme.of(context).colorScheme.onSurface;
     }
     
-    // En cualquier otro caso, usar el color rojo estándar
-    return Colors.red;
+    // En cualquier otro caso, usar el color del tema para errores
+    return Theme.of(context).colorScheme.error;
+  }
+
+  /// Devuelve el color apropiado para valores positivos según el modo de tema
+  /// En modo monoclaro, usa el color de texto primario en lugar del verde
+  static Color textPositive(BuildContext context) {
+    // Obtener el provider usando Provider.of
+    final themeModeProvider = Provider.of<ThemeModeProvider>(context, listen: false);
+    final themeMode = themeModeProvider.mode;
+    
+    // Si el modo es monoclaro, usar el color de texto primario
+    if (themeMode == AppThemeMode.lightMono || themeMode == AppThemeMode.darkMono) {
+      return Theme.of(context).colorScheme.onSurface;
+    }
+    
+    // En cualquier otro caso, usar el color del tema para terciario (generalmente verde)
+    return Theme.of(context).colorScheme.tertiary;
+  }
+
+  /// Helper para obtener el color apropiado según el valor (ganancia/pérdida)
+  /// Usa los colores del tema actual
+  static Color gainLossColor(BuildContext context, double value) {
+    if (value >= 0) {
+      return textPositive(context);
+    } else {
+      return textNegative(context);
+    }
   }
 }
 
