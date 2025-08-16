@@ -38,9 +38,6 @@ class ExportController {
     try {
       // ignore: use_build_context_synchronously
       final investments = context.read<InvestmentProvider>().investments;
-      debugPrint(
-        '📤 Iniciando exportación de ${investments.length} inversiones...',
-      );
       final path = await CsvExportService().export(investments);
       if (context.mounted) {
         showAppSnack(
@@ -50,7 +47,6 @@ class ExportController {
         );
       }
     } catch (e) {
-      debugPrint('❌ Error al exportar archivo CSV: $e');
       if (context.mounted) {
         showAppSnack(
           context,
