@@ -253,7 +253,7 @@ class AssetListTile extends StatelessWidget {
     final valorActual = spotUsd != null ? pl.currentValue * fx.rate : null;
     final colorRentabilidad = pnl.amountUsd >= 0
         ? Theme.of(context).colorScheme.tertiary
-        : AppColors.textNegative(context);
+        : Theme.of(context).colorScheme.error;
 
     final trailing = valorActual == null
         ? const SizedBox(width: 60)

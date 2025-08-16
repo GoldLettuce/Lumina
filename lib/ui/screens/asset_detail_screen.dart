@@ -255,7 +255,7 @@ class _TopSummaryLine extends StatelessWidget {
       (sp) => sp.spotPrices[symbol],
     );
 
-    // Calculate P/L using new system
+    // Calculate P/L using new system - ALWAYS calculate, even for archived assets
     final pl = calculatePL(asset: asset, marketPriceUsd: spotUsd);
     final pnl = PnlTotal.from(asset, pl);
     final unit = context.watch<ProfitDisplayModeNotifier>().unit;
@@ -266,7 +266,18 @@ class _TopSummaryLine extends StatelessWidget {
     final displayStr = unit == PnlUnit.percent
         ? '${pnl.percent.toStringAsFixed(2)}%'
         : formatMoney(pnl.amountUsd * currency.exchangeRate, currency.currency, context);
-    final color = pnl.amountUsd >= 0 ? AppColors.positive : AppColors.negative;
+    
+    // Determine color based on P/L value - use theme colors for consistency
+    Color color;
+    if (asset.operations.isEmpty) {
+      // If asset never had operations, use neutral gray from theme
+      color = theme.colorScheme.onSurface.withValues(alpha: 0.56);
+    } else {
+      // Use theme colors: tertiary for positive, error for negative
+      color = pnl.amountUsd >= 0 
+          ? theme.colorScheme.tertiary 
+          : theme.colorScheme.error;
+    }
 
     // Estilo muy sutil (caption), centrado, con espaciado limpio
     final base = theme.textTheme.labelLarge?.copyWith(
@@ -280,7 +291,6 @@ class _TopSummaryLine extends StatelessWidget {
         style: base ?? const TextStyle(fontSize: 13),
         child: Wrap(
           alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
           spacing: 12,
           children: [
             // 0.8 BTC
@@ -296,20 +306,18 @@ class _TopSummaryLine extends StatelessWidget {
             ])),
             // $10,000.00 (WAC)
             Text(avgStr),
-            // P/L TOTAL (tap para alternar entre % y moneda)
-            if (qty > 0 && spotUsd != null && spotUsd > 0) ...[
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => context.read<ProfitDisplayModeNotifier>().toggle(),
-                child: Text(
-                  displayStr,
-                  style: (base ?? const TextStyle()).copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: color,
-                  ),
+            // P/L TOTAL (tap para alternar entre % y moneda) - ALWAYS show, even for archived assets
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => context.read<ProfitDisplayModeNotifier>().toggle(),
+              child: Text(
+                displayStr,
+                style: (base ?? const TextStyle()).copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: color,
                 ),
               ),
-            ],
+            ),
           ],
         ),
       ),
