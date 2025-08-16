@@ -85,5 +85,6 @@
   },
   "assetIconVisibilityTitle": "Mostrar iconos de activos",
   "assetIconVisibilityShow": "Mostrar iconos",
-  "assetIconVisibilityHide": "Ocultar iconos"
+  "assetIconVisibilityHide": "Ocultar iconos",
+  "holdingsLabel": "En cartera"
 }

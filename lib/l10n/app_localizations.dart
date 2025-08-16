@@ -514,6 +514,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hide icons'**
   String get assetIconVisibilityHide;
+
+  /// No description provided for @holdingsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Holdings'**
+  String get holdingsLabel;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

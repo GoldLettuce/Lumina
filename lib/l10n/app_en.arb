@@ -86,5 +86,6 @@
   },
   "assetIconVisibilityTitle": "Show asset icons",
   "assetIconVisibilityShow": "Show icons",
-  "assetIconVisibilityHide": "Hide icons"
+  "assetIconVisibilityHide": "Hide icons",
+  "holdingsLabel": "Holdings"
 }

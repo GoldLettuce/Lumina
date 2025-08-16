@@ -221,4 +221,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get assetIconVisibilityHide => 'Hide icons';
+
+  @override
+  String get holdingsLabel => 'Holdings';
 }

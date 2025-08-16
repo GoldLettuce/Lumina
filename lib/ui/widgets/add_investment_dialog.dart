@@ -60,6 +60,14 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   bool _isSell = false;
   double _availableQty = 0;
 
+  // Función auxiliar para formatear cantidades de manera consistente
+  String _formatQuantity(double quantity) {
+    return quantity
+        .toStringAsFixed(8)
+        .replaceFirst(RegExp(r'0+$'), '')
+        .replaceFirst(RegExp(r'\.$'), '');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -558,10 +566,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                             ),
                             onPressed: () {
                               // Rellena con toda la posición disponible, recortando ceros finales
-                              final txt = _availableQty
-                                  .toStringAsFixed(8)
-                                  .replaceFirst(RegExp(r'0+$'), '')
-                                  .replaceFirst(RegExp(r'\.$'), '');
+                              final txt = _formatQuantity(_availableQty);
                               _quantityController.text = txt;
                               // si hay validación onChanged, dispara un setState ligero
                               setState(() {});
@@ -582,6 +587,12 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                     if (val == null || val.isEmpty) return loc.fieldRequired;
                     final n = parseFlexibleDouble(val);
                     if (n == null || n <= 0) return loc.invalidQuantity;
+                    
+                    // Validación adicional para modo venta: verificar que no se exceda la cantidad disponible
+                    if (_isSell && n > _availableQty) {
+                      return '${loc.holdingsLabel}: ${_formatQuantity(_availableQty)}';
+                    }
+                    
                     return null;
                   },
                 ),
