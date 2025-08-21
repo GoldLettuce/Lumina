@@ -12,10 +12,7 @@ dependencies:
     sdk: flutter
 
   permission_handler: ^12.0.1
-
   cupertino_icons: ^1.0.8
-
-
 
   # Internacionalización
   flutter_localizations:
@@ -58,18 +55,16 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
   flutter_lints: ^5.0.0
-
   # Generación de adaptadores Hive
   hive_generator: ^2.0.1
   build_runner: ^2.4.6
+  # Splash & App Icons
   flutter_native_splash: ^2.4.0
   flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
-
   # Generación automática de localización
   generate: true
 
@@ -88,23 +83,39 @@ flutter:
         - asset: fonts/RobotoMono-Regular.ttf
           weight: 400
 
+# Splash screen: isotipo únicamente (Android e iOS)
 flutter_native_splash:
   color: "#000000"
-  image: assets/logo/lumina_splash.png
+  color_dark: "#000000"
+
+  # Imagen del isotipo
+  image: assets/logo/splash_icon.png
+  image_dark: assets/logo/splash_icon.png
+
+  android_gravity: center
+  ios_content_mode: center
+  fullscreen: true
   android: true
   ios: true
-  fullscreen: true
 
+  # Android 12+: también solo isotipo
+  android_12:
+    color: "#000000"
+    color_dark: "#000000"
+    image: assets/logo/splash_icon.png
+    image_dark: assets/logo/splash_icon.png
+
+# Iconos: Android adaptive + iOS estático
 flutter_launcher_icons:
   android: true
   ios: true
 
-  # ANDROID (unchanged)
+  # ANDROID (adaptive): fondo negro + foreground transparente
   image_path_android: "assets/icons/app_icon_foreground.png"
   adaptive_icon_background: "#000000"
   adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
-  adaptive_icon_monochrome: "assets/icons/ic_launcher_monochrome.svg"
+  # (opcional para Android 13+) adaptive_icon_monochrome: "assets/icons/ic_launcher_monochrome.png"
 
-  # IOS (dedicated PNG)
-  image_path_ios: "assets/icons/app_icon_ios_dark.png"
+  # iOS (PNG ya compuesto con fondo negro)
+  image_path_ios: "assets/icons/app_icon.png"
   remove_alpha_ios: true
