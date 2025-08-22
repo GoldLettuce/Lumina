@@ -224,4 +224,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get holdingsLabel => 'Holdings';
+
+  @override
+  String get allTransactions => 'All transactions';
 }

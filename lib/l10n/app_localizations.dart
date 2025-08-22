@@ -520,6 +520,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Holdings'**
   String get holdingsLabel;
+
+  /// No description provided for @allTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'All transactions'**
+  String get allTransactions;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

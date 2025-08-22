@@ -14,6 +14,7 @@ import '../widgets/add_investment_dialog.dart';
 import '../widgets/portfolio_summary_with_chart.dart';
 import '../widgets/coingecko_attribution.dart';
 import 'asset_detail_screen.dart';
+import 'all_transactions_screen.dart';
 import 'archived_assets_screen.dart';
 import 'settings_screen.dart';
 import '../../core/point.dart';
@@ -580,6 +581,18 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                   ],
                 ),
                 actions: [
+                  // NUEVO: listado global de operaciones
+                  IconButton(
+                    icon: const Icon(Icons.list_alt),
+                    tooltip: 'All transactions',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const AllTransactionsScreen()),
+                      );
+                    },
+                  ),
+                  // EXISTENTE: botón +
                   IconButton(
                     icon: const Icon(Icons.add),
                     onPressed: () async {
