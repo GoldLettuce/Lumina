@@ -168,17 +168,21 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
           ),
         ],
       ),
-      body:
-          currentAsset.operations.isEmpty
-              ? Center(
+      body: () {
+        // Crear una copia ordenada de las operaciones por fecha descendente
+        final ops = List.of(currentAsset.operations);
+        ops.sort((a, b) => b.date.compareTo(a.date));
+        
+        return ops.isEmpty
+            ? Center(
                 child: Text(t.noOperations, style: theme.textTheme.bodyLarge),
               )
-              : ListView.separated(
+            : ListView.separated(
                 padding: const EdgeInsets.all(16),
                 separatorBuilder: (_, __) => const Divider(),
-                itemCount: currentAsset.operations.length,
+                itemCount: ops.length,
                 itemBuilder: (context, index) {
-                  final op = currentAsset.operations[index];
+                  final op = ops[index];
                   final isBuy = op.type == OperationType.buy;
                   final fecha = DateFormat(
                     'd MMM y',
@@ -253,7 +257,8 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                     ),
                   );
                 },
-              ),
+              );
+      }(),
     );
   }
 }
