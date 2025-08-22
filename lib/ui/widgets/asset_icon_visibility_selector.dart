@@ -14,25 +14,12 @@ class AssetIconVisibilitySelector extends StatelessWidget {
     final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
 
-    // Definimos colores del switch en función del estado y del tema,
-    // usando MaterialStateProperty para que se apliquen correctamente.
-    final thumbColor = WidgetStateProperty.resolveWith<Color?>((states) {
-      if (states.contains(WidgetState.selected)) return cs.onPrimary;
-      return cs.onSurface;
-    });
 
-    final trackColor = WidgetStateProperty.resolveWith<Color?>((states) {
-      if (states.contains(WidgetState.selected)) {
-        // Track ligeramente translúcido para que no resulte chillón en ningún tema
-        return cs.primary.withValues(alpha: isDark ? 0.55 : 0.6);
-      }
-      return cs.onSurfaceVariant.withValues(alpha: isDark ? 0.25 : 0.3);
-    });
 
     // Switch compacto
     final compactSwitch = Transform.scale(
       scale: 0.9,
-      child: Switch.adaptive(
+      child: Switch(
         value: settings.showAssetIcons,
         onChanged: (v) {
           if (v != settings.showAssetIcons) {
@@ -40,36 +27,36 @@ class AssetIconVisibilitySelector extends StatelessWidget {
                 v ? AssetIconVisibility.show : AssetIconVisibility.hide;
           }
         },
+        activeColor: Theme.of(context).colorScheme.primary,
+        inactiveThumbColor: Theme.of(context).colorScheme.surface,
+        inactiveTrackColor: Theme.of(context).colorScheme.outline,
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
     );
 
     return MergeSemantics(
-      child: SwitchTheme(
-        data: SwitchThemeData(thumbColor: thumbColor, trackColor: trackColor),
-        child: ListTile(
-          title: Text(
-            t.assetIconVisibilityTitle,
-            // Forzar color que garantice visibilidad en todos los temas
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-              color:
-                  isDark
-                      ? cs.onSurface
-                      : cs.onSurface, // Siempre usar onSurface para contraste
-            ),
+      child: ListTile(
+        title: Text(
+          t.assetIconVisibilityTitle,
+          // Forzar color que garantice visibilidad en todos los temas
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+            color:
+                isDark
+                    ? cs.onSurface
+                    : cs.onSurface, // Siempre usar onSurface para contraste
           ),
-          trailing: compactSwitch,
-          dense: true,
-          visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          onTap:
-              () =>
-                  settings.assetIconVisibility =
-                      settings.showAssetIcons
-                          ? AssetIconVisibility.hide
-                          : AssetIconVisibility.show,
         ),
+        trailing: compactSwitch,
+        dense: true,
+        visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        onTap:
+            () =>
+                settings.assetIconVisibility =
+                    settings.showAssetIcons
+                        ? AssetIconVisibility.hide
+                        : AssetIconVisibility.show,
       ),
     );
   }

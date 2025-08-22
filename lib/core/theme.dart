@@ -3,6 +3,23 @@ import 'package:hive/hive.dart';
 import 'colors.dart';
 
 class AppTheme {
+  /// Función reutilizable para construir AppBarTheme consistente
+  static AppBarTheme _buildAppBarTheme(ThemeData base) {
+    return AppBarTheme(
+      titleTextStyle: base.textTheme.titleLarge?.copyWith(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        fontFamily: 'Roboto',
+        color: base.colorScheme.onSurface,
+      ),
+      backgroundColor: base.appBarTheme.backgroundColor ?? base.colorScheme.surface,
+      foregroundColor: base.appBarTheme.foregroundColor ?? base.colorScheme.onSurface,
+      elevation: base.appBarTheme.elevation ?? 0,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
+    );
+  }
+
   static ThemeData get lightTheme {
     return ThemeData.light(useMaterial3: true).copyWith(
       scaffoldBackgroundColor: AppColors.lightBackground,
@@ -16,6 +33,7 @@ class AppTheme {
         tertiary: AppColors.lightPositive,
         error: AppColors.lightNegative,
       ),
+      appBarTheme: _buildAppBarTheme(ThemeData.light(useMaterial3: true)),
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
           fontSize: 32,
@@ -47,7 +65,7 @@ class AppTheme {
   }
 
   static ThemeData get darkTheme {
-    return ThemeData(
+    final baseTheme = ThemeData(
       brightness: Brightness.dark,
       useMaterial3: true,
       scaffoldBackgroundColor: AppColors.darkBackground,
@@ -94,6 +112,10 @@ class AppTheme {
         showCloseIcon: false,
       ),
     );
+    
+    return baseTheme.copyWith(
+      appBarTheme: _buildAppBarTheme(baseTheme),
+    );
   }
 
   static ThemeData get lightMonoTheme {
@@ -106,11 +128,13 @@ class AppTheme {
         surface: AppColors.lightBackground,
         onSurface: AppColors.lightTextPrimary,
       ),
+      appBarTheme: _buildAppBarTheme(ThemeData.light(useMaterial3: true)),
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.bold,
           color: AppColors.lightTextPrimary,
+          fontFamily: 'Roboto',
         ),
         bodyLarge: TextStyle(fontSize: 16, color: AppColors.lightTextPrimary),
         bodyMedium: TextStyle(
@@ -139,11 +163,13 @@ class AppTheme {
         surface: AppColors.darkBackground,
         onSurface: AppColors.darkOnBackground,
       ),
+      appBarTheme: _buildAppBarTheme(ThemeData.dark(useMaterial3: true)),
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.bold,
           color: AppColors.darkOnBackground,
+          fontFamily: 'Roboto',
         ),
         bodyLarge: TextStyle(fontSize: 16, color: AppColors.darkOnBackground),
         bodyMedium: TextStyle(fontSize: 14, color: AppColors.darkOnSurface),
