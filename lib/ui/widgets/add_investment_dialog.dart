@@ -29,10 +29,12 @@ class AddInvestmentDialog extends StatefulWidget {
     super.key,
     this.initialOperation,
     this.initialSymbol,
+    this.fixedSymbol,
   });
 
   final InvestmentOperation? initialOperation;
   final String? initialSymbol;
+  final String? fixedSymbol;
 
   @override
   State<AddInvestmentDialog> createState() => _AddInvestmentDialogState();
@@ -71,6 +73,14 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   void initState() {
     super.initState();
     final op = widget.initialOperation;
+    
+    // Si tenemos un símbolo fijo, inicializarlo
+    if (widget.fixedSymbol != null) {
+      _displaySymbol = widget.fixedSymbol;
+      // Necesitamos obtener el coingeckoId para el símbolo fijo
+      Future.microtask(() => _onAssetSelected());
+    }
+    
     if (op != null) {
       // Si venimos de editar, inicializamos también el símbolo y el ID
       _operationType = op.type;
@@ -155,24 +165,47 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
   }
 
   void _onAssetSelected() {
-    if (_coingeckoId != null) {
+    if (_coingeckoId != null || widget.fixedSymbol != null) {
       final model = context.read<InvestmentProvider>();
-      final asset = model.investments.firstWhere(
-        (inv) => inv.coingeckoId == _coingeckoId,
-        orElse:
-            () => Investment(
-              symbol: _displaySymbol ?? '',
-              name: _displaySymbol ?? '',
-              type: AssetType.crypto,
-              coingeckoId: _coingeckoId!,
-            ),
-      );
+      Investment? asset;
+      
+      if (_coingeckoId != null) {
+        // Buscar por coingeckoId
+        asset = model.investments.firstWhere(
+          (inv) => inv.coingeckoId == _coingeckoId,
+          orElse: () => Investment(
+            symbol: _displaySymbol ?? '',
+            name: _displaySymbol ?? '',
+            type: AssetType.crypto,
+            coingeckoId: _coingeckoId!,
+          ),
+        );
+      } else if (widget.fixedSymbol != null) {
+        // Buscar por símbolo cuando tenemos fixedSymbol
+        asset = model.investments.firstWhere(
+          (inv) => inv.symbol == widget.fixedSymbol,
+          orElse: () => Investment(
+            symbol: widget.fixedSymbol!,
+            name: widget.fixedSymbol!,
+            type: AssetType.crypto,
+            coingeckoId: '', // Se asignará cuando se seleccione
+          ),
+        );
+        
+        // Si encontramos el asset, obtener su coingeckoId
+        if (asset.coingeckoId.isNotEmpty) {
+          _coingeckoId = asset.coingeckoId;
+          _imageUrl = asset.imageUrl;
+        }
+      }
 
-      setState(() {
-        // Usar la cantidad actual en posesión del modelo
-        final q = asset.totalQuantity;
-        _availableQty = q < 0 ? 0 : q;
-      });
+      if (asset != null) {
+        setState(() {
+          // Usar la cantidad actual en posesión del modelo
+          final q = asset!.totalQuantity;
+          _availableQty = q < 0 ? 0 : q;
+        });
+      }
     }
   }
 
@@ -188,8 +221,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
     });
 
     // Validación: exigimos símbolo, ID, tipo y fecha
+    final symbol = widget.fixedSymbol ?? _displaySymbol;
     if (!_formKey.currentState!.validate() ||
-        _displaySymbol == null ||
+        symbol == null ||
         _coingeckoId == null ||
         _operationType == null ||
         _selectedDate == null) {
@@ -242,8 +276,8 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
 
     // Crear Investment con símbolo, nombre, ID, vsCurrency e imageUrl
     final newInvestment = Investment(
-      symbol: _displaySymbol!,
-      name: _displaySymbol!,
+      symbol: symbol,
+      name: symbol,
       type: AssetType.crypto,
       coingeckoId: _coingeckoId!,
       vsCurrency: currencyCode,
@@ -376,9 +410,9 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  widget.initialOperation != null
+                  widget.fixedSymbol ?? (widget.initialOperation != null
                       ? loc.editOperation
-                      : loc.newOperation,
+                      : loc.newOperation),
                   style: Theme.of(
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
@@ -469,7 +503,7 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                 const SizedBox(height: 16),
 
                 // ─── Selector símbolo ────────────────────────────────
-                if (widget.initialOperation == null)
+                if (widget.initialOperation == null && widget.fixedSymbol == null)
                   InkWell(
                     onTap:
                         _isSaving

@@ -138,6 +138,24 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () async {
+              final result = await showDialog(
+                context: context,
+                builder: (_) => AddInvestmentDialog(
+                  fixedSymbol: widget.asset.symbol,
+                ),
+              );
+              if (result == true && context.mounted) {
+                // Espera a que InvestmentProvider publique la nueva inversión
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
+                  setState(() {});
+                });
+              }
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.delete),
             onPressed:
                 _selectedIds.isNotEmpty
