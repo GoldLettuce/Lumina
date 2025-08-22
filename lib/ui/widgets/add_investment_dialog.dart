@@ -660,8 +660,23 @@ class _AddInvestmentDialogState extends State<AddInvestmentDialog> {
                     if (n == null || n <= 0) return loc.invalidQuantity;
 
                     // Validación adicional para modo venta: verificar que no se exceda la cantidad disponible
-                    if (_isSell && n > _availableQty) {
-                      return '${loc.holdingsLabel}: ${_formatQuantity(_availableQty)}';
+                    if (_isSell) {
+                      // Si estamos editando, ajustar las holdings excluyendo la operación original
+                      double adjustedHoldings = _availableQty;
+                      if (widget.initialOperation != null) {
+                        final originalOp = widget.initialOperation!;
+                        if (originalOp.type == OperationType.sell) {
+                          // Si la operación original es una venta, súmale su cantidad a las holdings
+                          adjustedHoldings += originalOp.quantity;
+                        } else if (originalOp.type == OperationType.buy) {
+                          // Si la operación original es una compra, réstale su cantidad a las holdings
+                          adjustedHoldings -= originalOp.quantity;
+                        }
+                      }
+                      
+                      if (n > adjustedHoldings) {
+                        return '${loc.holdingsLabel}: ${_formatQuantity(adjustedHoldings)}';
+                      }
                     }
 
                     return null;
