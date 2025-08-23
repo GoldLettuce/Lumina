@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 // por si se necesita conversión en el futuro
 import 'package:lumina/ui/providers/investment_provider.dart';
 import '../../l10n/app_localizations.dart';
-import 'asset_detail_screen.dart';
+import '../widgets/archived_asset_tile.dart';
 
 class ArchivedAssetsScreen extends StatelessWidget {
   const ArchivedAssetsScreen({super.key});
@@ -42,27 +42,17 @@ class ArchivedAssetsScreen extends StatelessWidget {
                 separatorBuilder:
                     (_, __) => Divider(color: Theme.of(context).dividerColor),
                 itemBuilder: (context, index) {
-                  final asset = archived[index];
-                  return ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      asset.symbol,
-                      style: theme.textTheme.bodyLarge!.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  final inv = archived[index];
+                  return Selector<InvestmentProvider, ({double? profit, double? profitPct})>(
+                    selector: (_, p) => (
+                      profit: p.totalProfitFor(inv.symbol),
+                      profitPct: p.totalProfitPctFor(inv.symbol),
                     ),
-                    subtitle: Text(
-                      '${t.quantity}: ${asset.totalQuantity}',
-                      style: theme.textTheme.bodyMedium,
+                    builder: (_, data, __) => ArchivedAssetTile(
+                      inv: inv,
+                      profit: data.profit,
+                      profitPct: data.profitPct,
                     ),
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => AssetDetailScreen(asset: asset),
-                        ),
-                      );
-                    },
                   );
                 },
               ),

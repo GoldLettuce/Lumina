@@ -87,6 +87,56 @@ class InvestmentProvider extends ChangeNotifier {
     return ((valorActual - invertido) / invertido) * 100;
   }
 
+  // ---------- MÉTRICAS PARA ASSETS ARCHIVADOS ----------
+  /// Calcula la ganancia total de un asset archivado basándose en sus operaciones
+  double? totalProfitFor(String symbol) {
+    final investment = _investments.firstWhere(
+      (inv) => inv.symbol == symbol,
+      orElse: () => throw Exception('Investment not found'),
+    );
+    
+    // Solo calcular para assets archivados (totalQuantity == 0)
+    if (investment.totalQuantity != 0) return null;
+    
+    double totalInvested = 0.0;
+    double totalRecovered = 0.0;
+    
+    for (final operation in investment.operations) {
+      if (operation.type == OperationType.buy) {
+        totalInvested += operation.quantity * operation.price;
+      } else if (operation.type == OperationType.sell) {
+        totalRecovered += operation.quantity * operation.price;
+      }
+    }
+    
+    return totalRecovered - totalInvested;
+  }
+
+  /// Calcula el porcentaje de ganancia de un asset archivado
+  double? totalProfitPctFor(String symbol) {
+    final investment = _investments.firstWhere(
+      (inv) => inv.symbol == symbol,
+      orElse: () => throw Exception('Investment not found'),
+    );
+    
+    // Solo calcular para assets archivados (totalQuantity == 0)
+    if (investment.totalQuantity != 0) return null;
+    
+    double totalInvested = 0.0;
+    double totalRecovered = 0.0;
+    
+    for (final operation in investment.operations) {
+      if (operation.type == OperationType.buy) {
+        totalInvested += operation.quantity * operation.price;
+      } else if (operation.type == OperationType.sell) {
+        totalRecovered += operation.quantity * operation.price;
+      }
+    }
+    
+    if (totalInvested <= 0) return 0.0;
+    return ((totalRecovered - totalInvested) / totalInvested) * 100;
+  }
+
   // ---------- REFRESH EXTERNO ----------
   Future<void> load() => loadInvestments();
 
