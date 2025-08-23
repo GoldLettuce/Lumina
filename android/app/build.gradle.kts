@@ -36,9 +36,14 @@ android {
         }
     }
 
-    ndkVersion = "27.0.12077973"
+
 }
 
 flutter {
     source = "../.."
+}
+
+// Forzar jvmTarget 17 en todas las tareas Kotlin
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions.jvmTarget = "17"
 }
