@@ -78,7 +78,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
         spotPrices,
       );
       if (todayValue > 0) {
-        // 🔑 Si el último punto ya es de hoy → reemplázalo
+        // Si el último punto ya es de hoy, reemplázalo
         final today = DateTime.now();
         final isSameDay = out.isNotEmpty && _isSameDay(out.last.time, today);
 
@@ -153,7 +153,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
       /*───────── descarga inicial ───────*/
       if (hist == null) {
-        // 📡 [NEW] ${inv.symbol} → 365 días inicial
+        // Nueva descarga inicial para ${inv.symbol} - 365 días
         List<Point> pts = [];
         try {
           pts = await _service.getMarketChart(
@@ -173,7 +173,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
                   )
                   .toList();
         } catch (_) {
-          // ⚠️  Sin conexión: no se pudo descargar ${inv.symbol}
+          // Sin conexión: no se pudo descargar ${inv.symbol}
           pts = [];
         }
         if (pts.isEmpty) continue;
@@ -205,7 +205,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
       if (earliestNeeded != null) {
         final earliestDate = _roundToDay(earliestNeeded);
-        //  ★ Nuevo límite: exactamente hoy-365 (UTC→local ya convertidos)
+        // Nuevo límite: exactamente hoy-365 (UTC→local ya convertidos)
         final limitDate = _roundToDay(
           DateTime.now().subtract(const Duration(days: 364)),
         );
@@ -215,7 +215,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
         if (daysBack > 0) {
           // si diffDays = 0 no se pide nada
-          // ⏪ [BACKFILL] ${inv.symbol} → $daysBack días
+          // Back-fill para ${inv.symbol} - $daysBack días
 
           List<Point> older = [];
           try {
@@ -236,7 +236,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
                     )
                     .toList();
           } catch (_) {
-            // ⚠️  Sin conexión back-fill ${inv.symbol}
+            // Sin conexión back-fill ${inv.symbol}
             older = [];
           }
 
@@ -258,7 +258,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
       if (lastSavedDay.isBefore(lastNeededDay)) {
         final missingDays = today.difference(lastSavedDay).inDays;
-                 // ⏩ [FORWARD] ${inv.symbol} → $missingDays días
+                 // Forward-fill para ${inv.symbol} - $missingDays días
 
         List<Point> newPts = [];
         try {
@@ -279,7 +279,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
                   )
                   .toList();
         } catch (_) {
-                     // ⚠️  Sin conexión forward ${inv.symbol}
+                     // Sin conexión forward ${inv.symbol}
           newPts = [];
         }
 

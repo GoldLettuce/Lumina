@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:lumina/ui/providers/theme_mode_provider.dart';
 import 'package:lumina/core/theme.dart';
 
-/// ⚠️ Versión provisional combinando dos SVG en darkMono.
+/// Versión provisional combinando dos SVG en darkMono.
 /// Se ha solicitado aprobación a CoinGecko.
 /// Si no la conceden, revertir a los logos completos oficiales.
 class CoinGeckoAttribution extends StatelessWidget {

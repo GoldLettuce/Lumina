@@ -12,7 +12,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
   Timer? _refreshTimer;
   bool _isLoading = false;
 
-  // OPT: versión/timestamp para gatillar UI de forma barata y fiable
+      // Versión/timestamp para gatillar UI de forma barata y fiable
   int _pricesVersion = 0;
   int get pricesVersion => _pricesVersion;
   DateTime? _lastUpdated;
@@ -37,13 +37,13 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
       _symbolToId.addAll(symbolToId);
     }
 
-    // ✅ Iniciar el timer si aún no existe
+    // Iniciar el timer si aún no existe
     _refreshTimer ??= Timer.periodic(
       const Duration(seconds: 60),
       (_) => loadPrices(),
     );
 
-    // ✅ Hacer una carga inicial si no hay precios o si hay símbolos nuevos no cargados
+    // Hacer una carga inicial si no hay precios o si hay símbolos nuevos no cargados
     final needInitialLoad =
         _spotPrices.isEmpty ||
         added.any((symbol) => !_spotPrices.containsKey(symbol));
@@ -67,7 +67,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
         }
       }
 
-      // OPT: sube versión al cargar desde cache
+      // Sube versión al cargar desde cache
       _pricesVersion++;
       _lastUpdated = DateTime.now();
       notifyListeners();
@@ -79,7 +79,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
     if (_isLoading || _symbols.isEmpty) return;
 
     _isLoading =
-        true; // OPT: Evitamos notificar aquí para no reconstruir a mitad de carga
+        true; // Evitamos notificar aquí para no reconstruir a mitad de carga
 
     try {
       // Actualizar el mapeo en el repositorio de precios usando el mapeo almacenado
@@ -104,7 +104,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
       // Error loading prices
     } finally {
       _isLoading = false;
-      // OPT: eliminado notifyListeners() final porque la UI no observa isLoading
+      // Eliminado notifyListeners() final porque la UI no observa isLoading
 
       // Reiniciar el timer para evitar llamadas dobles tras una carga manual
       _refreshTimer?.cancel();
@@ -134,11 +134,11 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
     // Evitar que una respuesta vacía borre los precios actuales
     if (newPrices.isEmpty) return;
 
-    // 🔑 No borres lo que ya teníamos; solo actualiza/añade lo nuevo
+    // No borres lo que ya teníamos; solo actualiza/añade lo nuevo
     bool changed = false;
     for (final entry in newPrices.entries) {
       if (!_symbols.contains(entry.key)) {
-        continue; // OPT: ignorar símbolos no visibles
+        continue; // Ignorar símbolos no visibles
       }
       if (_spotPrices[entry.key] != entry.value) {
         _spotPrices[entry.key] = entry.value;
@@ -147,9 +147,9 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
     if (!changed) return;
 
-    // OPT: sube versión en cada tick válido
+          // Sube versión en cada tick válido
     _pricesVersion++;
-    // OPT: timestamp (útil para debug/UX)
+          // Timestamp (útil para debug/UX)
     _lastUpdated = DateTime.now();
 
     notifyListeners();
@@ -179,7 +179,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
 
     if (state == AppLifecycleState.resumed && _symbols.isNotEmpty) {
-      // ✅ Al volver, lanzar una carga manual y reiniciar el timer
+      // Al volver, lanzar una carga manual y reiniciar el timer
       loadPrices();
     }
   }

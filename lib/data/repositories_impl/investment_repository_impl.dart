@@ -35,7 +35,7 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
 
   @override
   Future<List<Investment>> getAllInvestments() async {
-    // ✅ Optimización: usar Future.wait para cargar todas las inversiones en paralelo
+    // Optimización: usar Future.wait para cargar todas las inversiones en paralelo
     // Esto es significativamente más rápido que lecturas secuenciales
     final keys = _box.keys.toList();
     if (keys.isEmpty) return [];
@@ -53,7 +53,7 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
     await _box.delete(symbol);
   }
 
-  /// ✅ Añadir operación directamente a un activo ya existente
+      /// Añadir operación directamente a un activo ya existente
   Future<void> addOperation(
     String investmentKey,
     InvestmentOperation op,
@@ -65,7 +65,7 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
     await inv.save();
   }
 
-  /// ✅ Editar una operación existente por ID
+      /// Editar una operación existente por ID
   Future<void> editOperation(
     String investmentKey,
     InvestmentOperation updatedOp,
@@ -83,7 +83,7 @@ class InvestmentRepositoryImpl implements InvestmentRepository {
     await _box.put(investmentKey, updatedInvestment);
   }
 
-  /// ✅ Eliminar múltiples operaciones por ID
+      /// Eliminar múltiples operaciones por ID
   Future<void> removeOperations(
     String investmentKey,
     List<String> operationIds,
