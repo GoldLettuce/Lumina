@@ -583,7 +583,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                 actions: [
                   // NUEVO: listado global de operaciones
                   IconButton(
-                    icon: const Icon(Icons.list_alt),
+                    icon: const Icon(Icons.history),
                     tooltip: 'All transactions',
                     onPressed: () {
                       Navigator.push(
