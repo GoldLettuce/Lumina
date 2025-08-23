@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -428,7 +428,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
       final inv = context.read<InvestmentProvider>().investments;
       _loadHistory(inv);
     } catch (e) {
-      debugPrint('[PortfolioScreen] Providers not ready yet, skipping reload');
+      // Error al recargar historial, continuar con datos existentes
     }
   }
 
