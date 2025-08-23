@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lumina/ui/providers/settings_provider.dart';
+import 'package:lumina/ui/providers/currency_provider.dart';
 import 'package:lumina/core/number_formatting.dart';
 import 'package:lumina/core/colors.dart';
 import '../../domain/entities/investment.dart';
@@ -22,7 +23,14 @@ class ArchivedAssetTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final currency = inv.vsCurrency.toUpperCase();
+    
+    // Obtener datos de moneda desde CurrencyProvider
+    final fx = context.select<CurrencyProvider, ({String code, double rate})>(
+      (p) => (code: p.currency, rate: p.exchangeRate),
+    );
+    
+    // Aplicar cambio de moneda al profit
+    final profitInUserCurrency = (profit ?? 0.0) * fx.rate;
     final colorRentabilidad = AppColors.gainLossColor(context, profit ?? 0.0);
     
     final trailing = Column(
@@ -30,7 +38,7 @@ class ArchivedAssetTile extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          formatMoney((profit ?? 0.0).abs(), currency, context),
+          formatMoney(profitInUserCurrency.abs(), fx.code, context),
           style: theme.textTheme.bodyLarge!.copyWith(
             fontWeight: FontWeight.w600,
           ),
