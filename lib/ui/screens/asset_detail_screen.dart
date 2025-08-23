@@ -17,7 +17,7 @@ import '../../l10n/app_localizations.dart';
 import 'package:lumina/core/colors.dart';
 import 'package:lumina/core/theme.dart';
 
-// Helper functions removed - now using AppColors helpers
+
 
 class AssetDetailScreen extends StatefulWidget {
   final Investment asset;

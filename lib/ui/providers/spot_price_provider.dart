@@ -12,7 +12,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
   Timer? _refreshTimer;
   bool _isLoading = false;
 
-  // OPT: versión/timestamp para gatillar UI de forma barata y fiable
+
   int _pricesVersion = 0;
   int get pricesVersion => _pricesVersion;
   DateTime? _lastUpdated;
@@ -66,10 +66,8 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
           _spotPrices[p.symbol] = p.price;
         }
       }
-      print(
-        '[SpotPriceProvider] Precios cargados desde Hive: ${_spotPrices.length} activos',
-      );
-      // OPT: sube versión al cargar desde cache
+
+
       _pricesVersion++;
       _lastUpdated = DateTime.now();
       notifyListeners();
@@ -80,8 +78,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> loadPrices() async {
     if (_isLoading || _symbols.isEmpty) return;
 
-    _isLoading =
-        true; // OPT: Evitamos notificar aquí para no reconstruir a mitad de carga
+    _isLoading = true;
 
     try {
       // Actualizar el mapeo en el repositorio de precios usando el mapeo almacenado
@@ -101,14 +98,12 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
               .map((e) => SpotPrice(symbol: e.key, price: e.value))
               .toList();
       await box.put('spot_prices', toStore);
-      print(
-        '[SpotPriceProvider] Precios guardados en Hive: ${toStore.length} activos',
-      );
+
     } catch (e) {
-      print('[ERROR][SpotPriceProvider] $e');
+
     } finally {
       _isLoading = false;
-      // OPT: eliminado notifyListeners() final porque la UI no observa isLoading
+
 
       // Reiniciar el timer para evitar llamadas dobles tras una carga manual
       _refreshTimer?.cancel();
@@ -142,7 +137,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
     bool changed = false;
     for (final entry in newPrices.entries) {
       if (!_symbols.contains(entry.key)) {
-        continue; // OPT: ignorar símbolos no visibles
+        continue;
       }
       if (_spotPrices[entry.key] != entry.value) {
         _spotPrices[entry.key] = entry.value;
@@ -151,9 +146,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
     if (!changed) return;
 
-    // OPT: sube versión en cada tick válido
     _pricesVersion++;
-    // OPT: timestamp (útil para debug/UX)
     _lastUpdated = DateTime.now();
 
     notifyListeners();
