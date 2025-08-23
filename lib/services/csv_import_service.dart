@@ -17,7 +17,7 @@ class CsvImportService {
     // Validar cabecera
     final header = rows.first.map((e) => e.toString().trim()).toList();
     const expectedHeader = [
-      'name', 'symbol', 'type', 'quantity', 'price', 'fee', 'currency', 'date'
+      'name', 'symbol', 'type', 'quantity', 'price', 'currency', 'date'
     ];
     if (header.length != expectedHeader.length ||
         !List.generate(expectedHeader.length,
@@ -37,8 +37,8 @@ class CsvImportService {
       final type = row[2].toString().toUpperCase();
       final quantity = double.tryParse(row[3].toString()) ?? 0;
       final price = double.tryParse(row[4].toString()) ?? 0;
-      final currency = row[6].toString();
-      final date = DateTime.tryParse(row[7].toString()) ?? DateTime.now();
+      final currency = row[5].toString();
+      final date = DateTime.tryParse(row[6].toString()) ?? DateTime.now();
 
       final op = InvestmentOperation(
         type: type == 'SELL' ? OperationType.sell : OperationType.buy,
