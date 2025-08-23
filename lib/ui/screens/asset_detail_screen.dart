@@ -279,6 +279,125 @@ class _TopSummaryLine extends StatelessWidget {
 
     if (asset == null) return const SizedBox.shrink();
 
+    // Check if asset is archived (totalQuantity == 0)
+    final isArchived = asset.totalQuantity == 0;
+
+    if (isArchived) {
+      // Show archived asset summary
+      return _ArchivedAssetSummary(asset: asset);
+    } else {
+      // Show active asset summary (existing logic)
+      return _ActiveAssetSummary(asset: asset, symbol: symbol);
+    }
+  }
+}
+
+class _ArchivedAssetSummary extends StatelessWidget {
+  final Investment asset;
+  
+  const _ArchivedAssetSummary({required this.asset});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final fx = context.select<CurrencyProvider, ({String code, double rate})>(
+      (p) => (code: p.currency, rate: p.exchangeRate),
+    );
+
+    // Get archived asset metrics
+    final profit = context.select<InvestmentProvider, double?>(
+      (p) => p.totalProfitFor(asset.symbol),
+    );
+    final profitPct = context.select<InvestmentProvider, double?>(
+      (p) => p.totalProfitPctFor(asset.symbol),
+    );
+    final invested = context.select<InvestmentProvider, double?>(
+      (p) => p.totalInvestedFor(asset.symbol),
+    );
+    final recovered = context.select<InvestmentProvider, double?>(
+      (p) => p.totalRecoveredFor(asset.symbol),
+    );
+
+    if (profit == null || invested == null || recovered == null) {
+      return const SizedBox.shrink();
+    }
+
+    // Apply currency conversion
+    final profitInUserCurrency = profit * fx.rate;
+    final investedInUserCurrency = invested * fx.rate;
+    final recoveredInUserCurrency = recovered * fx.rate;
+
+    // Format values
+    final profitFormatted = formatMoney(profitInUserCurrency.abs(), fx.code, context);
+    final pctFormatted = '${profit >= 0 ? '+' : ''}${profitPct?.toStringAsFixed(2) ?? '0.00'}%';
+    final investedFormatted = formatMoney(investedInUserCurrency, fx.code, context);
+    final recoveredFormatted = formatMoney(recoveredInUserCurrency, fx.code, context);
+
+    // Determine color based on profit - use same logic as active assets
+    final profitColor = profit >= 0 
+        ? AppColors.positive 
+        : AppColors.negative;
+
+    // Use same base style as active assets for consistency
+    final base = theme.textTheme.labelLarge?.copyWith(
+      color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
+      fontWeight: FontWeight.w500,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: DefaultTextStyle(
+        style: base ?? const TextStyle(fontSize: 13),
+        child: Wrap(
+          alignment: WrapAlignment.start, // Left alignment like active assets
+          spacing: 12, // Same spacing as active assets
+          children: [
+            // Ganancia total con porcentaje (main number like active assets) - TAPPABLE
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => context.read<ProfitDisplayModeNotifier>().toggle(),
+              child: Consumer<ProfitDisplayModeNotifier>(
+                builder: (context, displayMode, child) {
+                  final unit = displayMode.unit;
+                  final displayText = unit == PnlUnit.percent
+                      ? pctFormatted
+                      : '${profit >= 0 ? '+' : ''}$profitFormatted';
+                  
+                  return Text(
+                    displayText,
+                    style: (base ?? const TextStyle()).copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: profitColor,
+                    ),
+                  );
+                },
+              ),
+            ),
+            // Capital invertido y recuperado (secondary info like active assets)
+            Text(
+              '$investedFormatted   $recoveredFormatted',
+              style: (base ?? const TextStyle()).copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.56),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ActiveAssetSummary extends StatelessWidget {
+  final Investment asset;
+  final String symbol;
+  
+  const _ActiveAssetSummary({required this.asset, required this.symbol});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     final spotUsd = context.select<SpotPriceProvider, double?>(
       (sp) => sp.spotPrices[symbol],
     );

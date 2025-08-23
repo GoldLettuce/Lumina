@@ -137,6 +137,48 @@ class InvestmentProvider extends ChangeNotifier {
     return ((totalRecovered - totalInvested) / totalInvested) * 100;
   }
 
+  /// Calcula el capital total invertido de un asset archivado
+  double? totalInvestedFor(String symbol) {
+    final investment = _investments.firstWhere(
+      (inv) => inv.symbol == symbol,
+      orElse: () => throw Exception('Investment not found'),
+    );
+    
+    // Solo calcular para assets archivados (totalQuantity == 0)
+    if (investment.totalQuantity != 0) return null;
+    
+    double totalInvested = 0.0;
+    
+    for (final operation in investment.operations) {
+      if (operation.type == OperationType.buy) {
+        totalInvested += operation.quantity * operation.price;
+      }
+    }
+    
+    return totalInvested;
+  }
+
+  /// Calcula el capital total recuperado de un asset archivado
+  double? totalRecoveredFor(String symbol) {
+    final investment = _investments.firstWhere(
+      (inv) => inv.symbol == symbol,
+      orElse: () => throw Exception('Investment not found'),
+    );
+    
+    // Solo calcular para assets archivados (totalQuantity == 0)
+    if (investment.totalQuantity != 0) return null;
+    
+    double totalRecovered = 0.0;
+    
+    for (final operation in investment.operations) {
+      if (operation.type == OperationType.sell) {
+        totalRecovered += operation.quantity * operation.price;
+      }
+    }
+    
+    return totalRecovered;
+  }
+
   // ---------- REFRESH EXTERNO ----------
   Future<void> load() => loadInvestments();
 
