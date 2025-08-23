@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 import 'colors.dart';
 
@@ -173,6 +174,24 @@ class AppTheme {
         ),
         bodyLarge: TextStyle(fontSize: 16, color: AppColors.darkOnBackground),
         bodyMedium: TextStyle(fontSize: 14, color: AppColors.darkOnSurface),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          return states.contains(WidgetState.selected)
+              ? DarkMonoSwitchColors.thumbOn
+              : DarkMonoSwitchColors.thumbOff;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          return states.contains(WidgetState.selected)
+              ? DarkMonoSwitchColors.trackOn
+              : DarkMonoSwitchColors.trackOff;
+        }),
+        trackOutlineColor: WidgetStatePropertyAll(DarkMonoSwitchColors.outline),
+        overlayColor: WidgetStatePropertyAll(Colors.transparent),
+      ),
+      // Para Switch.adaptive en iOS (CupertinoSwitch), fija el color principal:
+      cupertinoOverrideTheme: const CupertinoThemeData(
+        primaryColor: DarkMonoSwitchColors.trackOn,
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,

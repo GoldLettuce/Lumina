@@ -27,9 +27,6 @@ class AssetIconVisibilitySelector extends StatelessWidget {
                 v ? AssetIconVisibility.show : AssetIconVisibility.hide;
           }
         },
-        activeColor: Theme.of(context).colorScheme.primary,
-        inactiveThumbColor: Theme.of(context).colorScheme.surface,
-        inactiveTrackColor: Theme.of(context).colorScheme.outline,
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
     );

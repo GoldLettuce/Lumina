@@ -174,3 +174,12 @@ const Color selectedTileMonoLight = Color(
   0xFFE8E8E8,
 ); // gris claro mono (más visible para light)
 const Color selectedTileMonoDark = Color(0xFF303030); // gris oscuro mono
+
+// --- Dark Mono Switch palette ---
+class DarkMonoSwitchColors {
+  static const Color thumbOn  = Color(0xFFFFFFFF); // blanco puro
+  static const Color trackOn  = Color(0xFFBDBDBD); // gris claro visible
+  static const Color thumbOff = Color(0xFF7A7A7A); // gris medio
+  static const Color trackOff = Color(0xFF2B2B2B); // gris muy oscuro
+  static const Color outline  = Color(0xFF3D3D3D); // borde del track
+}
