@@ -270,7 +270,6 @@ class _TopSummaryLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
 
     // Get current asset data
     final asset = context.select<InvestmentProvider, Investment?>((inv) {
