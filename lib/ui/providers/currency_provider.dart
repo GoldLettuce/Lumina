@@ -58,7 +58,6 @@ class CurrencyProvider extends ChangeNotifier {
       final service = FxCurrencyService();
       _currencies = await service.fetchSupportedCurrencies();
     } catch (e) {
-      debugPrint('Error al cargar monedas: $e');
       _currencies = {};
     }
 
@@ -72,7 +71,6 @@ class CurrencyProvider extends ChangeNotifier {
       final service = FxCurrentRateService();
       _exchangeRate = await service.getTodayRate(_currency);
     } catch (e) {
-      debugPrint('Error al cargar tasa de cambio: $e');
       _exchangeRate = 1.0;
     }
     notifyListeners();

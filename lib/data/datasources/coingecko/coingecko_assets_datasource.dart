@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+
 import '../../../core/request_manager.dart';
 import '../../../core/hive_service.dart';
 
@@ -40,14 +41,11 @@ class CoinGeckoAssetsDatasource {
 
   /// Obtiene una página específica de activos
   Future<List<CoinGeckoAsset>> fetchMarketsPage(int page) async {
-    print('[PAGINATION] Cargando página $page...');
-
     final url = Uri.parse(_getMarketsEndpoint(page));
     final response = await RequestManager().get(url);
 
     if (response.statusCode == 200) {
       final assets = await compute(_parseAssets, response.body);
-      print('[PAGINATION] Página $page cargada con ${assets.length} activos');
       return assets;
     } else {
       throw Exception(
@@ -65,8 +63,6 @@ class CoinGeckoAssetsDatasource {
     }
 
     // Cache vencida o no existe, obtener desde red
-    print('[CACHE][ASSETS] Cache vencida, actualizando desde red…');
-
     final assets = await fetchMarketsPage(1);
 
     // Guardar en cache
@@ -77,8 +73,6 @@ class CoinGeckoAssetsDatasource {
 
   /// Búsqueda remota de activos usando la API de CoinGecko
   Future<List<CoinGeckoAsset>> searchAssets(String query) async {
-    print('[SEARCH] Buscando: $query');
-
     final url = Uri.parse(
       'https://api.coingecko.com/api/v3/search?query=$query',
     );
@@ -100,7 +94,6 @@ class CoinGeckoAssetsDatasource {
               )
               .toList();
 
-      print('[SEARCH] Encontrados ${results.length} resultados para "$query"');
       return results;
     } else {
       throw Exception('Error en búsqueda: ${response.statusCode}');
@@ -119,10 +112,6 @@ class CoinGeckoAssetsDatasource {
 
         // Verificar si el cache no ha expirado (24 horas)
         if (now.difference(timestamp) < const Duration(hours: 24)) {
-          print(
-            '[CACHE][ASSETS] Usando cache local (fecha: ${timestamp.toIso8601String()})',
-          );
-
           final List<dynamic> data = cached['data'] as List<dynamic>;
           return data
               .map(
@@ -132,7 +121,7 @@ class CoinGeckoAssetsDatasource {
         }
       }
     } catch (e) {
-      print('[CACHE][ASSETS] Error al leer cache: $e');
+      // Error al leer cache
     }
 
     return null;
@@ -160,9 +149,8 @@ class CoinGeckoAssetsDatasource {
       };
 
       metaBox.put('assetsList', cacheData);
-      print('[CACHE][ASSETS] Cache actualizada con ${assets.length} assets');
     } catch (e) {
-      print('[CACHE][ASSETS] Error al guardar cache: $e');
+      // Error al guardar cache
     }
   }
 }
