@@ -91,7 +91,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: const Icon(Icons.download),
             title: Text(t.exportOperationsToCsv),
-            onTap: () => ExportController.handleCsvExport(context),
+            onTap: () async {
+              await ExportController.handleCsvExport(context);
+            },
           ),
 
           const SizedBox(height: 32),
