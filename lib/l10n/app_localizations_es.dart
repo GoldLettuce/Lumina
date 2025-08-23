@@ -168,6 +168,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exportOperationsToCsv => 'Exportar operaciones a CSV';
 
   @override
+  String get importOperationsFromCsv => 'Importar operaciones desde CSV';
+
+  @override
   String get deleteAllPortfolioData => 'Eliminar todos los datos del portafolio';
 
   @override

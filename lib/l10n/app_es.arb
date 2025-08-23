@@ -52,6 +52,7 @@
   "selectCurrency": "Selecciona una moneda",
   "selectLanguage": "Selecciona un idioma",
   "exportOperationsToCsv": "Exportar operaciones a CSV",
+  "importOperationsFromCsv": "Importar operaciones desde CSV",
   "deleteAllPortfolioData": "Eliminar todos los datos del portafolio",
   "portfolioDeletedSuccess": "✅ Portafolio eliminado",
   "searchAssetPlaceholder": "Ej. BTC, Ethereum…",

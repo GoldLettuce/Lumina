@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 
 import 'csv_export_service.dart';
+import 'csv_import_service.dart';
 import 'package:lumina/ui/providers/investment_provider.dart';
 import '../l10n/app_localizations.dart';
 
@@ -38,6 +41,39 @@ class ExportController {
       if (context.mounted) {
         _showSnack(context, t.exportFileError); // o texto plano
       }
+    }
+  }
+
+  static Future<void> handleCsvImport(BuildContext context) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['csv'],
+    );
+    if (result == null) return; // cancelado
+
+    try {
+      final file = File(result.files.single.path!);
+      final investments = await CsvImportService.parseCsv(file);
+
+      if (!context.mounted) return;
+
+      final provider = context.read<InvestmentProvider>();
+      for (final inv in investments) {
+        // Add the investment if it doesn't exist
+        await provider.addInvestment(inv);
+      }
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Importación completada ✅')),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al importar: $e')),
+      );
     }
   }
 }

@@ -96,6 +96,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
 
+          // Import CSV
+          ListTile(
+            leading: const Icon(Icons.file_upload),
+            title: Text(t.importOperationsFromCsv),
+            onTap: () async {
+              await ExportController.handleCsvImport(context);
+            },
+          ),
+
           const SizedBox(height: 32),
 
           // Reset portfolio

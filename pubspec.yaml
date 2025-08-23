@@ -52,6 +52,10 @@ dependencies:
   # Export functionality
   share_plus: ^10.0.2
 
+  # CSV import/export
+  file_picker: ^8.0.6
+  csv: ^6.0.0
+
   # Información del paquete
   package_info_plus: ^8.0.0
 

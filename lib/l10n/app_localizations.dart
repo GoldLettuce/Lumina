@@ -413,6 +413,12 @@ abstract class AppLocalizations {
   /// **'Export operations to CSV'**
   String get exportOperationsToCsv;
 
+  /// No description provided for @importOperationsFromCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Import operations from CSV'**
+  String get importOperationsFromCsv;
+
   /// No description provided for @deleteAllPortfolioData.
   ///
   /// In en, this message translates to:

@@ -53,6 +53,7 @@
   "selectCurrency": "Select a currency",
   "selectLanguage": "Select a language",
   "exportOperationsToCsv": "Export operations to CSV",
+  "importOperationsFromCsv": "Import operations from CSV",
   "deleteAllPortfolioData": "Delete all portfolio data",
   "portfolioDeletedSuccess": "✅ Portfolio deleted",
   "searchAssetPlaceholder": "E.g. BTC, Ethereum…",
