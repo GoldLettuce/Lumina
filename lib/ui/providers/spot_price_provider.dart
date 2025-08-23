@@ -100,7 +100,7 @@ class SpotPriceProvider extends ChangeNotifier with WidgetsBindingObserver {
       await box.put('spot_prices', toStore);
 
     } catch (e) {
-
+      // Ignora errores de red - mantiene precios en cache
     } finally {
       _isLoading = false;
 

@@ -428,7 +428,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
       final inv = context.read<InvestmentProvider>().investments;
       _loadHistory(inv);
     } catch (e) {
-
+      // Ignora errores al recargar historial - providers no están listos
     }
   }
 

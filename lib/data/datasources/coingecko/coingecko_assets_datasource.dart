@@ -130,7 +130,7 @@ class CoinGeckoAssetsDatasource {
         }
       }
     } catch (e) {
-
+      // Ignora errores de cache - simplemente retorna null para recargar desde red
     }
 
     return null;
@@ -160,7 +160,7 @@ class CoinGeckoAssetsDatasource {
       metaBox.put('assetsList', cacheData);
 
     } catch (e) {
-
+      // Ignora errores al guardar en cache - no es crítico
     }
   }
 }

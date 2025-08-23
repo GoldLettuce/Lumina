@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:flutter/foundation.dart';
+
 import 'package:lumina/core/hive_key_service.dart';
 import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/domain/entities/asset_type.dart';
@@ -58,30 +58,20 @@ class HiveService {
 
   /// Método interno que contiene la lógica de apertura de cajas
   static Future<void> _openAllBoxesInternal() async {
-    final startTime = DateTime.now();
-
-
     // Crear cipher AES-256 antes de abrir las cajas
     final key = await HiveKeyService.getOrCreateKey();
     final cipher = HiveAesCipher(key);
 
     // Fase 1: Abre solo la caja de configuración (mínima y rápida)
-    final settingsStart = DateTime.now();
     _settingsBox = await _openEncryptedBoxOrReset('settingsBox', cipher);
     await Future.delayed(Duration.zero);
-    final settingsEnd = DateTime.now();
-
 
     // Fase 2: Abre el resto de cajas y espera a que terminen
-
-
-    final heavyStart = DateTime.now();
     await _openInvestmentsBox(cipher);
     await _openChartCacheBox(cipher);
     await _openHistoryBox(cipher);
     await _openFxRatesBox(cipher);
     await _openMetaBox(cipher);
-    final heavyEnd = DateTime.now();
 
     _isInitialized = true;
   }
@@ -91,13 +81,9 @@ class HiveService {
   /// Este método debe llamarse una sola vez al inicio de la aplicación,
   /// antes de usar cualquier funcionalidad que requiera acceso a Hive.
   static Future<void> init() async {
-
     await initFlutterLight();
     await openAllBoxes();
     _isInitialized = true;
-
-[${}] �� ',
-
   }
 
   /// Registra todos los adapters de Hive necesarios
@@ -148,25 +134,25 @@ class HiveService {
     _investmentsBox = await _openEncryptedLazyBoxOrReset<Investment>(
       InvestmentRepositoryImpl.boxName,
       cipher,
-
+    );
     await Future.delayed(Duration.zero);
   }
 
   /// Abre la caja de caché de gráficos
   static Future<void> _openChartCacheBox(HiveAesCipher cipher) async {
     _chartCacheBox = await _openEncryptedBoxOrReset<ChartCache>(
-chart_cache',
+      'chart_cache',
       cipher,
-
+    );
     await Future.delayed(Duration.zero);
   }
 
   /// Abre la caja de historial local
   static Future<void> _openHistoryBox(HiveAesCipher cipher) async {
     _historyBox = await _openEncryptedBoxOrReset<LocalHistory>(
-history',
+      'history',
       cipher,
-
+    );
     await Future.delayed(Duration.zero);
   }
 
@@ -213,16 +199,16 @@ history',
     _investmentsBox = await _openEncryptedLazyBoxOrReset<Investment>(
       InvestmentRepositoryImpl.boxName,
       cipher,
-
+    );
     await Future.delayed(Duration.zero);
   }
 
   /// Reabre la caja de caché de gráficos (útil después de reset)
   static Future<void> reopenChartCacheBox(HiveAesCipher cipher) async {
     _chartCacheBox = await _openEncryptedBoxOrReset<ChartCache>(
-chart_cache',
+      'chart_cache',
       cipher,
-
+    );
     await Future.delayed(Duration.zero);
   }
 }
