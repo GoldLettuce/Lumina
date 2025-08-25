@@ -42,7 +42,7 @@ class SummaryVM {
   final double exchangeRate;
   final String currency;
   final List<Investment> investments;
-  final double initialValueUsd;
+  final double initialValueUsd; // OPT: precálculo para evitar trabajo en scrub
 
   const SummaryVM({
     required this.history,
@@ -136,9 +136,9 @@ class PortfolioSummaryMinimal extends StatelessWidget {
   final double exchangeRate;
   final String currency;
   final List<Investment> investments;
-  final double initialValueUsd;
+  final double initialValueUsd; // OPT
 
-
+  // OPT: valor inicial ya precalculado y memoizado en el Selector
 
   @override
   Widget build(BuildContext context) {
@@ -317,7 +317,7 @@ class AssetListTile extends StatelessWidget {
 
     final showIcons = context.select<SettingsProvider, bool>(
       (s) => s.showAssetIcons,
-    );
+    ); // OPT: evita rebuilds por otros ajustes
 
     return GestureDetector(
       onTap: () async {
@@ -331,7 +331,7 @@ class AssetListTile extends StatelessWidget {
             ?._maybeReloadHistory();
       },
       child: RepaintBoundary(
-
+        // OPT: evita repintar vecinas
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
@@ -428,7 +428,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
       final inv = context.read<InvestmentProvider>().investments;
       _loadHistory(inv);
     } catch (e) {
-
+      debugPrint('[PortfolioScreen] Providers not ready yet, skipping reload');
     }
   }
 
@@ -625,7 +625,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                       Selector<SpotPriceProvider, int>(
                         selector:
                             (_, p) =>
-                                p.pricesVersion,
+                                p.pricesVersion, // OPT: versión fiable y barata
                         builder: (_, __, ___) {
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             if (mounted) _scheduleReloadHistory();
@@ -655,7 +655,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                               .where((e) => e.totalQuantity > 0)
                               .toList(growable: false);
 
-
+                          // OPT: fecha más antigua de todas las operaciones
                           DateTime? firstDate;
                           if (investments.isNotEmpty) {
                             DateTime? minDate;
@@ -677,7 +677,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                               firstDate.month,
                               firstDate.day,
                             );
-
+                            // OPT: leer caches una vez (evitamos trabajo durante el scrub)
                             final key =
                                 'history_${startDate.toIso8601String().substring(0, 10)}';
                             final localHistory = HiveService.history.get(key);

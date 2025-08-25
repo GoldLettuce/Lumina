@@ -17,13 +17,17 @@ import 'ui/providers/theme_mode_provider.dart';
 import 'ui/providers/settings_provider.dart';
 
 Future<void> main() async {
-
+  print('[ARRANQUE][${DateTime.now().toIso8601String()}] main() START');
   WidgetsFlutterBinding.ensureInitialized();
 
-
+  assert(() {
+    debugPrintRebuildDirtyWidgets = true;
+    debugProfileBuildsEnabled = true;
+    return true;
+  }());
 
   // Eliminado: HiveService se inicializa en AppInitializationProvider
-
+  print('[ARRANQUE][${DateTime.now().toIso8601String()}] Antes de runApp()');
 
   runApp(const PortfolioApp());
 }
@@ -43,7 +47,7 @@ class PortfolioApp extends StatelessWidget {
 
           return MaterialApp(
             title: 'Lumina',
-
+            debugShowCheckedModeBanner: false,
             theme:
                 themeMode == AppThemeMode.lightMono
                     ? AppTheme.lightMonoTheme

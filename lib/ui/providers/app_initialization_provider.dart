@@ -25,20 +25,20 @@ class AppInitializationProvider extends ChangeNotifier {
 
     await HiveService.initFlutterLight();
 
-    
+    debugPrint('[INIT] Iniciando Hive...');
     await HiveService.init();
 
-    
+    debugPrint('[INIT] Iniciando repositorio...');
     repository = InvestmentRepositoryImpl();
     await repository.init();
 
-    
+    debugPrint('[INIT] Precargando datos...');
     preloadedData = await _preloadAll();
 
     _isAppReady = true;
     notifyListeners();
 
-    
+    debugPrint('[INIT] Aplicación lista.');
   }
 
   static Future<Map<String, dynamic>> _preloadAll() async {
