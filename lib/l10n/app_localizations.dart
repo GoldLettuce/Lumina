@@ -532,6 +532,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All transactions'**
   String get allTransactions;
+
+  /// No description provided for @noTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions'**
+  String get noTransactions;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

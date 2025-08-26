@@ -88,5 +88,6 @@
   "assetIconVisibilityShow": "Mostrar iconos",
   "assetIconVisibilityHide": "Ocultar iconos",
   "holdingsLabel": "En cartera",
-  "allTransactions": "Todas las transacciones"
+  "allTransactions": "Todas las transacciones",
+  "noTransactions": "No hay transacciones"
 }

@@ -230,4 +230,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get allTransactions => 'All transactions';
+
+  @override
+  String get noTransactions => 'No transactions';
 }

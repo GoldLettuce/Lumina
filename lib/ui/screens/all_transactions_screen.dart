@@ -20,13 +20,15 @@ class AllTransactionsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(loc?.allTransactions ?? 'All transactions'),
       ),
-      body: const _AllTransactionsList(),
+      body: _AllTransactionsList(loc: loc),
     );
   }
 }
 
 class _AllTransactionsList extends StatelessWidget {
-  const _AllTransactionsList();
+  const _AllTransactionsList({required this.loc});
+  
+  final AppLocalizations? loc;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +50,7 @@ class _AllTransactionsList extends StatelessWidget {
     if (items.isEmpty) {
       return Center(
         child: Text(
-          'No transactions',
+          loc?.noTransactions ?? 'No transactions',
           style: theme.textTheme.bodyLarge,
         ),
       );
@@ -79,7 +81,7 @@ class _AllTransactionsList extends StatelessWidget {
                 : AppColors.textNegative(context),
           ),
           title: Text(
-            '${isBuy ? "Buy" : "Sell"} of $qtyStr ${item.inv.symbol.toUpperCase()}',
+            '${isBuy ? (loc?.buy ?? "Buy") : (loc?.sell ?? "Sell")}${loc?.operationQuantitySeparator ?? " of "}$qtyStr ${item.inv.symbol.toUpperCase()}',
             style: theme.textTheme.bodyLarge,
           ),
           subtitle: Text(

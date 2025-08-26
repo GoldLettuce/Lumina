@@ -89,5 +89,6 @@
   "assetIconVisibilityShow": "Show icons",
   "assetIconVisibilityHide": "Hide icons",
   "holdingsLabel": "Holdings",
-  "allTransactions": "All transactions"
+  "allTransactions": "All transactions",
+  "noTransactions": "No transactions"
 }
