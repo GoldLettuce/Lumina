@@ -428,7 +428,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
       final inv = context.read<InvestmentProvider>().investments;
       _loadHistory(inv);
     } catch (e) {
-      debugPrint('[PortfolioScreen] Providers not ready yet, skipping reload');
+      // Providers not ready yet, skipping reload
     }
   }
 

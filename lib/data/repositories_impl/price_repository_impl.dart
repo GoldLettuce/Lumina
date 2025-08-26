@@ -37,10 +37,6 @@ class PriceRepositoryImpl implements PriceRepository {
     Set<String> symbols, {
     String currency = 'USD',
   }) async {
-    print(
-      '[TRACE][getPrices()] Iniciado → ${DateTime.now().toIso8601String()}',
-    );
-    print('[TRACE][getPrices()] Solicita precios para: ${symbols.join(', ')}');
     if (symbols.isEmpty) return {};
 
     await _ensureMap();
@@ -63,13 +59,6 @@ class PriceRepositoryImpl implements PriceRepository {
       }
     }
 
-    // Log de símbolos que faltan en cache
-    if (toFetch.isNotEmpty) {
-      print('[TRACE][getPrices()] Faltan en cache: ${toFetch.keys.join(', ')}');
-    } else {
-      print('[TRACE][getPrices()] Todos los símbolos están en cache');
-    }
-
     // Una sola llamada bulk para los símbolos caducados/faltantes
     if (toFetch.isNotEmpty) {
       try {
@@ -85,15 +74,11 @@ class PriceRepositoryImpl implements PriceRepository {
           }
         }
       } catch (e) {
-        print('[ERROR][PriceRepositoryImpl] Error fetching prices: $e');
         // En caso de error, usar los precios del caché aunque estén expirados
         for (final symbol in toFetch.keys) {
           final cached = _cache[symbol];
           if (cached != null) {
             fresh[symbol] = cached.value;
-            print(
-              '[INFO][PriceRepositoryImpl] Using cached price for $symbol: ${cached.value}',
-            );
           }
         }
       }

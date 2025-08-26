@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:lumina/core/chart_range.dart';
 import 'package:lumina/core/point.dart';
 import 'package:lumina/data/models/local_history.dart';
@@ -6,17 +7,10 @@ import 'package:lumina/data/datasources/coingecko/coingecko_history_service.dart
 import 'package:lumina/domain/entities/investment.dart';
 import 'package:lumina/domain/repositories/history_repository.dart';
 import 'package:lumina/core/hive_service.dart';
-import 'package:flutter/foundation.dart';
 import 'package:lumina/data/history_isolate.dart';
 
 class HistoryRepositoryImpl implements HistoryRepository {
   final CoinGeckoHistoryService _service = CoinGeckoHistoryService();
-
-  /*───────────────────────── logs ─────────────────────────*/
-  void _log(String msg) {
-    final ts = DateTime.now().toIso8601String().substring(11, 19);
-    debugPrint('[$ts] $msg');
-  }
 
   /*──────────────────────── helpers ───────────────────────*/
   DateTime _roundToDay(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
@@ -32,11 +26,8 @@ class HistoryRepositoryImpl implements HistoryRepository {
     // Elimina puntos anteriores al corte
     hist.points.removeWhere((p) => p.time.isBefore(cut));
 
-    // Ajusta “from”
+    // Ajusta "from"
     if (hist.points.isNotEmpty) hist.from = hist.points.first.time;
-
-    _log('🗑️  Trim → ${hist.points.length}/≤365 pts');
-    _log('🗑️  Trim → ${hist.points.length} pts (fecha ≥ $cut)');
   }
 
   /*──────────────────────── API ───────────────────────────*/
@@ -157,7 +148,6 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
       /*───────── descarga inicial ───────*/
       if (hist == null) {
-        _log('📡 [NEW] ${inv.symbol} → 365 días inicial');
         List<Point> pts = [];
         try {
           pts = await _service.getMarketChart(
@@ -177,7 +167,6 @@ class HistoryRepositoryImpl implements HistoryRepository {
                   )
                   .toList();
         } catch (_) {
-          _log('⚠️  Sin conexión: no se pudo descargar ${inv.symbol}');
           pts = [];
         }
         if (pts.isEmpty) continue;
@@ -219,7 +208,6 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
         if (daysBack > 0) {
           // si diffDays = 0 no se pide nada
-          _log('⏪ [BACKFILL] ${inv.symbol} → $daysBack días');
 
           List<Point> older = [];
           try {
@@ -240,7 +228,6 @@ class HistoryRepositoryImpl implements HistoryRepository {
                     )
                     .toList();
           } catch (_) {
-            _log('⚠️  Sin conexión back-fill ${inv.symbol}');
             older = [];
           }
 
@@ -262,7 +249,6 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
       if (lastSavedDay.isBefore(lastNeededDay)) {
         final missingDays = today.difference(lastSavedDay).inDays;
-        _log('⏩ [FORWARD] ${inv.symbol} → $missingDays días');
 
         List<Point> newPts = [];
         try {
@@ -283,7 +269,6 @@ class HistoryRepositoryImpl implements HistoryRepository {
                   )
                   .toList();
         } catch (_) {
-          _log('⚠️  Sin conexión forward ${inv.symbol}');
           newPts = [];
         }
 

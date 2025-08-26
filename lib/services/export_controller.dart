@@ -37,7 +37,6 @@ class ExportController {
       );
       // opcional: _showSnack(context, t.exportDone);
     } catch (e) {
-      debugPrint('❌ Error exportando CSV: $e');
       if (context.mounted) {
         _showSnack(context, t.exportFileError); // o texto plano
       }
