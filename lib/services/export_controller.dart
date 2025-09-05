@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'csv_export_service.dart';
 import 'csv_import_service.dart';
 import 'package:lumina/ui/providers/investment_provider.dart';
+import 'package:lumina/ui/providers/spot_price_provider.dart';
 import '../l10n/app_localizations.dart';
 
 // Si usas un wrapper de SnackBar propio, impórtalo; si no, usa ScaffoldMessenger directamente.
@@ -44,25 +45,32 @@ class ExportController {
   }
 
   static Future<void> handleCsvImport(BuildContext context) async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['csv'],
-    );
-    if (result == null) return; // cancelado
-
     try {
-      final file = File(result.files.single.path!);
-      final investments = await CsvImportService.parseCsv(file);
+      final file = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['csv']);
+      if (file == null) return;
 
+      final investments = await CsvImportService.parseCsv(File(file.files.single.path!));
+      
       if (!context.mounted) return;
-
-      final provider = context.read<InvestmentProvider>();
+      
+      final invProv = context.read<InvestmentProvider>();
       for (final inv in investments) {
-        // Add the investment if it doesn't exist
-        await provider.addInvestment(inv);
+        await invProv.addInvestment(inv);
       }
 
       if (!context.mounted) return;
+
+      // [IMPORT_FIX] Refrescar precios inmediatamente tras importar
+      final spot = context.read<SpotPriceProvider>();
+      // Si tu provider ya tiene auto-refresh, solo fuerza un ciclo:
+      await spot.loadPrices(); // carga con mapping actual; el resto lo hará el ciclo
+
+      if (!context.mounted) return;
+
+      // Si esta acción viene de una ruta modal, notificar cambio al padre:
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context, true);
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Importación completada ✅')),

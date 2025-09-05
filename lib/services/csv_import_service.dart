@@ -54,7 +54,9 @@ class CsvImportService {
             name: name,
             symbol: symbol,
             type: AssetType.crypto, // Default type, can be updated later
-            coingeckoId: symbol.toLowerCase(), // Default coingecko ID
+            // [IMPORT_FIX] No asignar coingeckoId desde symbol.
+            // Se resolverá luego vía mapping símbolo→id (cache + red).
+            coingeckoId: '',
             vsCurrency: currency.toLowerCase(),
             operations: [],
           );
