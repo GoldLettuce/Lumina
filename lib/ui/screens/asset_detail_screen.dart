@@ -194,10 +194,11 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                           : AppColors.textNegative(context);
                   final selected = _selectedIds.contains(op.id);
 
-                  // Convertir precio USD a moneda seleccionada
-                  final convertedPrice = op.price * fx.exchangeRate;
+                  // Calcular importe total gastado (cantidad * precio) y convertir a moneda seleccionada
+                  final totalUsd = op.quantity * op.price;
+                  final totalLocal = totalUsd * fx.exchangeRate;
                   final priceText = formatMoney(
-                    convertedPrice,
+                    totalLocal,
                     fx.currency,
                     context,
                   );
